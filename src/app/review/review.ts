@@ -3,7 +3,6 @@ import { CurrencyPipe } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { REVIEWS, Review } from '../review.data';
 
-
 @Component({
   selector: 'app-review',
   standalone: true,
@@ -38,11 +37,20 @@ import { REVIEWS, Review } from '../review.data';
             </div>
 
             <div class="rating-container">
-              <a href="#reviews" class="rating-count">Reviews</a>
+              <a href="#" class="rating-count" (click)="toggleReviews($event)">
+                {{ showReviews() ? 'Hide Reviews' : 'Show Reviews' }}
+              </a>
               <div class="stars">
                 ★★★★<span class="half-star">★</span>
               </div>
             </div>
+
+            @if (showReviews()) {
+              <div class="reviews-section">
+                <p><strong>Alice:</strong> Beautiful plant, fits perfectly! 🌿</p>
+                <p><strong>Bob:</strong> Arrived safely and looking healthy. 5/5!</p>
+              </div>
+            }
 
             <div class="price-block">
               <div class="current-price">{{ p.price | currency:'BRL' }}</div>
@@ -81,11 +89,8 @@ import { REVIEWS, Review } from '../review.data';
             </div>
 
             <button class="btn btn-add-to-cart">Add to Cart</button>
-
             <button class="btn btn-buy-now">Buy Now</button>
-
           </div>
-
         </div>
 
       } @else {
@@ -94,7 +99,6 @@ import { REVIEWS, Review } from '../review.data';
           <p>Sorry, we couldn't find the review you're looking for in our database.</p>
         </div>
       }
-
     </div>
   `,
   styles: `
@@ -121,7 +125,6 @@ import { REVIEWS, Review } from '../review.data';
       margin: 0 auto;
       padding: 2rem;
       font-family: IBM Plex Mono, monospace;
-
     }
 
     .back-link {
@@ -192,6 +195,14 @@ import { REVIEWS, Review } from '../review.data';
       object-fit: contain;
     }
 
+    /* --- RIGHT COLUMN STICKY MAGIC --- */
+    .review-info-container {
+      position: sticky;           /* Prevents dragging to the bottom */
+      top: 90px;                  /* Offsets enough to stay below your fixed mat-toolbar */
+      height: fit-content;        /* Makes sure the container is only as tall as its content */
+      align-self: start;          /* Stops it from stretching the full height of the grid */
+    }
+
     .review-title h1 {
       font-size: 1.5rem;
       font-weight: 400;
@@ -211,11 +222,27 @@ import { REVIEWS, Review } from '../review.data';
     }
 
     .stars { color: var(--accent-color); margin-right: 5px; font-size: 1.1rem; }
-    .half-star { color: #ccc; } /* Fakes a half star for the UI */
+    .half-star { color: #ccc; }
     .rating-count { color: var(--link-blue); margin-left: 8px; text-decoration: none; }
-    .current-price { font-size: 1.8rem; font-weight: 500; color: var(--text-dark); }
+    
+    /* New Styles for the Toggled Reviews */
+    .reviews-section {
+      background-color: #fff9f0;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+      border: 1px solid #ddd;
+    }
+    
+    .reviews-section p {
+      font-size: 0.85rem;
+      margin-bottom: 8px;
+      color: var(--text-dark);
+    }
 
-    .divider { height: 1px; background-color: var(--border-color); margin: 25px 0; }
+    .current-price { font-size: 1.8rem; font-weight: 500; color: var(--text-dark); margin-top: 15px;}
+
+    .divider { height: 1px; background-color: #ddd; margin: 25px 0; }
 
      .support-selector h4 {
       font-size: 1.05rem;
@@ -230,12 +257,12 @@ import { REVIEWS, Review } from '../review.data';
     }
 
     .support-box {
-      flex: 1; /* Makes both boxes equal width */
+      flex: 1; 
       display: flex;
       align-items: center;
       gap: 12px;
       padding: 10px;
-      border: 2px solid var(--border-color);
+      border: 2px solid #ddd;
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -243,10 +270,9 @@ import { REVIEWS, Review } from '../review.data';
 
     .support-box:hover { border-color: #bbb; }
 
-    /* Active State for the Box */
     .support-box.selected {
       border-color: var(--accent-color);
-      background-color: #fff9f0; /* Slight orange tint */
+      background-color: #fff9f0; 
     }
 
     .support-box img {
@@ -259,10 +285,6 @@ import { REVIEWS, Review } from '../review.data';
     .support-text { display: flex; flex-direction: column; }
     .support-text span { font-size: 0.95rem; font-weight: 600; color: var(--text-dark); }
     .support-text small { font-size: 0.85rem; color: var(--text-light); margin-top: 2px;}
-
-
-
-    
 
     .btn {
       width: 100%;
@@ -279,24 +301,16 @@ import { REVIEWS, Review } from '../review.data';
     .btn-add-to-cart { background-color: var(--buy-color); }
     .btn-add-to-cart:hover { background-color: var(--buy-hover); }
 
-    .btn-buy-now { background-color: #ffa41c; }
+    .btn-buy-now { background-color: #ffa41c; margin-top: 10px;}
     .btn-buy-now:hover { background-color: #fa8900; }
-
-    .secure-transaction {
-      display: flex;
-      align-items: center;
-      color: var(--link-blue);
-      font-size: 0.9rem;
-      margin-top: 15px;
-    }
-
-    .seller-info { margin-top: 15px; font-size: 0.85rem; color: var(--text-light); line-height: 1.4;}
 
     /* Mobile Adjustments */
     @media (max-width: 768px) {
       .gallery-container { flex-direction: column-reverse; }
       .thumbnail-list { flex-direction: row; justify-content: center; flex-wrap: wrap; }
-      .buy-box-container { position: static; border: none; padding: 0; margin-top: 20px; }
+      
+      /* Disable sticky on mobile so it flows naturally */
+      .review-info-container { position: static; height: auto; margin-top: 20px; } 
     }
   `
 })
@@ -304,12 +318,12 @@ export class ReviewComponent implements OnInit {
   private route = inject(ActivatedRoute);
   
   review = signal<Review | undefined>(undefined);
-  
-  // State for the Image Gallery
   selectedImage = signal<string>('');
   galleryImages = signal<string[]>([]);
-
   selectedSupport = signal<'basic' | 'wood'>('basic');
+
+  // Step 1: Create our state variable for the toggler
+  showReviews = signal<boolean>(false); 
 
   ngOnInit() {
     const idParam = this.route.snapshot.paramMap.get('id');
@@ -318,12 +332,8 @@ export class ReviewComponent implements OnInit {
     const foundReview = REVIEWS.find(p => p.id === reviewId);
     this.review.set(foundReview);
 
-    // If we found a review, set up the gallery
     if (foundReview) {
       this.selectedImage.set(foundReview.image);
-      
-      // Because your data model only has 1 image, we generate 3 fake alternate 
-      // images by tweaking the picsum ID math slightly!
       this.galleryImages.set([
         foundReview.image,
         `https://picsum.photos/id/${reviewId + 50}/500/500`,
@@ -333,8 +343,13 @@ export class ReviewComponent implements OnInit {
     }
   }
 
-  // Method triggered when user clicks a thumbnail
   changeImage(imgSrc: string) {
     this.selectedImage.set(imgSrc);
+  }
+
+  // Step 2: The logic to toggle our state boolean on and off!
+  toggleReviews(event: Event) {
+    event.preventDefault(); // Prevents the browser from jumping to the top of the page
+    this.showReviews.update(val => !val); // Reverses the boolean
   }
 }
