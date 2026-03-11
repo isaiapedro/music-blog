@@ -34,7 +34,7 @@ export class ArticlesPage {
   mainArticle = computed(() => this.filteredArticles()[0]);
   sideArticles = computed(() => this.filteredArticles().slice(1, 3));
   listArticles = computed(() => {
-    return this.filteredArticles().slice(0, 3);
+    return this.filteredArticles().slice(0, 5);
   });
 
   setTheme(theme: string) {

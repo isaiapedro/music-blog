@@ -1,31 +1,48 @@
 import { Component, signal, computed } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 import { ARTICLES } from '../article.data';
 
 @Component({
   selector: 'app-home-page',
-  imports: [RouterModule, FormsModule],
+  standalone: true,
+  imports: [RouterModule, FormsModule, CommonModule],
   templateUrl: './home-page.html',
-  styleUrl: './home-page.css',
+  styleUrl: './home-page.css'
 })
-
 export class HomePage {
-  articles = signal(ARTICLES);
   searchTerm = signal('');
+  selectedTheme = signal('All');
+  
+  themes = ['All', 'Music', 'Technology', 'Literature', 'Travel', 'Fashion'];
+
+  articles = signal(ARTICLES);
 
   filteredArticles = computed(() => {
     const term = this.searchTerm().toLowerCase();
-
-    return this.articles().filter((article: any) => {
-      const matchesSearch = article.title.toLowerCase().includes(term);
-      
-      return matchesSearch;
+    const theme = this.selectedTheme().toLowerCase();
+    
+    return this.articles().filter(article => {
+      const matchesSearch = article.title.toLowerCase().includes(term) || 
+                            article.keywords.toLowerCase().includes(term);
+      const matchesTheme = theme === 'all' || article.keywords.toLowerCase().includes(theme);
+      return matchesSearch && matchesTheme;
     });
   });
 
-  updateSearch(term: string) {
-    this.searchTerm.set(term);
-  }
+  mainArticle = computed(() => this.filteredArticles()[0]);
+  sideArticles = computed(() => this.filteredArticles().slice(1, 3));
+  listArticles = computed(() => {
+    return this.filteredArticles().slice(0, 5);
+  });
 
+  setTheme(theme: string) {
+    
+  if (this.selectedTheme() === theme) {
+    this.selectedTheme.set('All');
+  } else {
+    this.selectedTheme.set(theme);
+  }
+}
 }

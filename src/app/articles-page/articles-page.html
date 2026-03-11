@@ -27,39 +27,20 @@
       }
     </div>
   </div>
+
   <div class="masonry-grid">
-    <div class="side-stories">
-      @for (article of sideArticles(); track article.id) {
-        <div class="side-item">
-          <div class="side-container">
-            <img [src]="article.image" class="side-img">
+    @for (article of articles(); track article.title) {
+      <div class="masonry-item">
+        <div class="article-card">
+          <img [src]="article.image" [alt]="article.title" class="article-image">
+          
+          <div class="article-info">
+            <h3 class="article-title">{{ article.title }}</h3>
+            <div class="title-underline"></div>
+            <p class="article-date">{{ article.date }}</p>
           </div>
-          <span class="side-theme">{{ article.keywords}}</span>
-          <h4>{{ article.title }}</h4>
-          <span class="side-date">{{ article.date }}</span>
-        </div>
-      }
-    </div>
-    <div class="main-column" *ngIf="mainArticle()">
-      <div class="main-article-border">
-        <div class="headline-article">
-          <div class="main-container">
-            <img [src]="mainArticle().image" class="main-img">
-          </div>
-          <h1>{{ mainArticle().title }}</h1>
-          <p class="description">{{ mainArticle().description }}</p>
-          <p class="date">{{ mainArticle().date }}</p>
         </div>
       </div>
-    </div>
-
-    <div class="text-only-list">
-      @for (article of listArticles(); track article.id) {
-        <div class="list-item">
-          <h3>{{ article.title }}</h3>
-          <span class="list-date">{{ article.date }}</span>
-        </div>
-      }
-    </div>
+    }
   </div>
 </div>
