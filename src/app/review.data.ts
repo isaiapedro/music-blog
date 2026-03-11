@@ -1,111 +1,75 @@
 export interface Review {
   id: number;
-  name: string;
-  price: number;
+  album: string;
+  artist: string;
+  year: number;
   image: string;
   description: string;
   date: string;
   genres: string;
+  subgenres: string;
+  country: string;
 }
 
 export const REVIEWS: Review[] = [
   { 
     id: 1, 
-    name: 'Monstera Deliciosa', 
-    price: 45.00, 
-    image: 'https://picsum.photos/id/106/500/500',
-    description: 'A beautiful tropical plant famous for its natural leaf holes.',
-    date: '2024-06-01',
-    genres: 'Tropical, Indoor'
+    album: 'Eli And The Thirteenth Confession', 
+    artist: 'Laura Nyro',
+    year: 1968,
+    image: 'https://i.scdn.co/image/57362d54bb8d4dc1137467bdc6242c9f563adcc0',
+    description: 'Eli and the Thirteenth Confession is the second album by New York City-born singer, songwriter, and pianist Laura Nyro, released in 1968.',
+    date: '2026-10-03',
+    genres: 'Pop, Soul, Singer-Songwriter',
+    subgenres: 'Pop Soul, Progressive Soul, Progressive Pop',
+    country: 'US'
   },
   { 
     id: 2, 
-    name: 'Fiddle Leaf Fig', 
-    price: 60.00, 
-    image: 'https://picsum.photos/id/107/500/500',
-    description: 'A popular indoor tree with massive, violin-shaped leaves.',
-    date: '2024-06-02',
-    genres: 'Indoor, Statement'
+    album: 'Listen Without Prejudice Vol. 1', 
+    artist: 'George Michael',
+    year: 1990,
+    image: 'https://i.scdn.co/image/46fe08e9249442a3973f0fba948be3940c746956',
+    description: 'Listen Without Prejudice Vol. 1 is the second solo studio album by the English singer-songwriter George Michael, released on 3 September 1990 by Columbia Records (Epic Records in the UK). The album was Michael´s final album of all-new material on Columbia until 2004´s Patience. ',
+    date: '2026-11-03',
+    genres: 'Pop, R&B, Singer-Songwriter',
+    subgenres: 'Pop Soul, Sophisti-Pop, Singer-Songwriter, Contemporary R&B',
+    country: 'UK'
   },
   { 
     id: 3, 
-    name: 'Snake Plant', 
-    price: 25.00, 
-    image: 'https://picsum.photos/id/108/500/500',
-    description: 'Nearly indestructible and great for purifying indoor air.',
-    date: '2024-06-03',
-    genres: 'Low Maintenance, Air Purifying'
+    album: 'Diamond Life', 
+    artist: 'Sade',
+    year: 1984,
+    image: 'https://i.scdn.co/image/ab67616d0000b273ad27e16c5f844ea1ad6797cd',
+    description: 'Diamond Life is the debut studio album by English band Sade, released in the United Kingdom on 16 July 1984 by Epic Records and in the United States on 27 February 1985 by Portrait Records. After studying fashion design, and later modelling, Sade Adu began backup-singing with British band Pride.',
+    date: '2026-12-03',
+    genres: 'Pop, Soul, Jazz',
+    subgenres: 'Sophisti-Pop, Smooth Soul, Smooth Jazz',
+    country: 'UK'
   },
   { 
     id: 4, 
-    name: 'Peace Lily', 
-    price: 30.00, 
-    image: 'https://picsum.photos/id/109/500/500',
-    description: 'Elegant white flowers and lush dark green foliage.',
-    date: '2024-06-04',
-    genres: 'Flowering, Air Purifying'
+    album: 'Out Of The Blue', 
+    artist: 'Electric Light Orchestra',
+    year: 1977,
+    image: 'https://i.scdn.co/image/a6f64edd91bd69365e0862dd15570dc1bc7511ec',
+    description: 'Out of the Blue is the seventh studio album by the British rock group Electric Light Orchestra (ELO), released in October 1977. Written and produced by ELO frontman Jeff Lynne, the double album is among the most commercially successful records in the group´s history, selling about 10 million copies worldwide by 2007.',
+    date: '2026-13-03',
+    genres: 'Pop, Rock',
+    subgenres: 'Pop Rock, Symphonic Rock, Progressive Pop',
+    country: 'UK'
   },
   {
-    id: 5,
-    name: 'Golden Pothos',
-    price: 18.00,
-    image: 'https://picsum.photos/id/110/500/500',
-    description: 'A fast-growing trailing vine with beautiful heart-shaped, variegated leaves. Looks stunning in a hanging basket.',
-    date: '2024-06-05',
-    genres: 'Trailing, Low Maintenance'
+    id: 5, 
+    album: 'Bayou Country', 
+    artist: 'Creedence Clearwater Revival',
+    year: 1969,
+    image: 'https://i.scdn.co/image/ea953711d7aee5d77ec89a3524eb1ca1913c4cbd',
+    description: 'Bayou Country is the second studio album by American rock band Creedence Clearwater Revival, released by Fantasy Records in January 1969, and was the first of three albums CCR released in that year.',
+    date: '2026-14-03',
+    genres: 'Rock, Blues',
+    subgenres: 'Swamp-Rock, Blues-Rock, Southern-Rock, Folk Rock',
+    country: 'US'
   },
-  {
-    id: 6,
-    name: 'Rubber Tree Plant',
-    price: 40.00,
-    image: 'https://picsum.photos/id/111/500/500',
-    description: 'Features thick, glossy, burgundy-green leaves. A sturdy and striking statement piece for any bright room.',
-    date: '2024-06-06',
-    genres: 'Statement, Indoor'
-  },
-  {
-    id: 7,
-    name: 'Aloe Vera',
-    price: 22.00,
-    image: 'https://picsum.photos/id/112/500/500',
-    description: 'A handy succulent that loves the sun. Not only is it cute, but the gel inside its leaves is great for your skin.',
-    date: '2024-06-07',
-    genres: 'Succulent, Medicinal'
-  },
-  {
-    id: 8,
-    name: 'Spider Plant',
-    price: 20.00,
-    image: 'https://picsum.photos/id/113/500/500',
-    description: 'A fun, pet-friendly plant that produces tiny "spiderettes" (baby plants) that dangle from the mother plant.',
-    date: '2024-06-08',
-    genres: 'Air Purifying, Pet Friendly'
-  },
-  {
-    id: 9,
-    name: 'ZZ Plant',
-    price: 35.00,
-    image: 'https://picsum.photos/id/114/500/500',
-    description: 'The ultimate low-maintenance plant. It tolerates neglect, low light, and only needs watering once a month.',
-    date: '2024-06-09',
-    genres: 'Low Maintenance, Indoor'
-  },
-  {
-    id: 10,
-    name: 'Bird of Paradise',
-    price: 75.00,
-    image: 'https://picsum.photos/id/115/500/500',
-    description: 'A magnificent, large-leafed tropical plant that brings a dramatic, architectural element to your home decor.',
-    date: '2024-06-10',
-    genres: 'Tropical, Statement'
-  },
-  {
-    id: 11,
-    name: 'Calathea Medallion',
-    price: 32.00,
-    image: 'https://picsum.photos/id/116/500/500',
-    description: 'Famous for its stunning, patterned foliage that folds up at night like hands in prayer. Thrives in humidity.',
-    date: '2024-06-11',
-    genres: 'Patterned, Humidity Loving'
-  }
 ];

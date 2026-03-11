@@ -13,12 +13,18 @@
     <div class="filter-group">
       <h3 class="filter-title">Genre</h3>
       <div class="filter-options">
-        @for (genre of genres; track genre) {
+        @for (genre of displayedGenres(); track genre) {
           <button 
             class="filter-btn" 
             [class.active]="selectedGenre() === genre"
             (click)="toggleGenre(genre)">
             {{ genre }}
+          </button>
+        }
+        
+        @if (genres.length > 7) {
+          <button class="filter-btn more-btn" (click)="showAllGenres.set(!showAllGenres())">
+            {{ showAllGenres() ? '-' : '+' }}
           </button>
         }
       </div>
@@ -50,12 +56,18 @@
     <div class="filter-group">
       <h3 class="filter-title">Country</h3>
       <div class="filter-options">
-        @for (country of countries; track country) {
+        @for (country of displayedCountries(); track country) {
           <button 
             class="filter-btn" 
             [class.active]="selectedCountry() === country"
             (click)="toggleCountry(country)">
             {{ country }}
+          </button>
+        }
+
+        @if (countries.length > 5) {
+          <button class="filter-btn more-btn" (click)="showAllCountries.set(!showAllCountries())">
+            {{ showAllCountries() ? '-' : '+' }}
           </button>
         }
       </div>
@@ -66,11 +78,10 @@
     <div class="blog-list">
       @for (review of paginatedReviews(); track review.id) {
         <div class="blog-post" 
-             [routerLink]="['/collection-page', review.id]"
-             (mouseenter)="selectedReview.set(review)"
-             (mouseleave)="selectedReview.set(null)">
+          [class.active]="selectedPreview()?.id === review.id"
+          (click)="togglePreview(review)">
           <div class="post-content">
-            <h3 class="post-title">{{ review.name }}</h3>
+            <h3 class="post-title">{{ review.album }}</h3>
             <p class="post-description">
               {{ review.description || 'A brief explanation of the review goes here.' }}
             </p>
@@ -92,7 +103,7 @@
           </div>
           
           <div class="post-image">
-            <img [src]="review.image" [alt]="review.name" loading="lazy">
+            <img [src]="review.image" [alt]="review.album" loading="lazy">
           </div>
         </div>
       }
@@ -107,15 +118,18 @@
     </div>
 
     <div class="preview-pane">
-      @if (selectedReview(); as review) {
+      @if (selectedPreview(); as review) {
         <div class="preview-card">
-          <img [src]="review.image" [alt]="review.name" class="preview-image">
-          <h2 class="preview-title">{{ review.name }}</h2>
-          <p class="preview-price">{{ review.price | currency:'BRL' }}</p>
+          <img [src]="review.image" [alt]="review.album" class="preview-image">
+          <h2 class="preview-title">{{ review.album }}</h2>
           <p class="preview-desc">{{ review.description }}</p>
           <div class="preview-genres">
             <span class="genre-tag">{{ review.genres }}</span>
           </div>
+          
+          <button class="btn-show-more" [routerLink]="['/collection-page', review.id]">
+            Show more
+          </button>
         </div>
       }
     </div>

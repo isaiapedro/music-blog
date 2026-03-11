@@ -27,13 +27,13 @@ import { REVIEWS, Review } from '../review.data';
               }
             </div>
             <div class="main-image-container">
-              <img [src]="selectedImage()" [alt]="p.name">
+              <img [src]="selectedImage()" [alt]="p.album">
             </div>
           </div>
 
           <div class="review-info-container">
             <div class="review-title">
-              <h1>{{ p.name }}</h1>
+              <h1>{{ p.album }}</h1>
             </div>
 
             <div class="rating-container">
@@ -51,10 +51,6 @@ import { REVIEWS, Review } from '../review.data';
                 <p><strong>Bob:</strong> Arrived safely and looking healthy. 5/5!</p>
               </div>
             }
-
-            <div class="price-block">
-              <div class="current-price">{{ p.price | currency:'BRL' }}</div>
-            </div>
 
             <div class="divider"></div>
 

@@ -106,6 +106,26 @@
   border-bottom: 1px solid #fff;
 }
 
+.more-btn {
+  background-color: transparent;
+  border: 0.4px dashed #444; 
+  color: #777;
+  padding: 0.5rem 0.8rem;
+}
+
+.more-btn:hover {
+  border-color: #888;
+  color: #ccc;
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* Ensure the active state doesn't accidentally apply to the more button */
+.more-btn.active {
+  background-color: transparent;
+  box-shadow: none;
+  border: 1px dashed #444;
+}
+
 .main-content {
   flex: 1;
   display: flex;
@@ -330,4 +350,27 @@
   border-radius: 20px;
   font-size: 0.8rem;
   font-family: 'IBM Plex Mono', monospace;
+}
+
+.btn-show-more {
+  background-color: #A5CEC7; /* Re-using your app's accent color */
+  color: #000;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 1rem;
+  text-align: center;
+  text-decoration: none;
+  display: block;
+  width: 100%;
+}
+
+.btn-show-more:hover {
+  background-color: #7AB5B7;
+  transform: translateY(-2px);
 }
