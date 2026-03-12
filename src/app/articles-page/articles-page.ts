@@ -49,4 +49,13 @@ export class ArticlesPage implements OnInit {
     }
     this.isExpanded.set(false);
   }
+
+  readonly fallbackImage = 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=800&auto=format&fit=crop';
+
+  onImageError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    if (img && this.fallbackImage) {
+      img.src = this.fallbackImage;
+    }
+  }
 }

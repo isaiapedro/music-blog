@@ -38,12 +38,17 @@ import { MatButtonModule } from '@angular/material/button';
         left: 0;
         right: 0;
         z-index: 1000;
-        background-image: linear-gradient(#000000 25%, #1a1a1a 85%); 
+        background-image: linear-gradient(#000000 25%, #1a1a1a 85%);
         border-bottom: 1px solid white;
-
         font-family: 'Helvetica', sans-serif;
         font-weight: 400;
         font-size: 20px;
+        color: white;
+      }
+
+      .mat-toolbar a,
+      .mat-toolbar .mat-mdc-button,
+      .navbar a {
         color: white;
       }
 

@@ -1,0 +1,112 @@
+{
+  "reviews": [
+    {
+      "id": 1,
+      "album": "Eli And The Thirteenth Confession",
+      "artist": "Laura Nyro",
+      "image": "https://i.scdn.co/image/57362d54bb8d4dc1137467bdc6242c9f563adcc0",
+      "releaseDate": 1968,
+      "label": "Columbia",
+      "genre": "Pop, Soul, Singer-Songwriter",
+      "description": "Eli and the Thirteenth Confession is the second album by New York City-born singer, songwriter, and pianist Laura Nyro, released in 1968.",
+      "context": "Laura Nyro emerged in the late 1960s as a singular voice, blending soul, pop and Broadway into a sound that would influence countless artists. This record captures her at a creative peak.",
+      "introduction": "Eli and the Thirteenth Confession remains one of the most ambitious and emotionally charged albums of its era. Here we break down its themes and standout moments.",
+      "breakdown": [
+        {
+          "type": "paragraph",
+          "title": "Side A",
+          "content": "The opening run of songs establishes Nyro's gift for **melodic storytelling** and bold arrangements. *Eli's Comin'* became a hit for Three Dog Night and remains a staple of the era."
+        },
+        {
+          "type": "music",
+          "title": "Eli's Comin'",
+          "spotifyId": "2nVb0nW5nHh7yjuPJ2bVjV",
+          "youtubeMusicId": null,
+          "content": ""
+        },
+        {
+          "type": "image",
+          "title": "Album session",
+          "imageUrl": "https://i.scdn.co/image/57362d54bb8d4dc1137467bdc6242c9f563adcc0",
+          "imageAlt": "Laura Nyro album cover detail",
+          "content": ""
+        },
+        {
+          "type": "paragraph",
+          "content": "The title track and *Stoned Soul Picnic* showcase her ability to move between intimacy and grandeur, with lush orchestration supporting her piano and voice."
+        }
+      ],
+      "conclusion": "Eli and the Thirteenth Confession stands as a landmark of 1960s pop and soul. Its influence can be heard in the work of Todd Rundgren, Kate Bush and many others who followed.",
+      "similarAlbums": [
+        { "id": 2, "album": "Listen Without Prejudice Vol. 1", "artist": "George Michael", "image": "https://i.scdn.co/image/46fe08e9249442a3973f0fba948be3940c746956" },
+        { "id": 3, "album": "Diamond Life", "artist": "Sade", "image": "https://i.scdn.co/image/ab67616d0000b273ad27e16c5f844ea1ad6797cd" }
+      ],
+      "comments": [
+        { "user": "Alice", "text": "Beautiful record. Nyro's songwriting is unmatched.", "date": "2026-01-15" },
+        { "user": "Bob", "text": "Arrived at this via Three Dog Night. The original is even better.", "date": "2026-02-01" }
+      ]
+    }
+  ],
+  "listMeta": [
+    {
+      "id": 1,
+      "album": "Eli And The Thirteenth Confession",
+      "artist": "Laura Nyro",
+      "year": 1968,
+      "image": "https://i.scdn.co/image/57362d54bb8d4dc1137467bdc6242c9f563adcc0",
+      "description": "Eli and the Thirteenth Confession is the second album by New York City-born singer, songwriter, and pianist Laura Nyro, released in 1968.",
+      "date": "2026-10-03",
+      "genres": "Pop, Soul, Singer-Songwriter",
+      "subgenres": "Pop Soul, Progressive Soul, Progressive Pop",
+      "country": "US"
+    },
+    {
+      "id": 2,
+      "album": "Listen Without Prejudice Vol. 1",
+      "artist": "George Michael",
+      "year": 1990,
+      "image": "https://i.scdn.co/image/46fe08e9249442a3973f0fba948be3940c746956",
+      "description": "Listen Without Prejudice Vol. 1 is the second solo studio album by the English singer-songwriter George Michael.",
+      "date": "2026-11-03",
+      "genres": "Pop, R&B, Singer-Songwriter",
+      "subgenres": "Pop Soul, Sophisti-Pop, Singer-Songwriter, Contemporary R&B",
+      "country": "UK"
+    },
+    {
+      "id": 3,
+      "album": "Diamond Life",
+      "artist": "Sade",
+      "year": 1984,
+      "image": "https://i.scdn.co/image/ab67616d0000b273ad27e16c5f844ea1ad6797cd",
+      "description": "Diamond Life is the debut studio album by English band Sade.",
+      "date": "2026-12-03",
+      "genres": "Pop, Soul, Jazz",
+      "subgenres": "Sophisti-Pop, Smooth Soul, Smooth Jazz",
+      "country": "UK"
+    },
+    {
+      "id": 4,
+      "album": "Out Of The Blue",
+      "artist": "Electric Light Orchestra",
+      "year": 1977,
+      "image": "https://i.scdn.co/image/a6f64edd91bd69365e0862dd15570dc1bc7511ec",
+      "description": "Out of the Blue is the seventh studio album by the British rock group Electric Light Orchestra (ELO).",
+      "date": "2026-13-03",
+      "genres": "Pop, Rock",
+      "subgenres": "Pop Rock, Symphonic Rock, Progressive Pop",
+      "country": "UK"
+    },
+    {
+      "id": 5,
+      "album": "Bayou Country",
+      "artist": "Creedence Clearwater Revival",
+      "year": 1969,
+      "image": "https://i.scdn.co/image/ea953711d7aee5d77ec89a3524eb1ca1913c4cbd",
+      "description": "Bayou Country is the second studio album by American rock band Creedence Clearwater Revival.",
+      "date": "2026-14-03",
+      "genres": "Rock, Blues",
+      "subgenres": "Swamp-Rock, Blues-Rock, Southern-Rock, Folk Rock",
+      "country": "US"
+    }
+  ]
+}

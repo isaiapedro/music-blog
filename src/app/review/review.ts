@@ -1,351 +1,429 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { CurrencyPipe } from '@angular/common';
+import {
+  Component,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { REVIEWS, Review } from '../review.data';
+import { MarkdownComponent } from 'ngx-markdown';
+import { ReviewCmsService } from '../cms/review-cms.service';
+import { ReviewContent } from '../cms/review-content.model';
+import { REVIEWS } from '../review.data';
+import type { Review } from '../review.data';
 
 @Component({
   selector: 'app-review',
   standalone: true,
-  imports: [RouterModule, CurrencyPipe],
+  imports: [RouterModule, MarkdownComponent],
   template: `
-    <div class="detail-container">
-      
-      <a routerLink="/collection-page" class="back-link">&larr; Back to Shop</a>
+    <div class="review-article">
+      <a routerLink="/collection-page" class="back-link">&larr; Back to reviews</a>
 
-      @if (review(); as p) {
-        <div class="review-layout">
-          <div class="gallery-container">
-            <div class="thumbnail-list">
-              @for (img of galleryImages(); track img) {
-                <div 
-                  class="thumbnail" 
-                  [class.active]="img === selectedImage()" 
-                  (click)="changeImage(img)"
-                >
-                  <img [src]="img" alt="Thumbnail view">
-                </div>
+      @if (reviewContent(); as content) {
+        <article class="article-body">
+          <header class="article-header">
+            <h1 class="article-title">{{ content.album }}</h1>
+            <p class="article-artist">{{ content.artist }}</p>
+            <div class="article-meta">
+              <span>{{ content.releaseDate }}</span>
+              @if (content.label) {
+                <span class="meta-sep">{{ content.label }}</span>
               }
+              <span class="meta-sep">{{ content.genre }}</span>
             </div>
-            <div class="main-image-container">
-              <img [src]="selectedImage()" [alt]="p.album">
+            <div class="cover-wrap">
+              <img
+                [src]="content.image"
+                [alt]="content.album"
+                class="article-cover"
+                width="400"
+                height="400"
+                loading="eager"
+              />
             </div>
-          </div>
-
-          <div class="review-info-container">
-            <div class="review-title">
-              <h1>{{ p.album }}</h1>
-            </div>
-
-            <div class="rating-container">
-              <a href="#" class="rating-count" (click)="toggleReviews($event)">
-                {{ showReviews() ? 'Hide Reviews' : 'Show Reviews' }}
-              </a>
-              <div class="stars">
-                ★★★★<span class="half-star">★</span>
-              </div>
-            </div>
-
-            @if (showReviews()) {
-              <div class="reviews-section">
-                <p><strong>Alice:</strong> Beautiful plant, fits perfectly! 🌿</p>
-                <p><strong>Bob:</strong> Arrived safely and looking healthy. 5/5!</p>
+            <p class="article-description">{{ content.description }}</p>
+            @if (content.context) {
+              <div class="article-context markdown-body">
+                <markdown [data]="content.context"></markdown>
               </div>
             }
+          </header>
 
-            <div class="divider"></div>
-
-            <div class="support-selector">
-              <h4>Select Support / Base</h4>
-              
-              <div class="support-options">
-                <div 
-                  class="support-box" 
-                  [class.selected]="selectedSupport() === 'basic'" 
-                  (click)="selectedSupport.set('basic')"
-                >
-                  <img src="https://picsum.photos/id/111/80/80" alt="Basic Pot">
-                  <div class="support-text">
-                    <span>Basic Pot</span>
-                    <small>Included</small>
-                  </div>
-                </div>
-
-                <div 
-                  class="support-box" 
-                  [class.selected]="selectedSupport() === 'wood'" 
-                  (click)="selectedSupport.set('wood')"
-                >
-                  <img src="https://picsum.photos/id/112/80/80" alt="Wood Stand">
-                  <div class="support-text">
-                    <span>Wood Stand</span>
-                    <small>+ R$ 25,00</small>
-                  </div>
-                </div>
+          @if (content.introduction) {
+            <section class="section introduction">
+              <div class="markdown-body">
+                <markdown [data]="content.introduction"></markdown>
               </div>
+            </section>
+          }
+
+          @if (content.breakdown.length) {
+            <section class="section breakdown">
+              <h2 class="section-title">Album breakdown</h2>
+              @for (block of content.breakdown; track $index) {
+                <div class="breakdown-block">
+                  @switch (block.type) {
+                    @case ('paragraph') {
+                      @if (block.title) {
+                        <h3 class="block-title">{{ block.title }}</h3>
+                      }
+                      @if (block.content) {
+                        <div class="markdown-body">
+                          <markdown [data]="block.content"></markdown>
+                        </div>
+                      }
+                    }
+                    @case ('image') {
+                      @if (block.imageUrl) {
+                        <figure>
+                          <img
+                            [src]="block.imageUrl"
+                            [alt]="block.imageAlt || block.title || ''"
+                            class="breakdown-image"
+                            loading="lazy"
+                          />
+                          @if (block.title) {
+                            <figcaption>{{ block.title }}</figcaption>
+                          }
+                        </figure>
+                      }
+                    }
+                    @case ('music') {
+                      <div class="music-player">
+                        @if (block.title) {
+                          <h4 class="player-title">{{ block.title }}</h4>
+                        }
+                        @if (block.spotifyId) {
+                          <iframe
+                            [src]="spotifyEmbedUrl(block.spotifyId)"
+                            class="embed-spotify"
+                            width="100%"
+                            height="152"
+                            frameborder="0"
+                            allowfullscreen
+                            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                            loading="lazy"
+                            title="Spotify player"
+                          ></iframe>
+                        }
+                        @if (!block.spotifyId && block.youtubeMusicId) {
+                          <iframe
+                            [src]="youtubeEmbedUrl(block.youtubeMusicId)"
+                            class="embed-youtube"
+                            width="100%"
+                            height="152"
+                            frameborder="0"
+                            allowfullscreen
+                            allow="autoplay; encrypted-media"
+                            loading="lazy"
+                            title="YouTube Music player"
+                          ></iframe>
+                        }
+                      </div>
+                    }
+                  }
+                </div>
+              }
+            </section>
+          }
+
+          @if (content.conclusion) {
+            <section class="section conclusion">
+              <h2 class="section-title">Conclusion</h2>
+              <div class="markdown-body">
+                <markdown [data]="content.conclusion"></markdown>
+              </div>
+            </section>
+          }
+
+          @if (content.similarAlbums.length) {
+            <section class="section similar">
+              <h2 class="section-title">Similar albums</h2>
+              <ul class="similar-list">
+                @for (sim of content.similarAlbums; track sim.id) {
+                  <li>
+                    <a [routerLink]="['/collection-page', sim.id]" class="similar-link">
+                      <img
+                        [src]="sim.image"
+                        [alt]="sim.album"
+                        class="similar-cover"
+                        width="80"
+                        height="80"
+                        loading="lazy"
+                      />
+                      <span class="similar-info">{{ sim.album }} &ndash; {{ sim.artist }}</span>
+                    </a>
+                  </li>
+                }
+              </ul>
+            </section>
+          }
+
+          @if (content.comments.length) {
+            <section class="section comments">
+              <h2 class="section-title">Comments</h2>
+              <ul class="comment-list">
+                @for (c of content.comments; track c.date + c.user) {
+                  <li class="comment-item">
+                    <strong class="comment-user">{{ c.user }}</strong>
+                    <span class="comment-date">{{ c.date }}</span>
+                    <p class="comment-text">{{ c.text }}</p>
+                  </li>
+                }
+              </ul>
+            </section>
+          }
+        </article>
+      } @else if (fallbackReview(); as fallback) {
+        <article class="article-body article-fallback">
+          <header class="article-header">
+            <h1 class="article-title">{{ fallback.album }}</h1>
+            <p class="article-artist">{{ fallback.artist }}</p>
+            <div class="article-meta">
+              <span>{{ fallback.year }}</span>
+              <span class="meta-sep">{{ fallback.genres }}</span>
             </div>
-
-            <button class="btn btn-add-to-cart">Add to Cart</button>
-            <button class="btn btn-buy-now">Buy Now</button>
-          </div>
-        </div>
-
+            <div class="cover-wrap">
+              <img
+                [src]="fallback.image"
+                [alt]="fallback.album"
+                class="article-cover"
+                width="400"
+                height="400"
+                loading="eager"
+              />
+            </div>
+            <p class="article-description">{{ fallback.description }}</p>
+          </header>
+          <p class="fallback-note">Full review content not yet available from CMS.</p>
+        </article>
       } @else {
         <div class="error-state">
-          <h2>Review Not Found</h2>
-          <p>Sorry, we couldn't find the review you're looking for in our database.</p>
+          <h2>Review not found</h2>
+          <p>This review is not in our database.</p>
         </div>
       }
     </div>
   `,
   styles: `
-    :root {
-      --add-cart: #A5CEC7;
-      --buy-color: #7AB5B7;
-      --text-dark: #000000;
-      --text-light: #ACAC9A;
-      --discount-color: #FF0000;
-      --star-color: #FFFF00;
-    }
-
-    .detail-container {
-      background: linear-gradient(to bottom,  #fafaeb 0%, #B8BAAD 80%);
-      display: flex;
-      flex-direction: column;
-      position: absolute;
-      width: 100%;
-      height: 140vh;
-      top: 70px;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      margin: 0 auto;
-      padding: 2rem;
-      font-family: IBM Plex Mono, monospace;
+    .review-article {
+      background: linear-gradient(to bottom, #0d0d0d 0%, #1a1a1a 100%);
+      min-height: 100vh;
+      padding: 6rem 1.5rem 4rem;
+      font-family: 'IBM Plex Mono', monospace;
+      color: #e0e0e0;
     }
 
     .back-link {
       display: inline-block;
-      margin-bottom: 1.5rem;
-      color: var(--link-blue);
+      margin-bottom: 2rem;
+      color: #A5CEC7;
       text-decoration: none;
       font-weight: 500;
     }
     .back-link:hover { text-decoration: underline; }
 
-    .review-layout {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 30px;
+    .article-body {
+      max-width: 720px;
+      margin: 0 auto;
     }
 
-    @media (min-width: 1000px) {
-      .review-layout {
-        grid-template-columns: 40% 35% 25%;
-      }
+    .article-header {
+      margin-bottom: 2.5rem;
     }
 
-    /* --- COLUMN 1: GALLERY --- */
-    .gallery-container {
-      display: flex;
-      gap: 15px;
-    }
-
-    .thumbnail-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .thumbnail {
-      width: 50px;
-      height: 50px;
-      border: 1px solid var(--border-color);
-      cursor: pointer;
-      border-radius: 4px;
-      overflow: hidden;
-      opacity: 0.6;
-      transition: all 0.2s;
-    }
-    
-    .thumbnail.active, .thumbnail:hover {
-      border: 2px solid var(--accent-color);
-      opacity: 1;
-    }
-
-    .thumbnail img { width: 100%; height: 100%; object-fit: cover; }
-
-    .main-image-container {
-      flex-grow: 1;
-      border-radius: 8px;
-      overflow: hidden;
-      max-height: 500px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #f8f8f8;
-    }
-
-    .main-image-container img {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-    }
-
-    /* --- RIGHT COLUMN STICKY MAGIC --- */
-    .review-info-container {
-      position: sticky;           /* Prevents dragging to the bottom */
-      top: 90px;                  /* Offsets enough to stay below your fixed mat-toolbar */
-      height: fit-content;        /* Makes sure the container is only as tall as its content */
-      align-self: start;          /* Stops it from stretching the full height of the grid */
-    }
-
-    .review-title h1 {
-      font-size: 1.5rem;
-      font-weight: 400;
-      line-height: 1.3;
-      color: var(--text-dark);
-      margin-bottom: 5px;
-    }
-
-    .brand-link { color: var(--link-blue); text-decoration: none; font-size: 0.9rem; }
-    .brand-link:hover { text-decoration: underline; }
-
-    .rating-container {
-      display: flex;
-      align-items: center;
-      margin-top: 10px;
-      font-size: 0.9rem;
-    }
-
-    .stars { color: var(--accent-color); margin-right: 5px; font-size: 1.1rem; }
-    .half-star { color: #ccc; }
-    .rating-count { color: var(--link-blue); margin-left: 8px; text-decoration: none; }
-    
-    /* New Styles for the Toggled Reviews */
-    .reviews-section {
-      background-color: #fff9f0;
-      padding: 15px;
-      border-radius: 8px;
-      margin-top: 15px;
-      border: 1px solid #ddd;
-    }
-    
-    .reviews-section p {
-      font-size: 0.85rem;
-      margin-bottom: 8px;
-      color: var(--text-dark);
-    }
-
-    .current-price { font-size: 1.8rem; font-weight: 500; color: var(--text-dark); margin-top: 15px;}
-
-    .divider { height: 1px; background-color: #ddd; margin: 25px 0; }
-
-     .support-selector h4 {
-      font-size: 1.05rem;
+    .article-title {
+      font-size: 1.75rem;
       font-weight: 600;
-      margin-bottom: 15px;
-      color: var(--text-dark);
+      margin: 0 0 0.25rem 0;
+      color: #fff;
+      font-family: 'Playfair Display', serif;
     }
 
-    .support-options {
-      display: flex;
-      gap: 15px;
+    .article-artist {
+      font-size: 1.1rem;
+      color: #888;
+      margin: 0 0 0.5rem 0;
     }
 
-    .support-box {
-      flex: 1; 
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px;
-      border: 2px solid #ddd;
+    .article-meta {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 1.5rem;
+    }
+    .meta-sep::before { content: " · "; }
+
+    .cover-wrap {
+      margin: 1.5rem 0;
       border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s ease;
+      overflow: hidden;
+      max-width: 320px;
     }
 
-    .support-box:hover { border-color: #bbb; }
-
-    .support-box.selected {
-      border-color: var(--accent-color);
-      background-color: #fff9f0; 
-    }
-
-    .support-box img {
-      width: 45px;
-      height: 45px;
-      border-radius: 6px;
+    .article-cover {
+      width: 100%;
+      height: auto;
+      display: block;
       object-fit: cover;
     }
 
-    .support-text { display: flex; flex-direction: column; }
-    .support-text span { font-size: 0.95rem; font-weight: 600; color: var(--text-dark); }
-    .support-text small { font-size: 0.85rem; color: var(--text-light); margin-top: 2px;}
-
-    .btn {
-      width: 100%;
-      padding: 10px;
-      border: none;
-      border-radius: 20px;
-      font-size: 1rem;
-      font-weight: 400;
-      cursor: pointer;
-      margin-bottom: 10px;
-      transition: background-color 0.2s;
+    .article-description {
+      margin-top: 1.5rem;
+      line-height: 1.6;
+      color: #bbb;
     }
 
-    .btn-add-to-cart { background-color: var(--buy-color); }
-    .btn-add-to-cart:hover { background-color: var(--buy-hover); }
-
-    .btn-buy-now { background-color: #ffa41c; margin-top: 10px;}
-    .btn-buy-now:hover { background-color: #fa8900; }
-
-    /* Mobile Adjustments */
-    @media (max-width: 768px) {
-      .gallery-container { flex-direction: column-reverse; }
-      .thumbnail-list { flex-direction: row; justify-content: center; flex-wrap: wrap; }
-      
-      /* Disable sticky on mobile so it flows naturally */
-      .review-info-container { position: static; height: auto; margin-top: 20px; } 
+    .article-context {
+      margin-top: 1rem;
+      line-height: 1.6;
+      color: #bbb;
     }
-  `
+
+    .section {
+      margin-top: 2.5rem;
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 0 0 1rem 0;
+      color: #fff;
+    }
+
+    .markdown-body {
+      line-height: 1.7;
+      color: #ccc;
+    }
+    .markdown-body :deep(p) { margin: 0 0 1em 0; }
+    .markdown-body :deep(strong) { color: #fff; }
+    .markdown-body :deep(a) { color: #A5CEC7; }
+
+    .breakdown-block {
+      margin-bottom: 1.5rem;
+    }
+
+    .block-title {
+      font-size: 1.05rem;
+      margin: 0 0 0.5rem 0;
+      color: #ddd;
+    }
+
+    .breakdown-image {
+      max-width: 100%;
+      height: auto;
+      border-radius: 6px;
+    }
+    figure { margin: 1rem 0; }
+    figcaption { font-size: 0.85rem; color: #666; margin-top: 0.25rem; }
+
+    .music-player {
+      margin: 1rem 0;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .player-title {
+      font-size: 0.95rem;
+      margin: 0 0 0.5rem 0;
+      color: #aaa;
+    }
+    .embed-spotify, .embed-youtube {
+      display: block;
+      border: 0;
+    }
+
+    .similar-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .similar-list li { margin-bottom: 1rem; }
+    .similar-link {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      color: #A5CEC7;
+      text-decoration: none;
+    }
+    .similar-link:hover { text-decoration: underline; }
+    .similar-cover {
+      width: 64px;
+      height: 64px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+    .similar-info { font-size: 0.95rem; }
+
+    .comment-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .comment-item {
+      padding: 1rem 0;
+      border-bottom: 1px solid #333;
+    }
+    .comment-item:last-child { border-bottom: 0; }
+    .comment-user { color: #fff; }
+    .comment-date {
+      font-size: 0.8rem;
+      color: #666;
+      margin-left: 0.5rem;
+    }
+    .comment-text {
+      margin: 0.5rem 0 0 0;
+      color: #bbb;
+      line-height: 1.5;
+    }
+
+    .fallback-note {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    .article-fallback .article-meta .meta-sep::before { content: " · "; }
+
+    .error-state {
+      text-align: center;
+      padding: 3rem;
+    }
+    .error-state h2 { color: #fff; margin-bottom: 0.5rem; }
+    .error-state p { color: #888; }
+  `,
 })
 export class ReviewComponent implements OnInit {
   private route = inject(ActivatedRoute);
-  
-  review = signal<Review | undefined>(undefined);
-  selectedImage = signal<string>('');
-  galleryImages = signal<string[]>([]);
-  selectedSupport = signal<'basic' | 'wood'>('basic');
+  private cms = inject(ReviewCmsService);
+  private sanitizer = inject(DomSanitizer);
 
-  // Step 1: Create our state variable for the toggler
-  showReviews = signal<boolean>(false); 
+  reviewContent = signal<ReviewContent | null>(null);
+  fallbackReview = signal<Review | null>(null);
 
   ngOnInit() {
     const idParam = this.route.snapshot.paramMap.get('id');
-    const reviewId = Number(idParam);
+    const id = idParam ? Number(idParam) : NaN;
+    if (Number.isNaN(id)) return;
 
-    const foundReview = REVIEWS.find(p => p.id === reviewId);
-    this.review.set(foundReview);
-
-    if (foundReview) {
-      this.selectedImage.set(foundReview.image);
-      this.galleryImages.set([
-        foundReview.image,
-        `https://picsum.photos/id/${reviewId + 50}/500/500`,
-        `https://picsum.photos/id/${reviewId + 100}/500/500`,
-        `https://picsum.photos/id/${reviewId + 150}/500/500`
-      ]);
-    }
+    this.cms.getReviewById(id).subscribe((content) => {
+      if (content) {
+        this.reviewContent.set(content);
+        return;
+      }
+      const fallback = REVIEWS.find((r) => r.id === id) ?? null;
+      this.fallbackReview.set(fallback);
+    });
   }
 
-  changeImage(imgSrc: string) {
-    this.selectedImage.set(imgSrc);
+  spotifyEmbedUrl(albumId: string): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(
+      `https://open.spotify.com/embed/album/${albumId}`
+    );
   }
 
-  // Step 2: The logic to toggle our state boolean on and off!
-  toggleReviews(event: Event) {
-    event.preventDefault(); // Prevents the browser from jumping to the top of the page
-    this.showReviews.update(val => !val); // Reverses the boolean
+  youtubeEmbedUrl(videoId: string): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(
+      `https://www.youtube.com/embed/${videoId}`
+    );
   }
 }
