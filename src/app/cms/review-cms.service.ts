@@ -1,10 +1,11 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { map, shareReplay } from 'rxjs';
+import { map, shareReplay, catchError, of } from 'rxjs';
 import {
   ReviewContent,
   ReviewListMeta,
 } from './review-content.model';
+import { CMS_API_BASE } from './cms-api.config';
 
 export interface CmsPayload {
   reviews: ReviewContent[];
@@ -15,8 +16,11 @@ export interface CmsPayload {
 export class ReviewCmsService {
   private http = inject(HttpClient);
   private payload$ = this.http
-    .get<CmsPayload>('assets/cms/reviews.json')
-    .pipe(shareReplay(1));
+    .get<CmsPayload>(`${CMS_API_BASE}/cms`)
+    .pipe(
+      catchError(() => this.http.get<CmsPayload>('assets/cms/reviews.json')),
+      shareReplay(1)
+    );
 
   getListMeta() {
     return this.payload$.pipe(map((p) => p.listMeta ?? []));

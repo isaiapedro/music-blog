@@ -21,6 +21,7 @@ import { MatButtonModule } from '@angular/material/button';
         <a mat-button routerLink="/articles-page" routerLinkActive="active-link">articles</a>
         <a mat-button routerLink="/collection-page" routerLinkActive="active-link">reviews</a>
         <a mat-button routerLink="/about-page" routerLinkActive="active-link">about</a>
+        <a mat-button routerLink="/admin" routerLinkActive="active-link">admin</a>
       </div>
       <span class="spacer"></span>  
       </mat-toolbar>
