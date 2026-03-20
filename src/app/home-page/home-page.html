@@ -2,11 +2,12 @@
   <div class="search-section">
     <div class="search-wrapper">
       <input 
+        #searchBox
         type="text" 
         placeholder="Search articles..." 
         class="search-bar"
-        [ngModel]="searchTerm()"
-        (ngModelChange)="searchTerm.set($event)"
+        [value]="searchTerm()"
+        (keyup.enter)="onSearch(searchBox.value)"
       >
       <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="11" cy="11" r="8"></circle>
@@ -36,9 +37,9 @@
           <div class="img-wrapper">
             <img [src]="article.image" class="article-img" alt="Article image">
           </div>
-          <span class="article-theme">{{ article.keywords}}</span>
+          <span class="filter-rect article-theme">{{ article.keywords}}</span>
           <h4 class="serif-heading">{{ article.title }}</h4>
-          <time class="article-date">{{ article.date }}</time>
+          <time class="article-date">{{ article.date | date:'longDate' }}</time>
         </article>
       }
     </div>
@@ -50,7 +51,7 @@
         </div>
         <h1 class="serif-heading main-heading">{{ mainArticle().title }}</h1>
         <p class="description">{{ mainArticle().description }}</p>
-        <time class="article-date">{{ mainArticle().date }}</time>
+        <time class="article-date main-date">{{ mainArticle().date | date:'longDate' }}</time>
       </article>
 
       <div class="music-player-section">
@@ -67,11 +68,11 @@
     </div>
 
     <div class="text-only-list">
-      <h2 class="serif-heading column-title">Latest</h2>
+      <h2 class="serif-heading column-title">Latest Posts</h2>
       @for (article of listArticles(); track article.id) {
         <article class="list-item">
           <h3 class="serif-heading">{{ article.title }}</h3>
-          <time class="article-date">{{ article.date }}</time>
+          <time class="article-date">{{ article.date | date:'longDate' }}</time>
         </article>
       }
     </div>
@@ -79,12 +80,22 @@
   </div>
 
   <div class="social-footer">
-    <h3 class="serif-heading">Connect</h3>
     <div class="social-links">
-      <a href="#" target="_blank">Instagram</a>
-      <a href="#" target="_blank">Twitter / X</a>
-      <a href="#" target="_blank">SoundCloud</a>
-      <a href="#" target="_blank">YouTube</a>
+      <a href="#" target="_blank" aria-label="TikTok">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93v8.12c0 4.11-3.08 7.56-7.37 8.01-4.07.42-8.08-1.92-9.28-5.83-1.19-3.92.51-8.22 4.1-9.98 1.83-.89 3.99-.95 5.92-.37v4.11c-1.15-.35-2.43-.37-3.48.24-.97.55-1.55 1.58-1.57 2.7-.01 1.25.7 2.45 1.81 2.94 1.25.54 2.82.31 3.84-.57.85-.72 1.34-1.8 1.34-2.93V.02h-.01z"/></svg>
+      </a>
+
+      <a href="#" target="_blank" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm3.98-10.169a1.44 1.44 0 11-2.88 0 1.44 1.44 0 012.88 0z"/></svg>
+      </a>
+      
+      <a href="#" target="_blank" aria-label="YouTube">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+      </a>
+
+      <a href="#" target="_blank" aria-label="SoundCloud">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M1.175 12.225c-.06.126-.145.244-.249.349-.247.247-.573.383-.926.383v1.86h5.812v-6.936c-.475 0-.916.182-1.25.516-.299.3-.475.698-.485 1.116l-.004.053-2.316.326-.064-.064c-.183-.183-.427-.285-.686-.285-.262 0-.508.102-.693.287-.19.191-.295.443-.295.713 0 .265.101.515.285.702l1.636 1.636-.29.435-.675-.989zM23.146 11.02c-.89-2.074-2.906-3.414-5.116-3.414-1.077 0-2.112.308-3.006.877L15 8.506v10.51h7.03c1.087 0 1.97-.884 1.97-1.97 0-1.066-.848-1.936-1.905-1.968l-.403-.012.164-.367c.18-.403.272-.835.272-1.272 0-1.107-.63-2.108-1.616-2.613l-.532-.27-.087-.584c-.035-.236-.084-.467-.148-.69h-.001zM8.59 19.016v-8.77l-1.002.39v8.38h1.002zm-1.874 0v-7.85l-1.003.542v7.308h1.003zm3.747 0V9.457l-1.002-.194v9.753h1.002zm1.874 0V8.752l-1.003-.058v10.322h1.003zM14.21 7.64v11.376h1.003V7.64h-1.003zM15 19.016v-8.498l-1.002.585v7.913H15zm-9.368 0v-6.32l-1.003.682v5.638h1.003z"/></svg>
+      </a>
     </div>
   </div>
 </div>

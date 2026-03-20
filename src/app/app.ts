@@ -47,6 +47,13 @@ import { MatButtonModule } from '@angular/material/button';
         color: white;
       }
 
+      .mat-toolbar a,
+      .mat-toolbar .mat-mdc-button,
+      .navbar a {
+        color: white;
+      }
+
+
       .title {
         font-size: 30px;
         font-weight: bold;
@@ -55,6 +62,7 @@ import { MatButtonModule } from '@angular/material/button';
 
       .nav-box a {
         margin-right: 20px;
+        font-size: 22px;
       }
 
       .nav-box {
@@ -66,10 +74,12 @@ import { MatButtonModule } from '@angular/material/button';
         border: 1px solid black;
         box-shadow: 0px 0px 0px 2px white, 0px 5px 0px 2px white;
         border-radius: 15px;
+
       }
 
       .active-link {
         font-weight: bold;
+        
       }
       
       .spacer {

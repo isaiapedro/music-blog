@@ -1,0 +1,42 @@
+<div class="articles-container">
+  <div class="search-section">
+    <div class="search-wrapper">
+      <input 
+        #searchBox
+        type="text" 
+        placeholder="Search articles..." 
+        class="search-bar"
+        [value]="searchTerm()"
+        (keyup.enter)="onSearch(searchBox.value)"
+        (input) = '(searchBox.value)==="" && onSearch(searchBox.value)'
+      >
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+    </div>
+  </div>
+
+  <div class="expandable-container" [class.expanded]="isExpanded()">
+  @if (filteredArticles().length > 0) {
+    <div class="article-columns">
+      @for (article of filteredArticles(); track article.title) {
+        <div class="search-result">
+          <div class="article-info">
+            <a [routerLink]="['/collection-page', article.id]" routerLinkActive="active-link" class="article-title">
+              {{ article.title }}
+            </a>
+            <div class="title-underline"></div>
+            <p class="post-description">
+                {{ article.description || 'A brief explanation of the review goes here.' }}
+            </p>
+            <p class="article-date">{{ article.date | date:'longDate' }}</p>
+          </div>
+        </div>
+      }
+    </div>
+  } @else{
+    <h2 class="article-missing">No articles found.</h2>
+  }
+  </div>
+</div>

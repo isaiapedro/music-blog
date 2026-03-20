@@ -1,0 +1,141 @@
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <h1 class="admin-title">Reviews</h1>
+    <button type="button" class="btn btn-new" (click)="newReview()">New review</button>
+    @if (error(); as err) {
+      <p class="admin-error">{{ err }}</p>
+    }
+    <ul class="review-list">
+      @for (r of reviews(); track r.id) {
+        <li>
+          <button
+            type="button"
+            class="review-list-item"
+            [class.active]="selectedReview()?.id === r.id"
+            (click)="selectReview(r)"
+          >
+            <span class="list-item-album">{{ r.album || 'Untitled' }}</span>
+            <span class="list-item-artist">{{ r.artist }}</span>
+          </button>
+        </li>
+      }
+    </ul>
+  </aside>
+
+  <main class="admin-main">
+    @if (selectedReview(); as model) {
+      <form class="admin-form" (ngSubmit)="saveReview(model)">
+        <header class="form-header">
+          <h2>{{ model.id ? 'Edit review' : 'New review' }}</h2>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" routerLink="/collection-page">Back to site</button>
+            @if (model.id) {
+              <button type="button" class="btn btn-danger" (click)="deleteReview(model.id)">Delete</button>
+            }
+            <button type="submit" class="btn btn-primary" [disabled]="saving()">
+              {{ saving() ? 'Saving…' : 'Save' }}
+            </button>
+          </div>
+        </header>
+
+        <section class="form-section">
+          <h3>Basics</h3>
+          <div class="form-grid">
+            <label>Album <input type="text" [(ngModel)]="model.album" name="album" required /></label>
+            <label>Artist <input type="text" [(ngModel)]="model.artist" name="artist" required /></label>
+            <label>Image URL <input type="url" [(ngModel)]="model.image" name="image" /></label>
+            <label>Release year <input type="number" [(ngModel)]="model.releaseDate" name="releaseDate" /></label>
+            <label>Label <input type="text" [(ngModel)]="model.label" name="label" /></label>
+            <label>Genre <input type="text" [(ngModel)]="model.genre" name="genre" /></label>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <h3>Description & context</h3>
+          <label>Short description <textarea [(ngModel)]="model.description" name="description" rows="2"></textarea></label>
+          <label>Context (markdown) <textarea [(ngModel)]="model.context" name="context" rows="3"></textarea></label>
+        </section>
+
+        <section class="form-section">
+          <h3>Introduction (markdown)</h3>
+          <textarea [(ngModel)]="model.introduction" name="introduction" rows="4"></textarea>
+        </section>
+
+        <section class="form-section">
+          <h3>Breakdown</h3>
+          @for (block of model.breakdown; track $index; let i = $index) {
+            <div class="breakdown-block">
+              <select [(ngModel)]="block.type" name="breakdownType{{ i }}">
+                <option value="paragraph">Paragraph</option>
+                <option value="image">Image</option>
+                <option value="music">Music</option>
+              </select>
+              @if (block.type === 'paragraph') {
+                <input type="text" [(ngModel)]="block.title" placeholder="Title" />
+                <textarea [(ngModel)]="block.content" placeholder="Markdown content" rows="3"></textarea>
+              }
+              @if (block.type === 'image') {
+                <input type="text" [(ngModel)]="block.title" placeholder="Caption" />
+                <input type="url" [(ngModel)]="block.imageUrl" placeholder="Image URL" />
+                <input type="text" [(ngModel)]="block.imageAlt" placeholder="Alt text" />
+              }
+              @if (block.type === 'music') {
+                <input type="text" [(ngModel)]="block.title" placeholder="Track/album title" />
+                <input type="text" [(ngModel)]="block.spotifyId" placeholder="Spotify album/track ID" />
+                <input type="text" [(ngModel)]="block.youtubeMusicId" placeholder="YouTube video ID" />
+              }
+              <button type="button" class="btn btn-small" (click)="removeBreakdownBlock(model, i)">Remove</button>
+            </div>
+          }
+          <div class="block-actions">
+            <button type="button" class="btn btn-secondary" (click)="addBreakdownBlock(model, 'paragraph')">+ Paragraph</button>
+            <button type="button" class="btn btn-secondary" (click)="addBreakdownBlock(model, 'image')">+ Image</button>
+            <button type="button" class="btn btn-secondary" (click)="addBreakdownBlock(model, 'music')">+ Music</button>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <h3>Conclusion (markdown)</h3>
+          <textarea [(ngModel)]="model.conclusion" name="conclusion" rows="4"></textarea>
+        </section>
+
+        <section class="form-section">
+          <h3>Similar albums</h3>
+          @for (sim of model.similarAlbums; track $index; let i = $index) {
+            <div class="similar-row">
+              <input type="number" [(ngModel)]="sim.id" placeholder="ID" />
+              <input type="text" [(ngModel)]="sim.album" placeholder="Album" />
+              <input type="text" [(ngModel)]="sim.artist" placeholder="Artist" />
+              <input type="url" [(ngModel)]="sim.image" placeholder="Image URL" />
+              <button type="button" class="btn btn-small" (click)="removeSimilarAlbum(model, i)">Remove</button>
+            </div>
+          }
+          <button type="button" class="btn btn-secondary" (click)="addSimilarAlbum(model)">+ Similar album</button>
+        </section>
+
+        <section class="form-section">
+          <h3>Comments</h3>
+          @for (c of model.comments; track $index; let i = $index) {
+            <div class="comment-row">
+              <input type="text" [(ngModel)]="c.user" placeholder="User" />
+              <input type="text" [(ngModel)]="c.date" placeholder="Date" />
+              <textarea [(ngModel)]="c.text" placeholder="Comment" rows="2"></textarea>
+              <button type="button" class="btn btn-small" (click)="removeComment(model, i)">Remove</button>
+            </div>
+          }
+          <button type="button" class="btn btn-secondary" (click)="addComment(model)">+ Comment</button>
+        </section>
+
+        <div class="form-actions form-actions-bottom">
+          <button type="submit" class="btn btn-primary" [disabled]="saving()">
+            {{ saving() ? 'Saving…' : 'Save' }}
+          </button>
+        </div>
+      </form>
+    } @else {
+      <div class="admin-empty">
+        <p>Select a review or create a new one.</p>
+      </div>
+    }
+  </main>
+</div>

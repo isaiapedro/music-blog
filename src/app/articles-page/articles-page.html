@@ -2,11 +2,12 @@
   <div class="search-section">
     <div class="search-wrapper">
       <input 
+        #searchBox
         type="text" 
         placeholder="Search articles..." 
         class="search-bar"
-        [ngModel]="searchTerm()"
-        (ngModelChange)="searchTerm.set($event)"
+        [value]="searchTerm()"
+        (keyup.enter)="onSearch(searchBox.value)"
       >
       <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="11" cy="11" r="8"></circle>
@@ -38,7 +39,7 @@
             <div class="article-info">
               <h3 class="article-title">{{ article.title }}</h3>
               <div class="title-underline"></div>
-              <p class="article-date">{{ article.date }}</p>
+              <p class="article-date">{{ article.date | date:'longDate' }}</p>
             </div>
           </div>
         </div>

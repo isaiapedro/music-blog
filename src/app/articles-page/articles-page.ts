@@ -1,5 +1,5 @@
 import { Component, signal, computed, inject, OnInit } from '@angular/core';
-import { RouterModule, ActivatedRoute } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ARTICLES } from '../article.data';
@@ -13,6 +13,7 @@ import { ARTICLES } from '../article.data';
 })
 export class ArticlesPage implements OnInit {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
   searchTerm = signal('');
   selectedTheme = signal('All');
@@ -40,6 +41,10 @@ export class ArticlesPage implements OnInit {
       return matchesSearch && matchesTheme;
     });
   });
+
+  onSearch(text: string) {
+    this.router.navigate(['/article-search-page'], { queryParams: { text: text } });
+  }
 
   setTheme(theme: string) {
     if (this.selectedTheme() === theme) {

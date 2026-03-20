@@ -1,25 +1,37 @@
-import { Component, signal, computed, inject } from '@angular/core';
-import { RouterModule, Router } from '@angular/router';
+import { Component, signal, computed, inject, OnInit } from '@angular/core';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ARTICLES } from '../article.data';
 
 @Component({
-  selector: 'app-home-page',
+  selector: 'app-article-search-page',
   standalone: true,
   imports: [RouterModule, FormsModule, CommonModule],
-  templateUrl: './home-page.html',
-  styleUrl: './home-page.css'
+  templateUrl: './article-search.html',
+  styleUrl: './article-search.css'
 })
-export class HomePage {
+export class ArticleSearchPage implements OnInit {
+  private route = inject(ActivatedRoute);
   private router = inject(Router);
 
   searchTerm = signal('');
   selectedTheme = signal('All');
+  isExpanded = signal(false); // Controls the Show More toggle
   
   themes = ['All', 'Music', 'Technology', 'Literature', 'Travel', 'Fashion'];
-
   articles = signal(ARTICLES);
+
+  ngOnInit() {
+    this.route.queryParams.subscribe(params => {
+      if (params['theme']) {
+        this.selectedTheme.set(params['theme']);
+      }
+      if (params['text']) {
+        this.searchTerm.set(params['text']);
+      }
+    });
+  }
 
   filteredArticles = computed(() => {
     const term = this.searchTerm().toLowerCase();
@@ -33,18 +45,20 @@ export class HomePage {
     });
   });
 
-  mainArticle = computed(() => this.filteredArticles()[0]);
-  sideArticles = computed(() => this.filteredArticles().slice(1, 3));
-  listArticles = computed(() => {
-    return this.filteredArticles().slice(0, 5);
-  });
-
   onSearch(text: string) {
+    if (text=='') {
+      this.router.navigate(['/articles-page']);
+    } else {
     this.router.navigate(['/article-search-page'], { queryParams: { text: text } });
-  } 
+    }
+  }
 
   setTheme(theme: string) {
-    // Navigates to the articles page and passes the theme as a URL query parameter!
-    this.router.navigate(['/articles-page'], { queryParams: { theme: theme } });
+    if (this.selectedTheme() === theme) {
+      this.selectedTheme.set('All');
+    } else {
+      this.selectedTheme.set(theme);
+    }
+    this.isExpanded.set(false);
   }
 }

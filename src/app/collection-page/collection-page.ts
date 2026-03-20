@@ -1,11 +1,12 @@
 import { Component, signal, computed } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 import { REVIEWS } from '../review.data';
 
 @Component({
   selector: 'app-collection-page',
-  imports: [RouterModule, FormsModule],
+  imports: [RouterModule, FormsModule, CommonModule],
   templateUrl: './collection-page.html',
   styleUrl: './collection-page.css'
 })
