@@ -12,7 +12,7 @@ database = 'music-app'
 username = 'postgres'
 pwd = '4B3questnloot'
 port_id = 5432
-
+ 
 conn = None
 cur = None
 
