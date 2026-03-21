@@ -1,8 +1,10 @@
-import { Component, signal, computed } from '@angular/core';
+import { Component, signal, computed, OnInit, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { REVIEWS } from '../review.data';
+import { ReviewCmsService } from '../cms/review-cms.service';
+import type { ReviewListMeta } from '../cms/review-content.model';
 
 @Component({
   selector: 'app-collection-page',
@@ -10,8 +12,21 @@ import { REVIEWS } from '../review.data';
   templateUrl: './collection-page.html',
   styleUrl: './collection-page.css'
 })
-export class CollectionPage {
-  reviews = signal(REVIEWS);
+
+export class CollectionPage implements OnInit {
+  private cms = inject(ReviewCmsService);
+  reviews = signal<ReviewListMeta[]>([]);
+
+  ngOnInit() {
+    this.cms.getListMeta().subscribe((list) => {
+      if (list?.length) {
+        this.reviews.set(list);
+      } else {
+        this.reviews.set(REVIEWS as unknown as ReviewListMeta[]);
+      }
+    });
+  }
+
   searchTerm = signal('');
   selectedGenre = signal<string | null>(null);
   selectedDecade = signal<string | null>(null);

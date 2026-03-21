@@ -65,6 +65,7 @@
 /* Post list */
 
 .expandable-container {
+  padding-top: 5px;
   position: relative;
   max-height: 1000px;
   transition: max-height 0.8s ease-in-out;
@@ -186,6 +187,20 @@
 
 .icon-btn:hover {
   color: #fff;
+}
+
+.article-missing{
+  font-size: 1.8rem;
+  font-weight: 500;
+  margin: 5px auto 15px 1px;
+  color: #f0f0f0;
+  font-family: 'IBM Plex Mono', monospace;
+  text-transform: lowercase;
+  text-decoration: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  
 }
 
 /* More button */

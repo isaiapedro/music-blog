@@ -104,7 +104,7 @@
 
 .side-item {
   margin-bottom: 30px;
-  padding-bottom: 10px;
+  padding-bottom: 15px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
@@ -160,6 +160,11 @@
 }
 
 /* Featured story and audio player */
+
+.main-story{
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
 
 .main-img-wrapper {
   max-height: 450px;

@@ -1,4 +1,4 @@
-import { Component, signal, computed, inject, OnInit } from '@angular/core';
+import { Component, signal, computed, inject, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -14,6 +14,8 @@ import { ARTICLES } from '../article.data';
 export class ArticleSearchPage implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+
+  @ViewChild('searchBox') searchInput!: ElementRef<HTMLInputElement>;
 
   searchTerm = signal('');
   selectedTheme = signal('All');
@@ -33,6 +35,10 @@ export class ArticleSearchPage implements OnInit {
     });
   }
 
+  ngAfterViewInit() {
+    setTimeout(() => this.searchInput?.nativeElement.focus(), 50);
+  }
+
   filteredArticles = computed(() => {
     const term = this.searchTerm().toLowerCase();
     const theme = this.selectedTheme().toLowerCase();
@@ -45,19 +51,14 @@ export class ArticleSearchPage implements OnInit {
     });
   });
 
-  onSearch(text: string, inputElement?: HTMLInputElement) {
-    if (text=='') {
-      this.router.navigate(['/articles-page']);
+  onSearch(text: string) {
+    if (text === '') {
+      // This is the trigger the constructor above is looking for!
+      this.router.navigate(['/articles-page'], { state: { keepFocus: true } });
     } else {
-    this.router.navigate(['/article-search-page'], { queryParams: { text: text } });
+      this.router.navigate(['/article-search-page'], { queryParams: { text: text } });
     }
     this.isExpanded.set(false);
-    
-    if (text === '' && inputElement) {
-      setTimeout(() => {
-        inputElement.focus();
-      }, 50); 
-    }
   }
 
   setTheme(theme: string) {

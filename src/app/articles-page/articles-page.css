@@ -4,6 +4,8 @@
   margin: 0 auto;
 }
 
+/* Search bar and filter */
+
 .search-section {
   display: flex;
   flex-direction: column;
@@ -76,11 +78,29 @@
   background: #a0000f;
 }
 
+/* Title */
+
+.border{
+  border-top: 4px solid #ffffff; 
+  margin-bottom: 70px;
+}
+
+.collection-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 3.5rem;
+  color: white;
+  letter-spacing: 2px;
+  text-align: center; /* Centers the text */
+  margin: 0 auto 2.4rem auto;
+  position: relative;
+  z-index: 10;
+}
+
+/* Post content */
 
 .masonry-grid {
   column-count: 4;
   column-gap: 20px;
-  border-top: 4px solid #ffffff; 
   width: 100%;
   padding: 30px 1px; /* Ensures grid content doesn't crop at the very edges */
 }

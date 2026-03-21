@@ -53,8 +53,3 @@ export interface ReviewListMeta {
   subgenres: string;
   country: string;
 }
-
-export interface CmsPayload {
-  reviews: ReviewContent[];
-  listMeta: ReviewListMeta[];
-}

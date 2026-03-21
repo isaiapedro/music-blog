@@ -1,4 +1,4 @@
-import { Component, signal, computed, inject, OnInit } from '@angular/core';
+import { Component, signal, computed, inject, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -15,6 +15,17 @@ export class ArticlesPage implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
+  @ViewChild('searchBox') searchInput!: ElementRef<HTMLInputElement>;
+
+  private shouldFocus = false;
+
+  constructor() {
+    const navigation = this.router.getCurrentNavigation();
+    if (navigation?.extras.state?.['keepFocus']) {
+      this.shouldFocus = true;
+    }
+  }
+
   searchTerm = signal('');
   selectedTheme = signal('All');
   isExpanded = signal(false); // Controls the Show More toggle
@@ -30,6 +41,14 @@ export class ArticlesPage implements OnInit {
     });
   }
 
+  ngAfterViewInit() {
+    if (this.shouldFocus) {
+      setTimeout(() => {
+        this.searchInput?.nativeElement.focus();
+      }, 100); 
+    }
+  }
+
   filteredArticles = computed(() => {
     const term = this.searchTerm().toLowerCase();
     const theme = this.selectedTheme().toLowerCase();
@@ -42,16 +61,14 @@ export class ArticlesPage implements OnInit {
     });
   });
 
-  onSearch(text: string, inputElement?: HTMLInputElement) {
-    this.router.navigate(['/article-search-page'], { queryParams: { text: text } });
-
-    this.isExpanded.set(false);
-    
-    if (text === '' && inputElement) {
-      setTimeout(() => {
-        inputElement.focus();
-      }, 50); 
+  onSearch(text: string) {
+    if (text === '') {
+      // This is the trigger the constructor above is looking for!
+      this.router.navigate(['/articles-page'], { state: { keepFocus: true } });
+    } else {
+      this.router.navigate(['/article-search-page'], { queryParams: { text: text } });
     }
+    this.isExpanded.set(false);
   }
 
   setTheme(theme: string) {
