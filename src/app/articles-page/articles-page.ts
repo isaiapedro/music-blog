@@ -42,8 +42,16 @@ export class ArticlesPage implements OnInit {
     });
   });
 
-  onSearch(text: string) {
+  onSearch(text: string, inputElement?: HTMLInputElement) {
     this.router.navigate(['/article-search-page'], { queryParams: { text: text } });
+
+    this.isExpanded.set(false);
+    
+    if (text === '' && inputElement) {
+      setTimeout(() => {
+        inputElement.focus();
+      }, 50); 
+    }
   }
 
   setTheme(theme: string) {

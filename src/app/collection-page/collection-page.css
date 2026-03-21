@@ -189,6 +189,14 @@
   transform: translateY(-2px);
 }
 
+.post-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+}
+
 .post-title {
   font-size: 1.5rem;
   font-weight: 500;
@@ -200,13 +208,7 @@
   text-overflow: ellipsis;
 }
 
-.post-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  height: 100%;
-}
+
 
 .post-description {
   font-size: 1rem;
