@@ -2,9 +2,8 @@ import { Component, signal, computed, OnInit, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { REVIEWS } from '../review.data';
-import { ReviewCmsService } from '../cms/review-cms.service';
-import type { ReviewListMeta } from '../cms/review-content.model';
+import { Review } from '../review.data';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-collection-page',
@@ -14,15 +13,17 @@ import type { ReviewListMeta } from '../cms/review-content.model';
 })
 
 export class CollectionPage implements OnInit {
-  private cms = inject(ReviewCmsService);
-  reviews = signal<ReviewListMeta[]>([]);
+
+  private http = inject(HttpClient);
+  reviews = signal<Review[]>([]);
 
   ngOnInit() {
-    this.cms.getListMeta().subscribe((list) => {
-      if (list?.length) {
-        this.reviews.set(list);
-      } else {
-        this.reviews.set(REVIEWS as unknown as ReviewListMeta[]);
+    this.http.get<{ reviews: Review[] }>('/data/reviews.json').subscribe({
+      next: (data) => {
+        this.reviews.set(data.reviews.reverse());
+      },
+      error: (error) => {
+        console.error('Error fetching reviews:', error);
       }
     });
   }

@@ -1,16 +1,38 @@
-import {
-  Component,
-  inject,
-  OnInit,
-  signal,
-} from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { MarkdownComponent } from 'ngx-markdown';
-import { ReviewCmsService } from '../cms/review-cms.service';
-import { ReviewContent } from '../cms/review-content.model';
-import { REVIEWS } from '../review.data';
-import type { Review } from '../review.data';
+import { HttpClient } from '@angular/common/http';
+
+export interface ReviewBlock {
+  type: 'paragraph' | 'image' | 'music';
+  title?: string;
+  content?: string;
+  imageUrl?: string;
+  imageAlt?: string;
+  spotifyId?: string;
+  youtubeMusicId?: string;
+}
+
+export interface ReviewDetail {
+  id: number | string;
+  album: string;
+  artist?: string;
+  releaseDate?: string;
+  year?: number | string;
+  date?: string;
+  label?: string;
+  genre?: string;
+  genres?: string | string[];
+  image: string;
+  description: string;
+  context?: string;
+  introduction?: string;
+  breakdown?: ReviewBlock[];
+  conclusion?: string;
+  similarAlbums?: Array<{ id: string | number; image: string; album: string; artist: string }>;
+  comments?: Array<{ user: string; date: string; text: string }>;
+}
  
 @Component({
   selector: 'app-review',
@@ -21,25 +43,42 @@ import type { Review } from '../review.data';
 })
 export class ReviewComponent implements OnInit {
   private route = inject(ActivatedRoute);
-  private cms = inject(ReviewCmsService);
+  private http = inject(HttpClient);
   private sanitizer = inject(DomSanitizer);
 
-  reviewContent = signal<ReviewContent | null>(null);
-  fallbackReview = signal<Review | null>(null);
+  review = signal<ReviewDetail | null>(null);
+  isLoading = signal(true);
 
   ngOnInit() {
     const idParam = this.route.snapshot.paramMap.get('id');
-    const id = idParam ? Number(idParam) : NaN;
-    if (Number.isNaN(id)) return;
+    const id = idParam ? String(idParam) : null;
+    
+    if (!id) {
+      this.isLoading.set(false);
+      return;
+    }
 
-    this.cms.getReviewById(id).subscribe((content) => {
-      if (content) {
-        this.reviewContent.set(content);
-        return;
+    this.http.get<{ reviews: ReviewDetail[] }>('/data/reviews.json').subscribe({
+      next: (data) => {
+        const foundReview = data.reviews.find((r) => String(r.id) === id);
+        this.review.set(foundReview || null);
+        this.isLoading.set(false);
+      },
+      error: (error) => {
+        console.error('Error fetching review data:', error);
+        this.isLoading.set(false);
       }
-      const fallback = REVIEWS.find((r) => r.id === id) ?? null;
-      this.fallbackReview.set(fallback);
     });
+  }
+
+  getGenreList(content: ReviewDetail): string[] {
+    const genres = content.genre;
+    if (!genres) return [];
+    
+    if (Array.isArray(genres)) {
+      return genres;
+    }
+    return genres.split(',').map(g => g.trim());
   }
 
   spotifyEmbedUrl(albumId: string): SafeResourceUrl {
