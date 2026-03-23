@@ -35,7 +35,6 @@
                                 {{ content.label }}
                             </span>
                         }
-                        <!---- <p class="article-description">{{ content.description }}</p> ---->
                     </div>
                 </div>
                 @if (content.context) {
@@ -44,114 +43,188 @@
                     </div>
                 }
             </header>
+            <div class="main-content">
+                <section class="content-column">
+                    @if (content.introduction) {
+                        <section class="section introduction">
+                            <h2 class="section-title">Introduction</h2>
+                            <div class="markdown-body">
+                            <markdown [data]="content.introduction"></markdown>
+                            </div>
+                        </section>
+                    }
 
-            @if (content.introduction) {
-                <section class="section introduction">
-                    <div class="markdown-body">
-                    <markdown [data]="content.introduction"></markdown>
-                    </div>
-                </section>
-            }
-
-            @if (content.breakdown && content.breakdown.length) {
-                <section class="section breakdown">
-                    <h2 class="section-title">Album breakdown</h2>
-                    @for (block of content.breakdown; track $index) {
-                        <div class="breakdown-block">
-                            @switch (block.type) {
-                                @case ('paragraph') {
-                                    @if (block.title) {
-                                    <h3 class="block-title">{{ block.title }}</h3>
-                                    }
-                                    @if (block.content) {
-                                    <div class="markdown-body">
-                                        <markdown [data]="block.content"></markdown>
-                                    </div>
-                                    }
-                                }
-                                @case ('image') {
-                                    @if (block.imageUrl) {
-                                    <figure>
-                                        <img
-                                        [src]="block.imageUrl"
-                                        [alt]="block.imageAlt || block.title || ''"
-                                        class="breakdown-image"
-                                        loading="lazy"
-                                        />
-                                        @if (block.title) {
-                                        <figcaption>{{ block.title }}</figcaption>
+                    @if (content.breakdown && content.breakdown.length) {
+                        <section class="section breakdown">
+                            <h2 class="section-title">Review</h2>
+                            @for (block of content.breakdown; track $index) {
+                                <div class="breakdown-block">
+                                    @switch (block.type) {
+                                        @case ('paragraph') {
+                                            @if (block.title) {
+                                            <h3 class="block-title">{{ block.title }}</h3>
+                                            }
+                                            @if (block.content) {
+                                            <div class="markdown-body">
+                                                <markdown [data]="block.content"></markdown>
+                                            </div>
+                                            }
                                         }
-                                    </figure>
+                                        @case ('image') {
+                                            @if (block.imageUrl) {
+                                            <figure>
+                                                <img
+                                                [src]="block.imageUrl"
+                                                [alt]="block.imageAlt || block.title || ''"
+                                                class="breakdown-image"
+                                                loading="lazy"
+                                                />
+                                                @if (block.title) {
+                                                <figcaption>{{ block.title }}</figcaption>
+                                                }
+                                            </figure>
+                                            }
+                                        }
+                                        @case ('music') {
+                                            <div class="music-player">
+                                            @if (block.title) {
+                                                <h4 class="player-title">{{ block.title }}</h4>
+                                            }
+                                            @if (block.spotifyId) {
+                                                <iframe
+                                                [src]="spotifyEmbedUrl(block.spotifyId)"
+                                                class="embed-spotify"
+                                                width="100%"
+                                                height="152"
+                                                frameborder="0"
+                                                allowfullscreen
+                                                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                                                loading="lazy"
+                                                title="Spotify player"
+                                                ></iframe>
+                                            }
+                                            @if (!block.spotifyId && block.youtubeMusicId) {
+                                                <iframe
+                                                [src]="youtubeEmbedUrl(block.youtubeMusicId)"
+                                                class="embed-youtube"
+                                                width="100%"
+                                                height="152"
+                                                frameborder="0"
+                                                allowfullscreen
+                                                allow="autoplay; encrypted-media"
+                                                loading="lazy"
+                                                title="YouTube Music player"
+                                                ></iframe>
+                                            }
+                                            </div>
+                                        }
                                     }
-                                }
-                                @case ('music') {
-                                    <div class="music-player">
-                                    @if (block.title) {
-                                        <h4 class="player-title">{{ block.title }}</h4>
-                                    }
-                                    @if (block.spotifyId) {
-                                        <iframe
-                                        [src]="spotifyEmbedUrl(block.spotifyId)"
-                                        class="embed-spotify"
-                                        width="100%"
-                                        height="152"
-                                        frameborder="0"
-                                        allowfullscreen
-                                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                                        loading="lazy"
-                                        title="Spotify player"
-                                        ></iframe>
-                                    }
-                                    @if (!block.spotifyId && block.youtubeMusicId) {
-                                        <iframe
-                                        [src]="youtubeEmbedUrl(block.youtubeMusicId)"
-                                        class="embed-youtube"
-                                        width="100%"
-                                        height="152"
-                                        frameborder="0"
-                                        allowfullscreen
-                                        allow="autoplay; encrypted-media"
-                                        loading="lazy"
-                                        title="YouTube Music player"
-                                        ></iframe>
-                                    }
-                                    </div>
-                                }
+                                </div>
                             }
-                        </div>
+                        </section>
+                    }
+
+                    @if (content.conclusion) {
+                        <section class="section conclusion">
+                            <h2 class="section-title">Conclusion</h2>
+                            <div class="markdown-body">
+                            <markdown [data]="content.conclusion"></markdown>
+                            </div>
+                        </section>
                     }
                 </section>
-            }
+                <section class="details-column">
+                    @if (content.score; as score) {
+                        <div class="score">
+                            <h2 class="section-title">Recommendation Score</h2>
+                            <div class="score-circle" [style.--percentage]="(content.score * 10) + '%'">
+                                <div class="score-value">
+                                    {{ content.score }}
+                                </div>
+                            </div>
+                            <div class="star-rating">
+                                <svg width="0" height="0" style="position: absolute;">
+                                    <defs>
+                                        <linearGradient id="half-fill">
+                                        <stop offset="50%" stop-color="#EAB034"/>
+                                        <stop offset="50%" stop-color="transparent"/>
+                                        </linearGradient>
+                                    </defs>
+                                </svg>
 
-            @if (content.conclusion) {
-                <section class="section conclusion">
-                    <h2 class="section-title">Conclusion</h2>
-                    <div class="markdown-body">
-                    <markdown [data]="content.conclusion"></markdown>
-                    </div>
+                                @for (star of getStars(content.score); track $index) {
+                                    <svg class="star-icon" viewBox="0 0 24 24" stroke="#EAB034" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                        [attr.fill]="star === 'full' ? '#EAB034' : (star === 'half' ? 'url(#half-fill)' : 'none')">
+                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                    </svg>
+                                }
+                            </div>
+                            <h3 class="score-verdict">{{ getScoreMessage(content.score) }}</h3>
+                        </div>
+                        
+                        @if (content.tracklist || content.producer || content.recordedAt) {
+                            <section class="album-details">
+                                <h2 class="section-title">Tracklist & Details</h2>
+
+                                @if (content.tracklist && content.tracklist.length) {
+                                <div class="tracklist-container">
+                                    <ul class="tracklist">
+                                    @for (track of content.tracklist; track track.number) {
+                                        <li class="track-item">
+                                        <span class="track-number">{{ track.number }}.</span>
+                                        <span class="track-title">{{ track.title }}</span>
+                                        <span class="track-duration">{{ track.duration }}</span>
+                                        </li>
+                                    }
+                                    </ul>
+                                </div>
+                                }
+
+                                <div class="album-meta-details">
+                                    @if (content.totalDuration) {
+                                        <p><strong>Total Duration:</strong> {{ content.totalDuration }}</p>
+                                    }
+                                    @if (content.producer) {
+                                        <p><strong>Producer:</strong> {{ content.producer }}</p>
+                                    }
+                                    @if (content.recordedAt) {
+                                        <p><strong>Recorded at:</strong> {{ content.recordedAt }}</p>
+                                    }
+                                </div>
+                            </section>
+                        }
+                    }
                 </section>
-            }
+            </div>
 
             @if (content.similarAlbums && content.similarAlbums.length) {
                 <section class="section similar">
-                    <h2 class="section-title">Similar albums</h2>
-                    <ul class="similar-list">
-                    @for (sim of content.similarAlbums; track sim.id) {
-                        <li>
-                        <a [routerLink]="['/collection-page', sim.id]" class="similar-link">
-                            <img
-                            [src]="sim.image"
-                            [alt]="sim.album"
-                            class="similar-cover"
-                            width="80"
-                            height="80"
-                            loading="lazy"
-                            />
-                            <span class="similar-info">{{ sim.album }} &ndash; {{ sim.artist }}</span>
-                        </a>
-                        </li>
-                    }
-                    </ul>
+                    <h2 class="section-title">Similar Albums You Might Enjoy</h2>
+                    
+                    <div class="similar-grid">
+                        @for (sim of content.similarAlbums; track sim.id) {
+                            
+                            <a [routerLink]="['/collection-page', sim.id]" class="similar-card">
+                                
+                                <div class="similar-cover-wrap">
+                                    <img
+                                        [src]="sim.image"
+                                        [alt]="sim.album"
+                                        class="similar-cover"
+                                        loading="lazy"
+                                    />
+                                </div>
+                                <h3 class="similar-title">{{ sim.album }}</h3>
+                                <div class="similar-info">
+                                    
+                                    <p class="similar-artist">{{ sim.artist }}</p>
+                                    @if (sim.releaseDate) {
+                                        <p class="similar-date">,{{ sim.releaseDate }}</p>
+                                    }
+                                </div>
+                            </a>
+                        }
+                    </div>
                 </section>
             }
 

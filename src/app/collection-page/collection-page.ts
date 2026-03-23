@@ -71,17 +71,39 @@ export class CollectionPage implements OnInit {
 
   filteredReviews = computed(() => {
     const term = this.searchTerm().toLowerCase();
-    const genre = this.selectedGenre();
+    const genre = this.selectedGenre()?.toLowerCase(); 
     const decade = this.selectedDecade();
     const year = this.selectedYear();
-    const country = this.selectedCountry();
+    const country = this.selectedCountry()?.toLowerCase();
 
     return this.reviews().filter((review: any) => {
-      const matchesSearch = review.album.toLowerCase().includes(term);
-      const matchesGenre = !genre || review.genres.includes(genre);
-      const matchesDecade = !decade || review.year.toString().startsWith(decade.slice(0, 3));
-      const matchesYear = !year || review.year.toString().startsWith(year);
-      const matchesCountry = !country || review.country === country;
+      
+      // 1. Safe Search
+      const reviewAlbum = review.album ? review.album.toLowerCase() : '';
+      const matchesSearch = !term || reviewAlbum.includes(term);
+
+      // 2. Safe Genre 
+      let matchesGenre = true;
+      if (genre) {
+        const reviewGenres = review.genres || review.genre || '';
+        const normalizedGenres = Array.isArray(reviewGenres) 
+            ? reviewGenres.join(', ').toLowerCase() 
+            : reviewGenres.toLowerCase();
+        
+        matchesGenre = normalizedGenres.includes(genre);
+      }
+
+      // 3. Safe Decade & Year (Checks BOTH 'year' and 'releaseDate'!)
+      const rawYear = review.year || review.releaseDate || '';
+      const reviewYear = rawYear.toString();
+      
+      const matchesDecade = !decade || reviewYear.startsWith(decade.slice(0, 3));
+      const matchesYear = !year || reviewYear.startsWith(year);
+
+      // 4. Safe Country 
+      // (Note: Make sure your reviews.json actually has a "country": "US" field!)
+      const reviewCountry = review.country ? review.country.toLowerCase() : '';
+      const matchesCountry = !country || reviewCountry === country;
 
       return matchesSearch && matchesGenre && matchesDecade && matchesYear && matchesCountry;
     });
@@ -94,6 +116,56 @@ export class CollectionPage implements OnInit {
 
   totalPages = computed(() => {
     return Math.ceil(this.filteredReviews().length / this.itemsPerPage);
+  });
+
+  visiblePages = computed(() => {
+    const current = this.currentPage();
+    const total = this.totalPages();
+    const middle = Math.ceil(total / 2);
+
+    if (total <= 7) {
+      return Array.from({ length: total }, (_, i) => i + 1);
+    }
+
+    const pages = new Set<number>();
+    pages.add(1);
+    pages.add(total);
+    pages.add(current);
+    
+    if (current > 1) pages.add(current - 1);
+    if (current < total) pages.add(current + 1);
+    
+    
+    if (middle > 2 && middle < total - 1) {
+      pages.add(middle);
+    }
+
+    const sortedPages = Array.from(pages).sort((a, b) => a - b);
+    const result: (number | string)[] = [];
+
+    for (let i = 0; i < sortedPages.length; i++) {
+      result.push(sortedPages[i]);
+      if (i < sortedPages.length - 1) {
+        const diff = sortedPages[i + 1] - sortedPages[i];
+        if (diff === 2) {
+          result.push(sortedPages[i] + 1);
+        } else if (diff > 2) {
+          result.push('...');
+        }
+      }
+    }
+
+    return result;
+  });
+
+  paginationText = computed(() => {
+    const total = this.filteredReviews().length;
+    if (total === 0) return 'No reviews found';
+
+    const start = ((this.currentPage() - 1) * this.itemsPerPage) + 1;
+    const end = Math.min(this.currentPage() * this.itemsPerPage, total);
+
+    return `Showing ${start}-${end} out of ${total} reviews`;
   });
 
   updateSearch(term: string) {

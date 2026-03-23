@@ -17,12 +17,14 @@
 }
 
 .article-body {
-    max-width: 1110px;
+    max-width: 1300px;
     margin: 0 auto;
 }
 
+/* Title and album information */
+
 .article-header {
-    margin-bottom: 2.5rem;
+    
 }
 
 .top-row {
@@ -34,14 +36,14 @@
 .cover-wrap {
     margin: 1.5rem 0;
     border-radius: 8px;
-    overflow: hidden;
-    max-width: 320px;
-    box-shadow: 2px 4px 40px 2px rgba(255, 255, 255, 0.2);
+    max-width: 350px;
+    box-shadow: 7px 7px 150px 5px rgba(255, 255, 255, 0.07);
 }
 
 .article-cover {
-    width: 100%;
+    width: 350px;
     height: auto;
+    border-radius: 16px;
     display: block;
     object-fit: cover;
 }
@@ -52,15 +54,16 @@
     gap: 1.45rem;
     align-items: flex-start;
     margin-top:70px;
+    margin-left: 30px;
 }
- 
+
 .back-link {
     margin-left: 2px;
     margin-top: -35px;
-    color: #A5CEC7;
+    color: #888;
     text-decoration: none;
     font-weight: 500;
-    font-size: 1rem;
+    font-size: 1.1rem;
 }
 
 .back-link:hover { text-decoration: underline; }
@@ -104,105 +107,56 @@
     margin-left: 2px;
     display: flex;
     align-items:start;
-    gap: 0.5rem;
-    font-size: 1.1rem;
-    color: #888;
-    font-family: 'IBM Plex Mono', monospace;
-}
-
-.label-wrap {
-    margin-left: 2px;
-    margin-top: -5px;
-    display: flex;
-    align-items: start;
     gap: 0.6rem;
     font-size: 1rem;
     color: #888;
     font-family: 'IBM Plex Mono', monospace;
 }
 
-.article-description {
-    margin-top: 1.5rem;
-    line-height: 1.6;
-    color: #bbb;
-}
-
-.article-context {
-    margin-top: 1rem;
-    line-height: 1.6;
-    color: #bbb;
-}
-
-.section {
-    margin-top: 2.5rem;
-}
-
-.section-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin: 0 0 1rem 0;.review-article {
-    background: linear-gradient(to bottom, #0d0d0d 0%, #1a1a1a 100%);
-    min-height: 100vh;
-    padding: 6rem 1.5rem 4rem;
-    font-family: 'IBM Plex Mono', monospace;
-    color: #e0e0e0;
-}
-
-.back-link {
-    display: inline-block;
-    margin-bottom: 2rem;
-    color: #A5CEC7;
-    text-decoration: none;
-    font-weight: 500;
-}
-.back-link:hover { text-decoration: underline; }
-
-
-.article-title {
-    font-size: 1.75rem;
-    font-weight: 600;
-    margin: 0 0 0.25rem 0;
-    color: #fff;
-    font-family: 'Playfair Display', serif;
-}
-
-.article-artist {
-    font-size: 1.1rem;
+.label-wrap {
+    margin-left: 2.4px;
+    margin-top: -7px;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1rem;
     color: #888;
-    margin: 0 0 0.5rem 0;
-}
-
-.article-meta {
-    font-size: 0.9rem;
-    color: #666;
-    margin-bottom: 1.5rem;
-}
-.meta-sep::before { content: " · "; }
-
-.article-description {
-    margin-top: 1.5rem;
-    line-height: 1.6;
-    color: #bbb;
+    font-family: 'IBM Plex Mono', monospace;
 }
 
 .article-context {
-    margin-top: 1rem;
-    line-height: 1.6;
-    color: #bbb;
+    padding: 0px 10px;
+}
+
+/* Introduction, Review and Conclusion  */
+
+.main-content{
+    display: flex;
+    gap: 3rem;
+    align-items: flex-start;
+}
+
+.content-column {
+    display: flex;
+    flex-direction: column;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0 0;
+    margin-left: -2px;
 }
 
 .section {
-    margin-top: 2.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 2rem;
+    margin: 1rem 0;
 }
 
-.section-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin: 0 0 1rem 0;
-    color: #fff;
-}
 
 .markdown-body {
+    font-size: 1.03rem;
     line-height: 1.7;
     color: #ccc;
 }
@@ -243,27 +197,265 @@ figcaption { font-size: 0.85rem; color: #666; margin-top: 0.25rem; }
     border: 0;
 }
 
-.similar-list {
+/* Rating Column */
+
+.details-column {
+    display: flex;
+    flex-direction: column;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0 0;
+}
+
+.score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2.8rem;
+    background: #1d1d1d;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 2rem;
+    margin: 1rem 0;
+    min-width: 300px;
+}
+
+.section-title {
+    margin-top: 0rem;
+    margin-bottom: 0.2rem;
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+.score-circle {
+    width: 125px;
+    height: 125px;
+    border-radius: 50%;
+    background: conic-gradient(#0084d2 var(--percentage), rgba(255, 255, 255, 0.1) 0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    flex-shrink: 0;
+    margin-left: 0px;
+}
+
+.score-circle::before {
+    content: "";
+    position: absolute;
+    inset: 8px; 
+    background-color: #1d1d1d;
+    border-radius: 50%;
+}
+
+.score-value {
+    position: relative;
+    z-index: 1;
+    font-size: 2.2rem;
+    font-weight: 400;
+    color: #fff;
+    margin-left: 0px;
+}
+
+.score-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.star-rating {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.star-icon {
+    width: 25px;
+    height: 25px;
+}
+
+.score-verdict {
+    font-size: 1.2rem;
+    color: #fff;
+    margin: 0;
+    font-weight: normal;
+}
+
+@media (max-width: 600px) {
+    .score-card {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+/* Tracklist */
+
+.album-details {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2.8rem;
+    background: #1d1d1d;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 2rem;
+    margin: 1rem 0;
+}
+
+.tracklist-container {
+    margin-top: -1rem;
+    margin-bottom: 0rem;
+}
+
+.tracklist {
     list-style: none;
     padding: 0;
     margin: 0;
+    display: flex;
+    flex-direction: column;
 }
-.similar-list li { margin-bottom: 1rem; }
-.similar-link {
+
+.track-item {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    color: #A5CEC7;
+    padding: 1rem 0rem;
+    margin-left: -3px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.94rem;
+    transition: background-color 0.2s ease;
+    border-radius: 4px;
+}
+
+.track-item:last-child {
+    border-bottom: none;
+}
+
+.track-number {
+    width: 35px;
+    color: #888;
+}
+
+.track-title {
+    flex: 1;
+    color: #e0e0e0;
+}
+
+.track-duration {
+    margin-left: 30px;
+    color: #888;
+}
+
+.album-meta-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    color: #bbb;
+}
+
+.album-meta-details p {
+    margin: 0;
+}
+
+.album-meta-details strong {
+    color: #fff;
+    font-weight: 500;
+    margin-right: 0.5rem;
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+/* Similar albums */
+
+.similar {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 3rem;
+    margin: 4rem 0;
+    margin-top: 1rem;
+}
+
+.similar .section-title {
+    margin-bottom: 3rem;
+}
+
+.similar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 0rem;
+}
+
+.similar-card {
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1.3rem;
+    cursor: pointer;
+}
+
+.similar-cover-wrap {
+    width: 90%;
+    max-width: 350px; 
+    aspect-ratio: 1 / 1;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.4);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+}
+
+.similar-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.7s ease;
+}
+
+.similar-card:hover .similar-cover-wrap {
+    box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.6); 
+}
+
+.similar-card:hover .similar-cover {
+    transform: scale(1.1);
+}
+
+.similar-card:hover .similar-title {
+    color: #0084d2;
     text-decoration: none;
 }
-.similar-link:hover { text-decoration: underline; }
-.similar-cover {
-    width: 64px;
-    height: 64px;
-    object-fit: cover;
-    border-radius: 6px;
+
+.similar-title {
+    font-size: 1.2rem;
+    color: #e0e0e0;
+    margin: 0;
+    font-family: 'Playfair Display', serif;
+    transition: color 0.2s ease;
 }
-.similar-info { font-size: 0.95rem; }
+
+.similar-info {
+    display: flex;
+    flex-direction: row;
+    gap: 0rem;
+    margin-top: -0.7rem;
+}
+
+.similar-artist {
+    font-size: 1.05rem;
+    color: #888;
+    margin: 0;
+}
+
+.similar-date {
+    font-size: 0.95rem;
+    color: #555;
+    margin: 0;
+    margin-top: 1.1px;
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+/* Comments */
 
 .comment-list {
     list-style: none;

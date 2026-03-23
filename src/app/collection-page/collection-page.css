@@ -1,13 +1,19 @@
 .shop-container {
-  position: absolute;
-  background: linear-gradient(to bottom,  #000000 0%, #1a1a1a 100%);
-  padding: 8rem 0;
-  width: 100%;
-  height: calc(100% + 4rem);
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  background-image: 
+        radial-gradient(
+            circle at bottom center, 
+            #1a1a1a 0%,
+            #0d0d0d 25%, 
+            #0d0d0d 100%
+        ),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.021'/%3E%3C/svg%3E");
+    
+    background-blend-mode: overlay;
+    background-attachment: fixed;
+    min-height: 100vh;
+    padding: 6rem 1.5rem 4rem;
+    font-family: 'Inter', sans-serif;
+    color: #e0e0e0;
 }
 
 .collection-title {
@@ -16,7 +22,7 @@
   color: white;
   letter-spacing: 2px;
   text-align: center; /* Centers the text */
-  margin: 0 auto 4rem auto;
+  margin: 3rem auto 4.7rem auto;
   position: relative;
   z-index: 10;
 }
@@ -108,21 +114,30 @@
 }
 
 .search-input {
+  margin-left: -7px;
+  margin-bottom: -2.5px;
   width: 100%;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid #333;
-  padding: 1rem 0;
-  padding: 0.5rem 0;
-  color: white;
+  padding: 12px 0 12px 14px;
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 1.2rem;
-  font-size: 1rem;
-} 
+  font-size: 0.95rem;
+  
+  background-color: rgba(255, 255, 255, 0.03);
+  color: #e0e0e0;
+  border: 1px solid #333;
+  border-radius: 20px;
+  
+  outline: none;
+  transition: all 0.25s ease;
+}
+
+.search-input:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
 
 .search-input:focus {
-  outline: none;
-  border-bottom: 1px solid #fff;
+  background-color: rgba(255, 255, 255, 0.07);
+  border-color: #A5CEC7; /* Highlights with your accent color! */
+  box-shadow: 0 0 0 1px rgba(165, 206, 199, 0.3);
 }
 
 .more-btn {
@@ -281,36 +296,63 @@
   color: #fff;
 }
 
+.pagination-info {
+  text-align: center;
+  color: #666; /* Matches the ellipsis dots */
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+  margin-top: -2rem; 
+  margin-bottom: 0; 
+}
+
 .pagination {
   display: flex;
+  flex-direction: row;
   justify-content: center;
   align-items: center;
-  gap: 1rem;
-  margin-top: 3rem;
-  font-family: 'IBM Plex Mono', monospace;
-  color: #888;
+  max-width: 700px;
+  position: relative;
+  margin: 3rem auto;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid black;
+  box-shadow: 0px 0px 0px 2px white, 0px 5px 0px 2px #6D7876;
 }
 
 .page-btn {
-  background: transparent;
-  border: 1px solid #333;
-  color: #f0f0f0;
-  padding: 0.5rem 1rem;
+  background-color: transparent;
+  border: none;
+  color: #ccc;
+  padding: 10px 15px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  border-radius: 4px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
 }
 
 .page-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: #666;
+  background-color: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+.page-btn.active {
+  background-color: #000;
+  border: 1px solid white;
+  color: white;
+  pointer-events: none;
+  cursor: default;
 }
 
 .page-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.3;
   cursor: not-allowed;
-  border-color: #222;
-  color: #444;
+  border-color: #555;
+}
+
+.page-ellipsis {
+  color: #888;
+  padding: 0 0.25rem;
+  letter-spacing: 2px;
 }
 
 .page-info {
