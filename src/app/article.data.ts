@@ -1,3 +1,10 @@
+export interface ArticleBlock {
+  type: 'heading' | 'paragraph' | 'image';
+  content?: string;
+  imageUrl?: string;
+  caption?: string;
+}
+
 export interface Article {
   id: number;
   title: string;
@@ -5,6 +12,10 @@ export interface Article {
   description: string;
   date: string;
   image: string;
+  readingTime?: string;
+  views?: number;
+  likes?: number;
+  contentBlocks?: ArticleBlock[];
 }
 
 export const ARTICLES: Article[] = [

@@ -176,15 +176,23 @@
   margin: 10px 0;
 }
 
+.post-wrapper {
+  display: block;
+  position: relative;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
 .expandable-container {
   position: relative;
-  max-height: 720px;
+  max-height: 1000px;
   overflow: hidden;
   transition: max-height 0.8s ease-in-out;
 }
 
 .expandable-container.expanded {
-  max-height: 20000px; /* Allows the content to fully unroll smoothly */
+  max-height: 20000px;
 }
 
 .fade-overlay {
@@ -199,7 +207,7 @@
   justify-content: center;
   padding-bottom: 24px;
   z-index: 10;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 .fade-overlay .show-more-btn {

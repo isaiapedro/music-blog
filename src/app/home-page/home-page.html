@@ -28,26 +28,41 @@
   <div class="newspaper-grid">
     
     <div class="side-stories">
-      @for (article of sideArticles(); track article.id) {
-        <article class="side-item">
+
+      <article class="side-item">
+        <a routerLink="/collection-page" [queryParams]="{ filter: 'latest' }" class="post-wrapper">
           <div class="img-wrapper">
-            <img [src]="article.image" class="article-img" alt="Article image">
+            <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=800&auto=format&fit=crop" class="article-img" alt="Latest Reviews">
           </div>
-          <span class="filter-rect article-theme">{{ article.keywords}}</span>
-          <h4 class="serif-heading">{{ article.title }}</h4>
-          <time class="article-date">{{ article.date | date:'longDate' }}</time>
-        </article>
-      }
+          <span class="filter-rect article-theme">Reviews</span>
+          <h4 class="serif-heading">Seven Records We Spun This Week</h4>
+          <time class="article-date">Weekly Update</time>
+        </a>
+      </article> 
+
+      <article class="side-item">
+        <a [routerLink]="['/articles-page', sideArticle().id]" class="post-wrapper">
+          <div class="img-wrapper">
+            <img [src]="sideArticle().image" class="article-img" alt="Article image">
+          </div>
+          <span class="filter-rect article-theme">{{ sideArticle().keywords}}</span>
+          <h4 class="serif-heading">{{ sideArticle().title }}</h4>
+          <time class="article-date">{{ sideArticle().date | date:'longDate' }}</time>
+        </a>
+      </article>
+
     </div>
 
     <div class="main-column" *ngIf="mainArticle()">
       <article class="main-story">
-        <div class="img-wrapper main-img-wrapper">
-          <img [src]="mainArticle().image" class="article-img" alt="Main article image">
-        </div>
-        <h1 class="serif-heading main-heading">{{ mainArticle().title }}</h1>
-        <p class="description">{{ mainArticle().description }}</p>
-        <time class="article-date main-date">{{ mainArticle().date | date:'longDate' }}</time>
+        <a [routerLink]="['/articles-page', mainArticle().id]" class="post-wrapper">
+          <div class="img-wrapper main-img-wrapper">
+            <img [src]="mainArticle().image" class="article-img" alt="Main article image">
+          </div>
+          <h1 class="serif-heading main-heading">{{ mainArticle().title }}</h1>
+          <p class="description">{{ mainArticle().description }}</p>
+          <time class="article-date main-date">{{ mainArticle().date | date:'longDate' }}</time>
+        </a>
       </article>
 
       <div class="music-player-section">
@@ -67,8 +82,10 @@
       <h2 class="serif-heading column-title">Latest Posts</h2>
       @for (article of listArticles(); track article.id) {
         <article class="list-item">
-          <h3 class="serif-heading">{{ article.title }}</h3>
-          <time class="article-date">{{ article.date | date:'longDate' }}</time>
+          <a [routerLink]="['/articles-page', article.id]" class="post-wrapper">
+            <h3 class="serif-heading">{{ article.title }}</h3>
+            <time class="article-date">{{ article.date | date:'longDate' }}</time>
+          </a>
         </article>
       }
     </div>

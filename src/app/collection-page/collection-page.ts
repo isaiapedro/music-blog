@@ -1,5 +1,5 @@
 import { Component, signal, computed, OnInit, inject } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Review } from '../review.data';
@@ -15,9 +15,17 @@ import { HttpClient } from '@angular/common/http';
 export class CollectionPage implements OnInit {
 
   private http = inject(HttpClient);
+  private route = inject(ActivatedRoute);
+
   reviews = signal<Review[]>([]);
 
+  showLatestOnly = signal(false);
+
   ngOnInit() {
+    this.route.queryParams.subscribe(params => {
+      this.showLatestOnly.set(params['filter'] === 'latest');
+    });
+
     this.http.get<{ reviews: Review[] }>('/data/reviews.json').subscribe({
       next: (data) => {
         this.reviews.set(data.reviews.reverse());
@@ -27,7 +35,7 @@ export class CollectionPage implements OnInit {
       }
     });
   }
-
+  
   searchTerm = signal('');
   selectedGenre = signal<string | null>(null);
   selectedDecade = signal<string | null>(null);
@@ -45,7 +53,7 @@ export class CollectionPage implements OnInit {
   }
 
   currentPage = signal(1);
-  itemsPerPage = 5;
+  itemsPerPage = 7;
 
   genres = ['Rock', 'Pop', 'Jazz', 'Electronic', 'Hip Hop', 'Indie', 'Folk', 'Metal', 'Classical', 'Reggae', 'Blues', 'Country'];
   decades = ['1960s', '1970s', '1980s', '1990s', '2000s', '2010s', '2020s'];
@@ -76,13 +84,11 @@ export class CollectionPage implements OnInit {
     const year = this.selectedYear();
     const country = this.selectedCountry()?.toLowerCase();
 
-    return this.reviews().filter((review: any) => {
+    const filteredArray =  this.reviews().filter((review: any) => {
       
-      // 1. Safe Search
       const reviewAlbum = review.album ? review.album.toLowerCase() : '';
       const matchesSearch = !term || reviewAlbum.includes(term);
 
-      // 2. Safe Genre 
       let matchesGenre = true;
       if (genre) {
         const reviewGenres = review.genres || review.genre || '';
@@ -93,21 +99,27 @@ export class CollectionPage implements OnInit {
         matchesGenre = normalizedGenres.includes(genre);
       }
 
-      // 3. Safe Decade & Year (Checks BOTH 'year' and 'releaseDate'!)
       const rawYear = review.year || review.releaseDate || '';
       const reviewYear = rawYear.toString();
       
       const matchesDecade = !decade || reviewYear.startsWith(decade.slice(0, 3));
       const matchesYear = !year || reviewYear.startsWith(year);
 
-      // 4. Safe Country 
-      // (Note: Make sure your reviews.json actually has a "country": "US" field!)
       const reviewCountry = review.country ? review.country.toLowerCase() : '';
       const matchesCountry = !country || reviewCountry === country;
+      
 
       return matchesSearch && matchesGenre && matchesDecade && matchesYear && matchesCountry;
     });
+
+    if (this.showLatestOnly()) {
+      return filteredArray.slice(0, 7);
+    }
+
+    return filteredArray;
   });
+
+  
 
   paginatedReviews = computed(() => {
     const startIndex = (this.currentPage() - 1) * this.itemsPerPage;

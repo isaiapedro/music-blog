@@ -37,14 +37,16 @@
     <div class="masonry-grid">
       @for (article of filteredArticles(); track article.title) {
         <div class="masonry-item">
-          <div class="article-card">
-            <img [src]="article.image" [alt]="article.title" class="article-image">
-            <div class="article-info">
-              <h3 class="article-title">{{ article.title }}</h3>
-              <div class="title-underline"></div>
-              <p class="article-date">{{ article.date | date:'longDate' }}</p>
+          <a [routerLink]="['/articles-page', article.id]" class="post-wrapper">
+            <div class="article-card">
+              <img [src]="article.image" [alt]="article.title" class="article-image">
+              <div class="article-info">
+                <h3 class="article-title">{{ article.title }}</h3>
+                <div class="title-underline"></div>
+                <p class="article-date">{{ article.date | date:'longDate' }}</p>
+              </div>
             </div>
-          </div>
+          </a>
         </div>
       }
     </div>

@@ -53,7 +53,6 @@ export class ArticleSearchPage implements OnInit {
 
   onSearch(text: string) {
     if (text === '') {
-      // This is the trigger the constructor above is looking for!
       this.router.navigate(['/articles-page'], { state: { keepFocus: true } });
     } else {
       this.router.navigate(['/article-search-page'], { queryParams: { text: text } });

@@ -3,6 +3,7 @@ import { AboutPage } from './about-page/about-page';
 import { CollectionPage } from './collection-page/collection-page';
 import { ArticlesPage } from './articles-page/articles-page';
 import { ArticleSearchPage } from './article-search-page/article-search';
+import { PostPage } from './post-page/post-page';
 import { HomePage } from './home-page/home-page';
 import { ReviewComponent } from './review/review';
 import { AdminPage } from './admin/admin-page';
@@ -20,6 +21,10 @@ export const routes: Routes = [
     {
         path: 'article-search-page',
         component: ArticleSearchPage,
+    },
+    {
+        path: 'articles-page/:id',
+        component: PostPage,
     },
     {
         path: 'collection-page',

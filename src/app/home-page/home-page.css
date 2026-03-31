@@ -1,6 +1,5 @@
 /* Bg and filter section*/
 
-
 .articles-container {
   padding: 120px 20px;
   max-width: 1450px;
@@ -97,6 +96,20 @@
   padding-bottom: 40px;
 }
 
+.post-wrapper {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.post-wrapper:hover .serif-heading {
+  color: #ffffff96;
+  transition: color 0.3s ease;
+}
+
 .side-stories {
   border-right: 1px solid rgba(255, 255, 255, 0.2);
   padding-right: 20px;
@@ -133,7 +146,6 @@
 .article-theme {
   border: none;
   box-shadow: none;
-  cursor: default;
   padding: 11px 17px;
   margin-left: 1px;
   font-weight: 500;
@@ -305,6 +317,7 @@
   width: 26px; 
   height: 26px;
   fill: currentColor;
+}
 
 .social-links a:hover {
   color: #ffffff;

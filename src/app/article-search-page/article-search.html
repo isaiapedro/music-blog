@@ -27,10 +27,10 @@
       <div class="article-columns">
         @for (article of filteredArticles(); track article.title; let i = $index) {
           <div class="blog-post" 
-            [routerLink]="['/collection-page', article.id]"
+            [routerLink]="['/articles-page', article.id]"
             [class.disabled-post]="!isExpanded() && i > 2">
             <div class="post-content">
-              <a [routerLink]="['/collection-page', article.id]" routerLinkActive="active-link" class="article-title">
+              <a [routerLink]="['/articles-page', article.id]" routerLinkActive="active-link" class="article-title">
                 {{ article.title }}
               </a>
               <p class="post-description">

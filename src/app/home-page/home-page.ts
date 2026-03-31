@@ -34,9 +34,9 @@ export class HomePage {
   });
 
   mainArticle = computed(() => this.filteredArticles()[0]);
-  sideArticles = computed(() => this.filteredArticles().slice(1, 3));
+  sideArticle = computed(() => this.filteredArticles()[1]);
   listArticles = computed(() => {
-    return this.filteredArticles().slice(0, 5);
+    return this.filteredArticles().slice(2, 7);
   });
 
   onSearch(text: string) {

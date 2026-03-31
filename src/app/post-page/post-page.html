@@ -1,0 +1,78 @@
+<div class="page-wrapper">
+  @if (article(); as post) {
+    <article class="post-container">
+      
+      <header class="post-header">
+        <a routerLink="/articles-page" [queryParams]="{ theme: post.keywords }" class="back-link"> 
+          {{ post.keywords }}
+        </a>
+        <h1 class="post-title">{{ post.title }}</h1>
+        <h2 class="post-subtitle">{{ post.description }}</h2>
+
+        <div class="post-meta">
+          <div class="author-text">
+            <div class="post-date-time">
+              <span>{{ post.date | date:'mediumDate' }}</span>
+              <span class="separator">·</span>
+              <span>{{ post.readingTime || '5 min read' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="engagement-bar">
+          <div class="engagement-left">
+            <button class="action-btn" (click)="toggleLike()" [class.liked]="hasLiked()">
+              <svg viewBox="0 0 24 24" [attr.fill]="hasLiked() ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+              <span>{{ (post.likes || 124) + (hasLiked() ? 1 : 0) }}</span>
+            </button>
+            <div class="action-stat">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <span>{{ post.views || '1.2k' }}</span>
+            </div>
+          </div>
+          <div class="engagement-right">
+            <button class="action-btn share-btn" (click)="sharePost()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <figure class="post-main-image">
+        <img [src]="post.image" [alt]="post.title">
+      </figure>
+
+      <div class="post-body">
+        @if (post.contentBlocks && post.contentBlocks.length) {
+          @for (block of post.contentBlocks; track $index) {
+            
+            @if (block.type === 'heading') {
+              <h2>{{ block.content }}</h2>
+            } 
+            
+            @else if (block.type === 'paragraph') {
+              <p>{{ block.content }}</p>
+            } 
+            
+            @else if (block.type === 'image') {
+              <figure class="body-image">
+                <img [src]="block.imageUrl" alt="Article visual">
+                @if (block.caption) {
+                  <figcaption>{{ block.caption }}</figcaption>
+                }
+              </figure>
+            }
+          }
+        } @else {
+          <p class="placeholder-text">This article is currently being written. Please check back later for the full story.</p>
+        }
+      </div>
+
+    </article>
+  } @else {
+    <div class="error-state">
+      <h2>Article Not Found</h2>
+      <a routerLink="/articles-page" class="back-link">&larr; Return to Articles</a>
+    </div>
+  }
+</div>
