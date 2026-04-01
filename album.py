@@ -83,16 +83,8 @@ def transform_music(df1, df2):
         df1[col] = df1[col].apply(lambda x: ', '.join(x) if isinstance(x, list) else x)
         df2[col] = df2[col].apply(lambda x: ', '.join(x) if isinstance(x, list) else x)
 
-    # Merge genres and subGenres into a single column
-    df2['allGenres'] = df2.apply(lambda row: ', '.join(filter(None, [row['genres'], row['subGenres']])), axis=1)
-    df2['allGenres'] = df2['allGenres'].apply(lambda x: ', '.join(sorted(set(map(str.strip, str(x).split(','))))))
-
-    df1['allGenres'] = df1.apply(lambda row: ', '.join(filter(None, [row['genres'], row['subGenres']])), axis=1)
-
-    # FIX FOR THE 'did-not-listen' BUG: Force errors to NaN, then drop NaNs
-    df2['rating'] = pd.to_numeric(df2['rating'], errors='coerce')
-    df2 = df2.dropna(subset=['rating']).copy()
-    df2['rating'] = df2['rating'].astype(int)
+    # THE FIX: Coerce bad strings to NaN, fill them with 0, and KEEP the row!
+    df2['rating'] = pd.to_numeric(df2['rating'], errors='coerce').fillna(0).astype(int)
 
     logging.info("Data transformed successfully.")
     return df1, df2
@@ -106,31 +98,26 @@ def load_music(df1, df2):
     cur = None
     try:
         conn = psycopg2.connect(
-            host=hostname,
-            dbname=database,
-            user=username,
-            password=pwd,
-            port=port_id
+            host=hostname, dbname=database, user=username, password=pwd, port=port_id
         )
         cur = conn.cursor()
         logging.info("Connected to database successfully.")
 
-        # Combine current album (df1) and past albums (df2) for batch processing
         df_combined = pd.concat([df1, df2], ignore_index=True)
 
         insert_review_query = '''
             INSERT INTO cms_reviews (
-                album, artist, image, release_date, genre,
+                album, artist, image, release_date, genre, subgenres,
                 description, context, introduction, breakdown, conclusion,
                 similar_albums, comments, score, published
-            ) VALUES (%s, %s, %s, %s, %s, '', '', '', '[]', '', '[]', '[]', NULL, FALSE)
+            ) VALUES (%s, %s, %s, %s, %s, %s, '', '', '', '[]', '', '[]', '[]', NULL, FALSE)
             RETURNING id;
         '''
 
         insert_meta_query = '''
             INSERT INTO cms_list_meta (
                 review_id, album, artist, year, image, description, date, genres, subgenres, country, score, published
-            ) VALUES (%s, %s, %s, %s, %s, '', %s, %s, '', %s, NULL, FALSE)
+            ) VALUES (%s, %s, %s, %s, %s, '', %s, %s, %s, %s, NULL, FALSE)
             ON CONFLICT (review_id) DO NOTHING;
         '''
 
@@ -140,33 +127,30 @@ def load_music(df1, df2):
             album_name = row.get('name', '')
             artist_name = row.get('artist', '')
 
-            # 1. Check if the album already exists in the CMS to prevent duplicates
             cur.execute("SELECT id FROM cms_reviews WHERE album = %s AND artist = %s", (album_name, artist_name))
             if cur.fetchone():
-                continue # Skip if we already saved this draft
+                continue 
 
-            # 2. Safely map dynamic data
             image_url = row.get('images', '')
-            
-            # Ensure releaseDate is an integer
             try:
                 release_date = int(row.get('releaseDate'))
             except (ValueError, TypeError):
                 release_date = datetime.datetime.now().year
                 
-            genre = row.get('allGenres', '')
+            genre = row.get('genres', '')        # ONLY Main Genres
+            subgenres = row.get('subGenres', '') # ONLY Subgenres
             artist_origin = row.get('artistOrigin', '')
             current_date = datetime.datetime.now().strftime('%Y-%m-%d')
 
-            # 3. Insert into the main CMS reviews table
+            # Insert into main table
             cur.execute(insert_review_query, (
-                album_name, artist_name, image_url, release_date, genre
+                album_name, artist_name, image_url, release_date, genre, subgenres
             ))
             new_review_id = cur.fetchone()[0]
 
-            # 4. Insert into the list metadata table
+            # Insert into meta table
             cur.execute(insert_meta_query, (
-                new_review_id, album_name, artist_name, release_date, image_url, current_date, genre, artist_origin
+                new_review_id, album_name, artist_name, release_date, image_url, current_date, genre, subgenres, artist_origin
             ))
             
             inserted_count += 1

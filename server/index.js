@@ -29,6 +29,7 @@ function rowToReview(row) {
     year: row.release_date,
     label: row.label,
     genre: row.genre,
+    subgenres: row.subgenres,
     
     // New fields mapped!
     tracklist: typeof row.tracklist === 'string' ? JSON.parse(row.tracklist) : (row.tracklist || []),
@@ -66,6 +67,20 @@ app.get('/api/reviews', async (req, res) => {
   } catch (err) {
     console.error('Error fetching reviews:', err);
     res.status(500).json({ error: 'Database error fetching reviews' });
+  }
+});
+
+app.get('/api/reviews/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query('SELECT * FROM cms_reviews WHERE id = $1', [id]);
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Review not found' });
+    
+    // Uses the rowToReview function to format it perfectly for your Angular frontend
+    res.json(rowToReview(result.rows[0])); 
+  } catch (err) {
+    console.error('Error fetching single review:', err);
+    res.status(500).json({ error: 'Database error' });
   }
 });
 

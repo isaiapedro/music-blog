@@ -17,9 +17,15 @@
                         <a routerLink="/collection-page" class="back-link"> Albums </a>
                         <h1 class="article-title">{{ content.album }}</h1>
                         <p class="article-artist">{{ content.artist }}</p>
-                        <span class="genre-list">
+                        <span class="genre-list main-genres">
                             @for (genre of getGenreList(content); track genre) {
                                 <span class="genre-tag">{{ genre }}</span>
+                            }
+                        </span>
+
+                        <span class="genre-list sub-genres">
+                            @for (sub of getSubgenreList(content); track sub) {
+                                <span class="genre-tag sub-tag">{{ sub }}</span>
                             }
                         </span>
                         <span class="article-release-date">
@@ -134,7 +140,7 @@
                     }
                 </section>
                 <section class="details-column">
-                    @if (content.score; as score) {
+                    @if (content.score != null) {
                         <div class="score">
                             <h2 class="section-title">Recommendation Score</h2>
                             <div class="score-circle" [style.--percentage]="(content.score * 10) + '%'">
@@ -161,38 +167,38 @@
                             </div>
                             <h3 class="score-verdict">{{ getScoreMessage(content.score) }}</h3>
                         </div>
+                    }
                         
-                        @if (content.tracklist || content.producer || content.recordedAt) {
-                            <section class="album-details">
-                                <h2 class="section-title">Tracklist & Details</h2>
+                    @if (content.tracklist?.length || content.producer || content.recordedAt) {
+                        <section class="album-details">
+                            <h2 class="section-title">Tracklist & Details</h2>
 
-                                @if (content.tracklist && content.tracklist.length) {
-                                <div class="tracklist-container">
-                                    <ul class="tracklist">
-                                    @for (track of content.tracklist; track track.number) {
-                                        <li class="track-item">
-                                        <span class="track-number">{{ track.number }}.</span>
-                                        <span class="track-title">{{ track.title }}</span>
-                                        <span class="track-duration">{{ track.duration }}</span>
-                                        </li>
-                                    }
-                                    </ul>
-                                </div>
+                            @if (content.tracklist && content.tracklist.length) {
+                            <div class="tracklist-container">
+                                <ul class="tracklist">
+                                @for (track of content.tracklist; track track.number) {
+                                    <li class="track-item">
+                                    <span class="track-number">{{ track.number }}.</span>
+                                    <span class="track-title">{{ track.title }}</span>
+                                    <span class="track-duration">{{ track.duration }}</span>
+                                    </li>
                                 }
+                                </ul>
+                            </div>
+                            }
 
-                                <div class="album-meta-details">
-                                    @if (content.totalDuration) {
-                                        <p><strong>Total Duration:</strong> {{ content.totalDuration }}</p>
-                                    }
-                                    @if (content.producer) {
-                                        <p><strong>Producer:</strong> {{ content.producer }}</p>
-                                    }
-                                    @if (content.recordedAt) {
-                                        <p><strong>Recorded at:</strong> {{ content.recordedAt }}</p>
-                                    }
-                                </div>
-                            </section>
-                        }
+                            <div class="album-meta-details">
+                                @if (content.totalDuration) {
+                                    <p><strong>Total Duration:</strong> {{ content.totalDuration }}</p>
+                                }
+                                @if (content.producer) {
+                                    <p><strong>Producer:</strong> {{ content.producer }}</p>
+                                }
+                                @if (content.recordedAt) {
+                                    <p><strong>Recorded at:</strong> {{ content.recordedAt }}</p>
+                                }
+                            </div>
+                        </section>
                     }
                 </section>
             </div>

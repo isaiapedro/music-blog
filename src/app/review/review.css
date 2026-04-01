@@ -91,6 +91,7 @@
     vertical-align: middle;
     margin-left: -2px;
     margin-top: -5px;
+    text-transform: capitalize;
 }
 
 .genre-tag {
@@ -103,8 +104,28 @@
     font-size: 1rem;
 }
 
+.sub-genres {
+  display: block;
+  margin-top: 8px;
+  color: #a0a0a0;
+  font-size: 0.9rem;
+  margin-left: 4px;
+}
+
+.sub-genres .sub-tag {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Automatically add a comma and a space after every subgenre EXCEPT the last one */
+.sub-genres .sub-tag:not(:last-child)::after {
+  content: ", ";
+}
+
 .article-release-date{
-    margin-left: 2px;
+    margin-left: 3px;
     display: flex;
     align-items:start;
     gap: 0.6rem;

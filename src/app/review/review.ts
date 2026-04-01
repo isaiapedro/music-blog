@@ -30,6 +30,7 @@ export interface ReviewDetail {
   date?: string;
   label?: string;
   genre?: string;
+  subgenres?: string;
   genres?: string | string[];
   image: string;
   tracklist?: Track[];
@@ -73,15 +74,26 @@ export class ReviewComponent implements OnInit {
 
       this.isLoading.set(true);
       
-      this.http.get<any>(`${this.apiUrl}/reviews/${id}`).subscribe(data => {
-        // Ensure the data from the API matches your ReviewDetail structure
-        this.review.set({
-          ...data,
-          // Ensure breakdown and other JSON fields are properly parsed if they arrive as strings
-          breakdown: typeof data.breakdown === 'string' ? JSON.parse(data.breakdown) : data.breakdown,
-          tracklist: typeof data.tracklist === 'string' ? JSON.parse(data.tracklist) : data.tracklist,
-          similarAlbums: typeof data.similarAlbums === 'string' ? JSON.parse(data.similarAlbums) : data.similarAlbums,
-        });
+      // Force the browser to skip the cache and hit your database directly
+      this.http.get<any>(`${this.apiUrl}/reviews/${id}`, {
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      }).subscribe({
+        next: (data) => {
+          this.review.set({
+            ...data,
+            breakdown: typeof data.breakdown === 'string' ? JSON.parse(data.breakdown) : data.breakdown,
+            tracklist: typeof data.tracklist === 'string' ? JSON.parse(data.tracklist) : data.tracklist,
+            similarAlbums: typeof data.similarAlbums === 'string' ? JSON.parse(data.similarAlbums) : data.similarAlbums,
+          });
+          this.isLoading.set(false);
+        },
+        error: (err) => {
+          console.error("Failed to load review:", err);
+          this.isLoading.set(false);
+        }
       });
 
     });
@@ -95,6 +107,13 @@ export class ReviewComponent implements OnInit {
       return genres;
     }
     return genres.split(',').map(g => g.trim());
+  }
+
+  getSubgenreList(content: ReviewDetail): string[] {
+    const subgenres = content.subgenres;
+    if (!subgenres) return [];
+    if (Array.isArray(subgenres)) return subgenres;
+    return subgenres.split(',').map(g => g.trim());
   }
 
   getStars(score: number): string[] {
