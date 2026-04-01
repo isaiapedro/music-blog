@@ -8,11 +8,11 @@ from psycopg2.extensions import register_adapter, AsIs
 register_adapter(np.int64, AsIs)
 
 hostname = 'localhost'
-database = 'music-app'
+database = 'music_blog'
 username = 'postgres'
-pwd = '4B3questnloot'
+pwd = 'password'
 port_id = 5432
- 
+
 conn = None
 cur = None
 
@@ -22,122 +22,88 @@ file.close()
 
 PROJECT_ID = "um-ano-e-meio-de-musica"
 
-# Logging configuration
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 
-
 def extract_music():
-    """
-    Extracts data from the API and saves it to a JSON file.
-    """
-
     logging.info("Requesting API data...")
-
     try:
-        response = requests.get("https://1001albumsgenerator.com/api/v1/projects/{}".format(PROJECT_ID))
-        response.raise_for_status()  # Raise an error for bad responses
+        response = requests.get(f"https://1001albumsgenerator.com/api/v1/projects/{PROJECT_ID}")
+        response.raise_for_status()
     except requests.exceptions.RequestException as e:
-        logging.error(f"Failed to fetch data from URL: {e}")
-        return
+        logging.error(f"Failed to fetch data: {e}")
+        return None, None
 
     data = response.json()
 
-    # current album
+    # Current album
     current_album = data['currentAlbum']
-
-    artist = current_album['artist']
-    artistOrigin = current_album['artistOrigin']
-    imagesUrl = current_album['images'][0]['url']
-    genres = current_album['genres']
-    subGenres = current_album['subGenres']
-    name = current_album['name']
-    releaseDate = current_album['releaseDate']
-    youtubeMusicId = current_album['youtubeMusicId']
-    spotifyId = current_album['spotifyId']
-
     current = pd.DataFrame({
-        'artist': artist,
-        'artistOrigin': artistOrigin,
-        'images': imagesUrl,
-        'genres': [genres],
-        'subGenres': [subGenres],
-        'name': name,
-        'releaseDate': releaseDate,
-        'youtubeMusicId': youtubeMusicId,
-        'spotifyId': spotifyId
+        'artist': current_album.get('artist', ''),
+        'artistOrigin': current_album.get('artistOrigin', ''),
+        'images': current_album['images'][0]['url'] if current_album.get('images') else '',
+        'genres': [current_album.get('genres', [])],
+        'subGenres': [current_album.get('subGenres', [])],
+        'name': current_album.get('name', ''),
+        'releaseDate': current_album.get('releaseDate', ''),
+        'youtubeMusicId': current_album.get('youtubeMusicId', ''),
+        'spotifyId': current_album.get('spotifyId', '')
     }, index=[0])
 
-    logging.info(f"Extracted data for current album: {name} by {artist}")
+    logging.info(f"Extracted current album: {current['name'][0]} by {current['artist'][0]}")
 
-    # listening history
+    # Past albums
     history = pd.DataFrame(data['history'])
-
-    # past albums
-
-    all_albums = history['album'].tolist()
-    past_albums = pd.DataFrame(all_albums)
+    past_albums = pd.DataFrame(history['album'].tolist())
 
     albums_df = pd.DataFrame()
-
     albums_df['artist'] = past_albums['artist']
     albums_df['name'] = past_albums['name']
-    albums_df['artistOrigin'] = past_albums['artistOrigin']
+    albums_df['artistOrigin'] = past_albums.get('artistOrigin', '')
     albums_df['releaseDate'] = past_albums['releaseDate']
-    albums_df['images'] = past_albums['images'].apply(lambda x: x[0]['url'] if isinstance(x, list) and len(x) > 0 else None)
+    albums_df['images'] = past_albums['images'].apply(lambda x: x[0]['url'] if isinstance(x, list) and len(x) > 0 else '')
     albums_df['genres'] = past_albums['genres'].apply(lambda x: x if isinstance(x, list) else [])
     albums_df['subGenres'] = past_albums['subGenres'].apply(lambda x: x if isinstance(x, list) else [])
     albums_df['rating'] = history['rating']
     albums_df['globalRating'] = history['globalRating']
     albums_df['review'] = history['review']
-    albums_df['youtubeMusicId'] = past_albums['youtubeMusicId']
+    albums_df['youtubeMusicId'] = past_albums.get('youtubeMusicId', '')
 
-    logging.info("Data extracted and saved sucessfully.")
-
+    logging.info("Data extracted successfully.")
     return current, albums_df
 
 
 def transform_music(df1, df2):
-    """
-    Applies transformations to the data pulled from XComs.
-    """
     logging.info("Transforming data...")
-    logging.info(f"Applying transformations to {len(df2) + len(df1)} rows...")
 
-    # Convert list columns to comma-separated strings
+    # Convert list columns to strings
     for col in ['genres', 'subGenres']:
         df1[col] = df1[col].apply(lambda x: ', '.join(x) if isinstance(x, list) else x)
-
-    for col in ['genres', 'subGenres']:
         df2[col] = df2[col].apply(lambda x: ', '.join(x) if isinstance(x, list) else x)
 
     # Merge genres and subGenres into a single column
     df2['allGenres'] = df2.apply(lambda row: ', '.join(filter(None, [row['genres'], row['subGenres']])), axis=1)
+    df2['allGenres'] = df2['allGenres'].apply(lambda x: ', '.join(sorted(set(map(str.strip, str(x).split(','))))))
 
-    # Remove genre duplicates
-    df2['allGenres'] = df2['allGenres'].apply(lambda x: ', '.join(sorted(set(map(str.strip, x.split(','))))))
+    df1['allGenres'] = df1.apply(lambda row: ', '.join(filter(None, [row['genres'], row['subGenres']])), axis=1)
 
-    # Drop the original genres and subGenres columns
-    df2 = df2.drop(columns=['genres', 'subGenres'])
-
-    # Create 5 albums global rating streak
-    df2['streak'] = df2['globalRating'].rolling(window=5).mean()
-
-    # Remove Nan Values on Rating
-    df2 = df2.dropna(subset=['rating'])
+    # FIX FOR THE 'did-not-listen' BUG: Force errors to NaN, then drop NaNs
+    df2['rating'] = pd.to_numeric(df2['rating'], errors='coerce')
+    df2 = df2.dropna(subset=['rating']).copy()
     df2['rating'] = df2['rating'].astype(int)
 
     logging.info("Data transformed successfully.")
-
     return df1, df2
 
 
 def load_music(df1, df2):
     """
-    Loads transformed data into a PostgreSQL database.
+    Loads transformed data into the PostgreSQL CMS tables as unpublished drafts.
     """
+    conn = None
+    cur = None
     try:
         conn = psycopg2.connect(
             host=hostname,
@@ -146,103 +112,72 @@ def load_music(df1, df2):
             password=pwd,
             port=port_id
         )
-
         cur = conn.cursor()
-
         logging.info("Connected to database successfully.")
 
-        # Drop tables if they exist
-        drop_script = '''
-        DROP TABLE IF EXISTS current_album;
-        DROP TABLE IF EXISTS albums;
+        # Combine current album (df1) and past albums (df2) for batch processing
+        df_combined = pd.concat([df1, df2], ignore_index=True)
+
+        insert_review_query = '''
+            INSERT INTO cms_reviews (
+                album, artist, image, release_date, genre,
+                description, context, introduction, breakdown, conclusion,
+                similar_albums, comments, score, published
+            ) VALUES (%s, %s, %s, %s, %s, '', '', '', '[]', '', '[]', '[]', NULL, FALSE)
+            RETURNING id;
         '''
-        cur.execute(drop_script)
-        conn.commit()
 
-        logging.info("Dropped 'current_album' and 'albums' tables if they existed.")
-
-        # Create tables if they don't exist
-        create_script = '''
-        CREATE TABLE IF NOT EXISTS current_album (
-            artist VARCHAR(255),
-            artistOrigin VARCHAR(255),
-            images VARCHAR(255),
-            genres VARCHAR(255),
-            subGenres VARCHAR(255),
-            name VARCHAR(255),
-            releaseDate int,
-            youtubeMusicId VARCHAR(255),
-            spotifyId VARCHAR(255)
-        )
+        insert_meta_query = '''
+            INSERT INTO cms_list_meta (
+                review_id, album, artist, year, image, description, date, genres, subgenres, country, score, published
+            ) VALUES (%s, %s, %s, %s, %s, '', %s, %s, '', %s, NULL, FALSE)
+            ON CONFLICT (review_id) DO NOTHING;
         '''
-        cur.execute(create_script)
 
-        conn.commit()
+        inserted_count = 0
 
-        logging.info("Created 'current_album' table if it didn't exist.")
+        for _, row in df_combined.iterrows():
+            album_name = row.get('name', '')
+            artist_name = row.get('artist', '')
 
-        insert_script = 'INSERT INTO current_album (artist, artistOrigin, images, genres, subGenres, name, releasedate, youtubemusicid, spotifyid) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)'
+            # 1. Check if the album already exists in the CMS to prevent duplicates
+            cur.execute("SELECT id FROM cms_reviews WHERE album = %s AND artist = %s", (album_name, artist_name))
+            if cur.fetchone():
+                continue # Skip if we already saved this draft
 
-        insert_value = (
-            df1['artist'].iloc[0],
-            df1['artistOrigin'].iloc[0],
-            df1['images'].iloc[0],
-            df1['genres'].iloc[0],
-            df1['subGenres'].iloc[0],
-            df1['name'].iloc[0],
-            df1['releaseDate'].iloc[0],
-            df1['youtubeMusicId'].iloc[0],
-            df1['spotifyId'].iloc[0]
-        )
+            # 2. Safely map dynamic data
+            image_url = row.get('images', '')
+            
+            # Ensure releaseDate is an integer
+            try:
+                release_date = int(row.get('releaseDate'))
+            except (ValueError, TypeError):
+                release_date = datetime.datetime.now().year
+                
+            genre = row.get('allGenres', '')
+            artist_origin = row.get('artistOrigin', '')
+            current_date = datetime.datetime.now().strftime('%Y-%m-%d')
 
-        cur.execute(insert_script, insert_value)
-        conn.commit()
+            # 3. Insert into the main CMS reviews table
+            cur.execute(insert_review_query, (
+                album_name, artist_name, image_url, release_date, genre
+            ))
+            new_review_id = cur.fetchone()[0]
 
-        logging.info("Inserted data into 'current_album' table.")
-
-        create_script = '''
-        CREATE TABLE IF NOT EXISTS albums (
-            artist VARCHAR(255),
-            name VARCHAR(255),
-            artistOrigin VARCHAR(255),
-            releaseDate VARCHAR(255),
-            images VARCHAR(255),
-            allGenres VARCHAR(255),
-            streak float,
-            rating INT,
-            globalRating float,
-            review TEXT,
-            youtubeMusicId VARCHAR(255)
-        )
-        '''
-        cur.execute(create_script)
-        conn.commit()
-
-        logging.info("Created 'albums' table if it didn't exist.")
-
-        insert_script = 'INSERT INTO albums (artist, name, artistOrigin, releaseDate, images, allGenres, streak, rating, globalRating, review, youtubeMusicId) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
-
-        for _, row in df2.iterrows():
-            insert_value = (
-                row['artist'],
-                row['name'],
-                row['artistOrigin'],
-                row['releaseDate'],
-                row['images'],
-                row['allGenres'],
-                row['streak'],
-                row['rating'],
-                row['globalRating'],
-                row['review'],
-                row['youtubeMusicId']
-            )
-            cur.execute(insert_script, insert_value)
+            # 4. Insert into the list metadata table
+            cur.execute(insert_meta_query, (
+                new_review_id, album_name, artist_name, release_date, image_url, current_date, genre, artist_origin
+            ))
+            
+            inserted_count += 1
             conn.commit()
 
-        logging.info("Inserted data into 'albums' table.")
+        logging.info(f"Successfully drafted {inserted_count} new albums into the Angular CMS.")
 
     except Exception as e:
         logging.error(f"Failed to load data to database: {e}")
+        if conn is not None:
+            conn.rollback()
     finally:
         if cur is not None:
             cur.close()
@@ -251,7 +186,7 @@ def load_music(df1, df2):
 
 
 if __name__ == "__main__":
-
-    df1, df2 = extract_music()
-    transformed_df1, transformed_df2 = transform_music(df1, df2)
-    load_music(transformed_df1, transformed_df2)
+    df1_extracted, df2_extracted = extract_music()
+    if df1_extracted is not None and df2_extracted is not None:
+        transformed_df1, transformed_df2 = transform_music(df1_extracted, df2_extracted)
+        load_music(transformed_df1, transformed_df2)

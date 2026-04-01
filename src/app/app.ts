@@ -32,6 +32,10 @@ import { MatButtonModule } from '@angular/material/button';
   `,
   styles: [
     `
+      .content {
+        /* Pushes the routed components down below the fixed toolbar */
+        margin-top: 64px; 
+      }
       .mat-toolbar {
         position: fixed;
         top: 0;

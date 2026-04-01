@@ -21,18 +21,22 @@ export class CollectionPage implements OnInit {
 
   showLatestOnly = signal(false);
 
+  // Add your API url
+  private apiUrl = 'http://localhost:3000/api';
+
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
       this.showLatestOnly.set(params['filter'] === 'latest');
     });
 
-    this.http.get<{ reviews: Review[] }>('/data/reviews.json').subscribe({
+    // Query the database, asking specifically for published=true
+    this.http.get<{ reviews: Review[] }>(`${this.apiUrl}/reviews?published=true`).subscribe({
       next: (data) => {
-        const publishedOnly = data.reviews.filter(r => r.published);
-        this.reviews.set(publishedOnly.reverse());
+        // Data is now live from the database!
+        this.reviews.set(data.reviews); 
       },
       error: (error) => {
-        console.error('Error fetching reviews:', error);
+        console.error('Error fetching live reviews:', error);
       }
     });
   }

@@ -56,6 +56,8 @@ export class ReviewComponent implements OnInit {
   private http = inject(HttpClient);
   private sanitizer = inject(DomSanitizer);
 
+  private apiUrl = 'http://localhost:3000/api';
+
   review = signal<ReviewDetail | null>(null);
   isLoading = signal(true);
 
@@ -71,18 +73,17 @@ export class ReviewComponent implements OnInit {
 
       this.isLoading.set(true);
       
-
-      this.http.get<{ reviews: ReviewDetail[] }>('/data/reviews.json').subscribe({
-        next: (data) => {
-          const foundReview = data.reviews.find((r) => String(r.id) === id);
-          this.review.set(foundReview || null);
-          this.isLoading.set(false);
-        },
-        error: (error) => {
-          console.error('Error fetching review data:', error);
-          this.isLoading.set(false);
-        }
+      this.http.get<any>(`${this.apiUrl}/reviews/${id}`).subscribe(data => {
+        // Ensure the data from the API matches your ReviewDetail structure
+        this.review.set({
+          ...data,
+          // Ensure breakdown and other JSON fields are properly parsed if they arrive as strings
+          breakdown: typeof data.breakdown === 'string' ? JSON.parse(data.breakdown) : data.breakdown,
+          tracklist: typeof data.tracklist === 'string' ? JSON.parse(data.tracklist) : data.tracklist,
+          similarAlbums: typeof data.similarAlbums === 'string' ? JSON.parse(data.similarAlbums) : data.similarAlbums,
+        });
       });
+
     });
   }
 

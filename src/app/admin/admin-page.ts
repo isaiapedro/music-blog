@@ -13,19 +13,19 @@ import { CommonModule } from '@angular/common';
 })
 export class AdminPage implements OnInit {
   private http = inject(HttpClient);
+  // Replace with your actual backend URL if different
+  private apiUrl = 'http://localhost:3000/api'; 
 
-  fullData: any = null;
   reviews = signal<any[]>([]);
   selectedReview = signal<any | null>(null);
+  isSaving = signal(false);
 
-  // Automatically separate reviews for the sidebar
-  drafts = computed(() => this.reviews().filter(r => !r.published));
-  published = computed(() => this.reviews().filter(r => r.published));
+  drafts = computed(() => this.reviews().filter((r) => !r.published));
+  published = computed(() => this.reviews().filter((r) => r.published));
 
   ngOnInit() {
-    // Make sure this points to wherever your JSON is served locally!
-    this.http.get('/data/reviews.json').subscribe((data: any) => {
-      this.fullData = data;
+    // Fetch directly from the database!
+    this.http.get<{ reviews: any[] }>(`${this.apiUrl}/reviews`).subscribe(data => {
       this.reviews.set(data.reviews);
     });
   }
@@ -34,7 +34,13 @@ export class AdminPage implements OnInit {
     this.selectedReview.set(review);
   }
 
-  // --- "List Widget" Functions for Rich Text ---
+  togglePublished(review: any, isPublished: boolean) {
+    review.published = isPublished;
+    this.reviews.set([...this.reviews()]); 
+  }
+
+  // --- MISSING FUNCTIONS ADDED BACK HERE ---
+
   addParagraphBlock() {
     const review = this.selectedReview();
     if (!review.breakdown) review.breakdown = [];
@@ -51,31 +57,26 @@ export class AdminPage implements OnInit {
     this.selectedReview().breakdown.splice(index, 1);
   }
 
-  // --- SAVE & EXPORT FUNCTION ---
-  downloadUpdatedJson() {
-    if (!this.fullData) return;
+  // ------------------------------------------
 
-    // Sync the 'published' and 'score' variables back to the listMeta array 
-    // so the homepage and collection page know what to show
-    const updatedMeta = this.fullData.listMeta.map((m: any) => {
-      const updatedRev = this.reviews().find(r => r.id === m.id);
-      if (updatedRev) {
-        m.published = updatedRev.published;
-        m.score = updatedRev.score;
+  // NEW DATABASE SAVE FUNCTION
+  saveCurrentReview() {
+    const review = this.selectedReview();
+    if (!review) return;
+
+    this.isSaving.set(true);
+
+    // Send the updated review directly to PostgreSQL via Express
+    this.http.put(`${this.apiUrl}/reviews/${review.id}`, review).subscribe({
+      next: () => {
+        alert('Review saved to database!');
+        this.isSaving.set(false);
+      },
+      error: (err) => {
+        console.error('Error saving review:', err);
+        alert('Failed to save to database.');
+        this.isSaving.set(false);
       }
-      return m;
     });
-
-    // Package it back into the exact format the app expects
-    const finalJson = { reviews: this.reviews(), listMeta: updatedMeta };
-
-    // Generate a downloadable file right from the browser
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(finalJson, null, 2));
-    const anchor = document.createElement('a');
-    anchor.href = dataStr;
-    anchor.download = "reviews.json";
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
   }
 }

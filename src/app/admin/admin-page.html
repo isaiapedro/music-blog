@@ -2,9 +2,14 @@
   
   <nav class="cms-navbar">
     <div class="cms-logo">Content Manager</div>
-    <button class="btn-export" (click)="downloadUpdatedJson()">Save & Export JSON</button>
+    <button class="btn-export" 
+            [disabled]="!selectedReview() || isSaving()" 
+            (click)="saveCurrentReview()">
+      {{ isSaving() ? 'Saving...' : 'Save to Database' }}
+    </button>
   </nav>
 
+  
   <div class="cms-body">
     
     <aside class="cms-sidebar">
@@ -45,10 +50,16 @@
               <label>Score (Out of 10)</label>
               <input type="number" [(ngModel)]="review.score" step="0.1" max="10" min="0">
             </div>
+            
             <div class="form-group checkbox-group">
               <label>Status</label>
               <div class="toggle-wrapper">
-                <input type="checkbox" [(ngModel)]="review.published" id="publish-toggle">
+                
+                <input type="checkbox" 
+                       [ngModel]="review.published" 
+                       (ngModelChange)="togglePublished(review, $event)"
+                       id="publish-toggle">
+                       
                 <label for="publish-toggle">Published to Website</label>
               </div>
             </div>
