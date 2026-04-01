@@ -28,7 +28,8 @@ export class CollectionPage implements OnInit {
 
     this.http.get<{ reviews: Review[] }>('/data/reviews.json').subscribe({
       next: (data) => {
-        this.reviews.set(data.reviews.reverse());
+        const publishedOnly = data.reviews.filter(r => r.published);
+        this.reviews.set(publishedOnly.reverse());
       },
       error: (error) => {
         console.error('Error fetching reviews:', error);

@@ -1,18 +1,3 @@
-import pg from 'pg';
-import dotenv from 'dotenv';
-
-dotenv.config();
-
-const { Pool } = pg;
-
-const pool = new Pool({
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '5432', 10),
-  database: process.env.DB_NAME || 'music-app',
-  user: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || '',
-});
-
 const initSchema = async () => {
   const client = await pool.connect();
   try {
@@ -33,6 +18,8 @@ const initSchema = async () => {
         conclusion TEXT,
         similar_albums JSONB DEFAULT '[]',
         comments JSONB DEFAULT '[]',
+        score NUMERIC DEFAULT NULL,        /* <-- NEW */
+        published BOOLEAN DEFAULT FALSE,   /* <-- NEW */
         created_at TIMESTAMPTZ DEFAULT NOW(),
         updated_at TIMESTAMPTZ DEFAULT NOW()
       );
@@ -50,6 +37,8 @@ const initSchema = async () => {
         genres VARCHAR(255),
         subgenres VARCHAR(255),
         country VARCHAR(100),
+        score NUMERIC DEFAULT NULL,        /* <-- NEW */
+        published BOOLEAN DEFAULT FALSE,   /* <-- NEW */
         UNIQUE(review_id)
       );
     `);
@@ -57,5 +46,3 @@ const initSchema = async () => {
     client.release();
   }
 };
-
-export { pool, initSchema };

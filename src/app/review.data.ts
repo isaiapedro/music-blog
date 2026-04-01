@@ -14,4 +14,6 @@ export interface Review {
   similarAlbums: string[];
   comments: string[];
   date: string;
+  score?: number | null; 
+  published?: boolean;
 }

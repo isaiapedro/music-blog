@@ -1,3 +1,118 @@
-<div class="container">
-    <h1>Hello</h1>
+<div class="cms-layout">
+  
+  <nav class="cms-navbar">
+    <div class="cms-logo">Content Manager</div>
+    <button class="btn-export" (click)="downloadUpdatedJson()">Save & Export JSON</button>
+  </nav>
+
+  <div class="cms-body">
+    
+    <aside class="cms-sidebar">
+      <div class="sidebar-section">
+        <h4 class="sidebar-title">Drafts</h4>
+        @for (review of drafts(); track review.id) {
+          <div class="sidebar-item" 
+               [class.active]="selectedReview()?.id === review.id" 
+               (click)="selectReview(review)">
+            {{ review.album }}
+          </div>
+        }
+      </div>
+
+      <div class="sidebar-section">
+        <h4 class="sidebar-title">Published</h4>
+        @for (review of published(); track review.id) {
+          <div class="sidebar-item" 
+               [class.active]="selectedReview()?.id === review.id" 
+               (click)="selectReview(review)">
+            {{ review.album }}
+          </div>
+        }
+      </div>
+    </aside>
+
+    <main class="cms-editor">
+      @if (selectedReview(); as review) {
+        <div class="editor-header">
+          <h2>{{ review.album }}</h2>
+          <p>{{ review.artist }} ({{ review.releaseDate }})</p>
+        </div>
+
+        <div class="form-grid">
+          
+          <div class="form-row two-col">
+            <div class="form-group">
+              <label>Score (Out of 10)</label>
+              <input type="number" [(ngModel)]="review.score" step="0.1" max="10" min="0">
+            </div>
+            <div class="form-group checkbox-group">
+              <label>Status</label>
+              <div class="toggle-wrapper">
+                <input type="checkbox" [(ngModel)]="review.published" id="publish-toggle">
+                <label for="publish-toggle">Published to Website</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Cover Image URL</label>
+            <input type="text" [(ngModel)]="review.image">
+          </div>
+
+          <div class="form-group">
+            <label>Short Description (Meta)</label>
+            <textarea [(ngModel)]="review.description" rows="2"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Introduction</label>
+            <textarea [(ngModel)]="review.introduction" rows="4"></textarea>
+          </div>
+
+          <div class="widget-list">
+            <div class="widget-list-header">
+              <label>Review Breakdown (Content Blocks)</label>
+              <div class="widget-actions">
+                <button class="btn-add" (click)="addParagraphBlock()">+ Paragraph</button>
+                <button class="btn-add" (click)="addMusicBlock()">+ Music Embed</button>
+              </div>
+            </div>
+
+            @for (block of review.breakdown; track $index) {
+              <div class="widget-card">
+                <div class="widget-card-header">
+                  <span class="widget-type">{{ block.type | uppercase }}</span>
+                  <button class="btn-remove" (click)="removeBlock($index)">Remove</button>
+                </div>
+                
+                <div class="widget-card-body">
+                  @if (block.type === 'paragraph') {
+                    <textarea [(ngModel)]="block.content" rows="4" placeholder="Write paragraph markdown here..."></textarea>
+                  } @else if (block.type === 'music') {
+                    <input type="text" [(ngModel)]="block.title" placeholder="Track / Album Title">
+                    <div class="form-row two-col mt-2">
+                      <input type="text" [(ngModel)]="block.spotifyId" placeholder="Spotify ID">
+                      <input type="text" [(ngModel)]="block.youtubeMusicId" placeholder="YouTube ID">
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="form-group mt-4">
+            <label>Conclusion</label>
+            <textarea [(ngModel)]="review.conclusion" rows="4"></textarea>
+          </div>
+
+        </div>
+      } @else {
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          <p>Select a review from the sidebar to start editing.</p>
+        </div>
+      }
+    </main>
+
+  </div>
 </div>
