@@ -60,7 +60,7 @@ export class CollectionPage implements OnInit {
   currentPage = signal(1);
   itemsPerPage = 7;
 
-  genres = ['Rock', 'Pop', 'Jazz', 'Electronic', 'Hip Hop', 'Indie', 'Folk', 'Metal', 'Classical', 'Reggae', 'Blues', 'Country'];
+  genres = ['Rock', 'Pop', 'Jazz', 'Soul', 'Electronic', 'Hip Hop', 'Indie', 'Folk', 'Metal', 'Classical', 'Reggae', 'Blues', 'Country'];
   decades = ['1960s', '1970s', '1980s', '1990s', '2000s', '2010s', '2020s'];
   countries = ['US', 'UK', 'Brazil', 'Japan', 'Germany', 'France', 'Canada'];
 
@@ -123,8 +123,6 @@ export class CollectionPage implements OnInit {
 
     return filteredArray;
   });
-
-  
 
   paginatedReviews = computed(() => {
     const startIndex = (this.currentPage() - 1) * this.itemsPerPage;
@@ -224,6 +222,37 @@ export class CollectionPage implements OnInit {
     this.selectedCountry.update(v => v === country ? null : country);
     this.currentPage.set(1);
     this.selectedPreview.set(null); // Clear preview
+  }
+
+  formatDate(dateString: string | undefined): string {
+    if (!dateString) return 'Unknown Date';
+
+    // Split the 'YYYY-MM-DD' string to avoid browser timezone shift bugs
+    const [year, month, day] = dateString.split('-').map(Number);
+    if (!year || !month || !day) return dateString; // Fallback if format is weird
+
+    const reviewDate = new Date(year, month - 1, day);
+    const today = new Date();
+    
+    // Set both to midnight to accurately compare pure days
+    today.setHours(0, 0, 0, 0);
+    reviewDate.setHours(0, 0, 0, 0);
+
+    // Calculate the difference in days
+    const diffTime = today.getTime() - reviewDate.getTime();
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) {
+      return 'Today';
+    } else if (diffDays === 1) {
+      return 'Yesterday';
+    } else if (diffDays > 1 && diffDays < 7) {
+      // Returns the day of the week (e.g., "Monday", "Tuesday")
+      return new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(reviewDate);
+    } else {
+      // Returns standard format for older reviews (e.g., "Oct 24, 2023")
+      return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(reviewDate);
+    }
   }
 
 }

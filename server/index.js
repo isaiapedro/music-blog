@@ -31,7 +31,7 @@ function rowToReview(row) {
     genre: row.genre,
     subgenres: row.subgenres,
     
-    // New fields mapped!
+    date: row.publish_date || '',
     tracklist: typeof row.tracklist === 'string' ? JSON.parse(row.tracklist) : (row.tracklist || []),
     totalDuration: row.total_duration || '',
     producer: row.producer || '',
@@ -89,7 +89,6 @@ app.put('/api/reviews/:id', async (req, res) => {
   const b = req.body;
 
   try {
-    // 1. Update the main review table with all the new fields
     await pool.query(
       `UPDATE cms_reviews SET 
         score = $1, 
@@ -99,12 +98,17 @@ app.put('/api/reviews/:id', async (req, res) => {
         breakdown = $5::jsonb,
         description = $6,
         image = $7,
-        tracklist = $8::jsonb,
-        total_duration = $9,
-        producer = $10,
-        recorded_at = $11,
+        context = $8,
+        tracklist = $9::jsonb,
+        total_duration = $10,
+        producer = $11,
+        recorded_at = $12,
+        
+        -- MAGIC DATE LOGIC: Stamps today's date ONLY the first time it is published
+        publish_date = CASE WHEN $2 = true AND publish_date IS NULL THEN TO_CHAR(NOW(), 'YYYY-MM-DD') ELSE publish_date END,
+        
         updated_at = NOW()
-      WHERE id = $12`,
+      WHERE id = $13`,
       [
         b.score != null ? Number(b.score) : null,
         Boolean(b.published),
@@ -113,17 +117,21 @@ app.put('/api/reviews/:id', async (req, res) => {
         JSON.stringify(b.breakdown || []),
         b.description || '',
         b.image || '',
-        JSON.stringify(b.tracklist || []), // New
-        b.totalDuration || '',             // New
-        b.producer || '',                  // New
-        b.recordedAt || '',                // New
+        b.context || '',
+        JSON.stringify(b.tracklist || []), 
+        b.totalDuration || '',             
+        b.producer || '',                  
+        b.recordedAt || '',                
         id
       ]
     );
 
-    // 2. Sync the published status to the meta table so it shows on the Homepage
     await pool.query(
-      `UPDATE cms_list_meta SET score = $1, published = $2 WHERE review_id = $3`,
+      `UPDATE cms_list_meta SET 
+        score = $1, 
+        published = $2,
+        date = (SELECT publish_date FROM cms_reviews WHERE id = $3)
+       WHERE review_id = $3`,
       [
         b.score != null ? Number(b.score) : null,
         Boolean(b.published),

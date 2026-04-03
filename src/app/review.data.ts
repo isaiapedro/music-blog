@@ -4,6 +4,7 @@ export interface Review {
   artist: string;
   image: string;
   releaseDate: number;
+  year: number;
   label: string;
   genre: string;
   description: string;

@@ -47,6 +47,10 @@
                     <div class="article-context markdown-body">
                     <markdown [data]="content.context"></markdown>
                     </div>
+                } @else{
+                    <div class="article-context markdown-body">
+                    <markdown [data]="content.description"></markdown>
+                    </div>
                 }
             </header>
             <div class="main-content">

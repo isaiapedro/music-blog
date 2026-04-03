@@ -89,10 +89,10 @@ def transform_music(df1, df2):
     logging.info("Data transformed successfully.")
     return df1, df2
 
-
 def load_music(df1, df2):
     """
-    Loads transformed data into the PostgreSQL CMS tables as unpublished drafts.
+    Loads transformed data into the PostgreSQL CMS tables.
+    Updates Group 1 columns if the album exists, leaves Editor columns (Group 3) untouched.
     """
     conn = None
     cur = None
@@ -104,59 +104,73 @@ def load_music(df1, df2):
         logging.info("Connected to database successfully.")
 
         df_combined = pd.concat([df1, df2], ignore_index=True)
-
-        insert_review_query = '''
-            INSERT INTO cms_reviews (
-                album, artist, image, release_date, genre, subgenres,
-                description, context, introduction, breakdown, conclusion,
-                similar_albums, comments, score, published
-            ) VALUES (%s, %s, %s, %s, %s, %s, '', '', '', '[]', '', '[]', '[]', NULL, FALSE)
-            RETURNING id;
-        '''
-
-        insert_meta_query = '''
-            INSERT INTO cms_list_meta (
-                review_id, album, artist, year, image, description, date, genres, subgenres, country, score, published
-            ) VALUES (%s, %s, %s, %s, %s, '', %s, %s, %s, %s, NULL, FALSE)
-            ON CONFLICT (review_id) DO NOTHING;
-        '''
-
         inserted_count = 0
+        updated_count = 0
 
         for _, row in df_combined.iterrows():
             album_name = row.get('name', '')
             artist_name = row.get('artist', '')
-
-            cur.execute("SELECT id FROM cms_reviews WHERE album = %s AND artist = %s", (album_name, artist_name))
-            if cur.fetchone():
-                continue 
-
+            
+            # --- CONTAINER 2 DATA GATHERING (Group 1) ---
             image_url = row.get('images', '')
             try:
                 release_date = int(row.get('releaseDate'))
             except (ValueError, TypeError):
                 release_date = datetime.datetime.now().year
                 
-            genre = row.get('genres', '')        # ONLY Main Genres
-            subgenres = row.get('subGenres', '') # ONLY Subgenres
+            genre = row.get('genres', '')        
+            subgenres = row.get('subGenres', '') 
             artist_origin = row.get('artistOrigin', '')
+            description = row.get('review', '') # API review mapped to description
             current_date = datetime.datetime.now().strftime('%Y-%m-%d')
 
-            # Insert into main table
-            cur.execute(insert_review_query, (
-                album_name, artist_name, image_url, release_date, genre, subgenres
-            ))
-            new_review_id = cur.fetchone()[0]
+            # --- CONTAINER 3 COMPARISON ---
+            cur.execute("SELECT id FROM cms_reviews WHERE album = %s AND artist = %s", (album_name, artist_name))
+            existing_row = cur.fetchone()
 
-            # Insert into meta table
-            cur.execute(insert_meta_query, (
-                new_review_id, album_name, artist_name, release_date, image_url, current_date, genre, subgenres, artist_origin
-            ))
-            
-            inserted_count += 1
+            if existing_row:
+                # ALBUM EXISTS: Update ONLY Group 1 columns!
+                review_id = existing_row[0]
+                
+                cur.execute('''
+                    UPDATE cms_reviews 
+                    SET image = %s, release_date = %s, genre = %s, subgenres = %s, description = %s, updated_at = NOW()
+                    WHERE id = %s
+                ''', (image_url, release_date, genre, subgenres, description, review_id))
+                
+                cur.execute('''
+                    UPDATE cms_list_meta
+                    SET image = %s, year = %s, genres = %s, subgenres = %s, country = %s, description = %s
+                    WHERE review_id = %s
+                ''', (image_url, release_date, genre, subgenres, artist_origin, description, review_id))
+                
+                updated_count += 1
+                
+            else:
+                # NEW ALBUM: Insert Group 1, Leave Group 2 & 3 as defaults/empty
+                cur.execute('''
+                    INSERT INTO cms_reviews (
+                        album, artist, image, release_date, genre, subgenres, description,
+                        context, introduction, breakdown, conclusion,
+                        similar_albums, comments, score, published,
+                        tracklist, total_duration, producer, recorded_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, '', '', '[]', '', '[]', '[]', NULL, FALSE, '[]', '', '', '')
+                    RETURNING id;
+                ''', (album_name, artist_name, image_url, release_date, genre, subgenres, description))
+                
+                new_review_id = cur.fetchone()[0]
+
+                cur.execute('''
+                    INSERT INTO cms_list_meta (
+                        review_id, album, artist, year, image, date, genres, subgenres, country, description, score, published
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NULL, FALSE)
+                ''', (new_review_id, album_name, artist_name, release_date, image_url, current_date, genre, subgenres, artist_origin, description))
+                
+                inserted_count += 1
+                
             conn.commit()
 
-        logging.info(f"Successfully drafted {inserted_count} new albums into the Angular CMS.")
+        logging.info(f"Successfully inserted {inserted_count} new albums and updated {updated_count} existing albums.")
 
     except Exception as e:
         logging.error(f"Failed to load data to database: {e}")
@@ -167,7 +181,6 @@ def load_music(df1, df2):
             cur.close()
         if conn is not None:
             conn.close()
-
 
 if __name__ == "__main__":
     df1_extracted, df2_extracted = extract_music()

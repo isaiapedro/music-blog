@@ -37,6 +37,7 @@ export interface ReviewDetail {
   totalDuration?: string;
   producer?: string;
   recordedAt?: string;
+  description?: string;
   context?: string;
   introduction?: string;
   breakdown?: ReviewBlock[];
