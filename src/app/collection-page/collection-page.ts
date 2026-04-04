@@ -117,6 +117,12 @@ export class CollectionPage implements OnInit {
       return matchesSearch && matchesGenre && matchesDecade && matchesYear && matchesCountry;
     });
 
+    filteredArray.sort((a: any, b: any) => {
+      const dateA = a.date || '';
+      const dateB = b.date || '';
+      return dateB.localeCompare(dateA); 
+    });
+
     if (this.showLatestOnly()) {
       return filteredArray.slice(0, 7);
     }
@@ -224,21 +230,32 @@ export class CollectionPage implements OnInit {
     this.selectedPreview.set(null); // Clear preview
   }
 
+  getPreviewIntro(text: string | undefined): string {
+    if (!text) return 'No introduction written yet.';
+    
+    const cleanText = text.replace(/[*#_>]/g, '').trim();
+    
+    const firstSentence = cleanText.match(/^.*?[.!?](?:\s|$)/);
+    
+    if (firstSentence) {
+      return firstSentence[0].trim();
+    }
+    
+    return cleanText.length > 120 ? cleanText.substring(0, 120) + '...' : cleanText;
+  }
+
   formatDate(dateString: string | undefined): string {
     if (!dateString) return 'Unknown Date';
 
-    // Split the 'YYYY-MM-DD' string to avoid browser timezone shift bugs
     const [year, month, day] = dateString.split('-').map(Number);
     if (!year || !month || !day) return dateString; // Fallback if format is weird
 
     const reviewDate = new Date(year, month - 1, day);
     const today = new Date();
     
-    // Set both to midnight to accurately compare pure days
     today.setHours(0, 0, 0, 0);
     reviewDate.setHours(0, 0, 0, 0);
 
-    // Calculate the difference in days
     const diffTime = today.getTime() - reviewDate.getTime();
     const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
@@ -247,10 +264,8 @@ export class CollectionPage implements OnInit {
     } else if (diffDays === 1) {
       return 'Yesterday';
     } else if (diffDays > 1 && diffDays < 7) {
-      // Returns the day of the week (e.g., "Monday", "Tuesday")
       return new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(reviewDate);
     } else {
-      // Returns standard format for older reviews (e.g., "Oct 24, 2023")
       return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(reviewDate);
     }
   }

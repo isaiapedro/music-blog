@@ -1,0 +1,228 @@
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Homemade+Apple&family=La+Belle+Aurore&family=Shadows+Into+Light&family=Special+Elite&display=swap');
+
+/* Main Header */
+
+.about-container {
+    padding: 6rem 10rem 4rem;
+    max-width: 1800px;
+    margin: 0 auto;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.about-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 3.5rem;
+  color: white;
+  letter-spacing: 2px;
+  text-align: center;
+  margin: 3rem auto 4.7rem auto;
+  position: relative;
+  z-index: 10;
+}
+
+.border{
+  border-top: 4px solid #ffffff; 
+  margin-bottom: 70px;
+}   
+
+/* Two Column Info */
+
+.content-split {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 5rem;
+    color: white;
+}
+
+/* Inventory Card */
+
+.bio-card {
+    flex: 1;
+    background-color: #ede7d3;
+    background-image: 
+        linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(0,0,0,0.02) 100%),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
+    padding: 30px 30px 40px 30px;
+    transform: rotate(-1deg);
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.25'/%3E%3C/svg%3E");
+    border: 1px solid rgba(0,0,0,0.05);
+    border-radius: 0px 2px 225px 225px / 255px 225px 5px 0px;
+    box-shadow: 3px 5px 15px rgba(0, 0, 0, 0.2);
+    max-width: 440px;
+    max-height: 550px;
+}
+
+.paperclip {
+    position: absolute;
+    top: -25px;
+    right: 8px;
+    width: 100px;
+    height: 150px;
+    z-index: 10;
+    transform: rotate(25deg);
+}
+
+.bio-top-section {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 25px;
+    margin-bottom: 70px;
+}
+
+.bio-header-text {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    margin-top: 40px;
+    margin-left: 20px;
+    gap: 40px;
+}
+
+.bio-signature-row {
+    padding-bottom: 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; 
+    width: 100%;
+}
+
+.signature-label {
+    font-family: 'Helvetica', sans-serif;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #444;
+    width: 120px;
+    flex-shrink: 0;
+    margin-bottom: 7px;
+}
+
+.bio-value {
+    font-family: 'Shadows Into Light', cursive;
+    font-size: 2.3rem;
+    color: #111;
+    line-height: 0.8;
+    padding-left: 5px;
+    width: 100%;
+    border-bottom: 1px solid #010101;
+}
+
+.large-signature {
+    font-size: 2.5rem; 
+}
+
+.bio-photo-wrapper {
+    width: 230px;
+    height: 250px;
+    background: #fff;
+    box-shadow: 0 5px 8px rgba(0,0,0,0.25);
+    border: 1px solid #eaeaea;
+    transform: rotate(-2.7deg);
+    margin-right: -20px;
+}
+
+.bio-photo-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: sepia(0.15) contrast(1.05); 
+}
+
+.bio-info {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    margin-left: 20px;
+    margin-right: 20px;
+    gap: 30px;
+}
+
+.bio-row {
+    display: flex;
+    align-items: flex-end;
+    padding-bottom: 4px;
+}
+
+.bio-label {
+    font-family: 'Special Elite', 'Courier New', Courier, monospace;
+    font-size: 1.15rem;
+    font-weight: normal;
+    color: #444;
+    width: 120px;
+    flex-shrink: 0;
+}
+
+/* List Work Tools */
+
+.tools-collection-container {
+    flex: 1;
+    position: relative;
+}
+
+.collection-header {
+    text-align: right;
+    margin-bottom: 70px;
+}
+
+.collection-header h2 {
+    font-family: Helvetica, sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+    margin: 0 0 8px 0;
+    font-weight: 500;
+    color: #e0e0e0;
+}
+
+.scattered-tools {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    margin-left: 50px;
+}
+
+.tool-sample {
+    display: flex;
+    align-items: center;
+    gap: 70px;
+    transition: transform 0.3s ease;
+    cursor: default;
+}
+
+.tool-1 {
+    align-self: flex-start;
+    transform: rotate(-2deg);
+}
+
+.tool-2 {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+    text-align: right;
+    transform: rotate(3deg);
+    margin-top: 30px;
+}
+
+.tool-3 {
+    align-self: center;
+    transform: rotate(-1deg);
+    margin-top: 40px;
+    margin-left: -50px;
+}
+
+.sample-img {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.5)); 
+    opacity: 0.85;
+}
+
+.sample-title {
+    font-family: 'Special Elite', monospace;
+    color: #fff;
+    font-size: 1rem;
+}

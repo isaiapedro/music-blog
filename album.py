@@ -134,9 +134,9 @@ def load_music(df1, df2):
                 
                 cur.execute('''
                     UPDATE cms_reviews 
-                    SET image = %s, release_date = %s, genre = %s, subgenres = %s, description = %s, updated_at = NOW()
+                    SET image = %s, release_date = %s, genre = %s, subgenres = %s, description = %s, country = %s, updated_at = NOW()
                     WHERE id = %s
-                ''', (image_url, release_date, genre, subgenres, description, review_id))
+                ''', (image_url, release_date, genre, subgenres, description, artist_origin, review_id))
                 
                 cur.execute('''
                     UPDATE cms_list_meta
@@ -150,13 +150,13 @@ def load_music(df1, df2):
                 # NEW ALBUM: Insert Group 1, Leave Group 2 & 3 as defaults/empty
                 cur.execute('''
                     INSERT INTO cms_reviews (
-                        album, artist, image, release_date, genre, subgenres, description,
+                        album, artist, image, release_date, genre, subgenres, description, country,
                         context, introduction, breakdown, conclusion,
                         similar_albums, comments, score, published,
                         tracklist, total_duration, producer, recorded_at
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, '', '', '[]', '', '[]', '[]', NULL, FALSE, '[]', '', '', '')
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, '', '', '[]', '', '[]', '[]', NULL, FALSE, '[]', '', '', '')
                     RETURNING id;
-                ''', (album_name, artist_name, image_url, release_date, genre, subgenres, description))
+                ''', (album_name, artist_name, image_url, release_date, genre, subgenres, description, artist_origin))
                 
                 new_review_id = cur.fetchone()[0]
 

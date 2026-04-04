@@ -21,32 +21,35 @@ const pool = new Pool({
 function rowToReview(row) {
   return {
     id: row.id,
-    slug: row.slug,
     album: row.album,
     artist: row.artist,
     image: row.image,
     releaseDate: row.release_date ? String(row.release_date) : '',
     year: row.release_date,
-    label: row.label,
     genre: row.genre,
     subgenres: row.subgenres,
+    country: row.country || '',
+    description: row.description || '',
     
+    slug: row.slug,
+    label: row.label,
     date: row.publish_date || '',
     tracklist: typeof row.tracklist === 'string' ? JSON.parse(row.tracklist) : (row.tracklist || []),
     totalDuration: row.total_duration || '',
     producer: row.producer || '',
     recordedAt: row.recorded_at || '',
+    similarAlbums: typeof row.similar_albums === 'string' ? JSON.parse(row.similar_albums) : (row.similar_albums || []),
     
-    description: row.description || '',
     context: row.context || '',
     introduction: row.introduction || '',
     breakdown: typeof row.breakdown === 'string' ? JSON.parse(row.breakdown) : (row.breakdown || []),
     conclusion: row.conclusion || '',
-    similarAlbums: typeof row.similar_albums === 'string' ? JSON.parse(row.similar_albums) : (row.similar_albums || []),
-    comments: typeof row.comments === 'string' ? JSON.parse(row.comments) : (row.comments || []),
-    
     score: row.score != null ? Number(row.score) : null,
     published: Boolean(row.published),
+    
+    comments: typeof row.comments === 'string' ? JSON.parse(row.comments) : (row.comments || []),
+    
+    
   };
 }
 
