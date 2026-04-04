@@ -1,12 +1,14 @@
 import { Component, computed, signal } from '@angular/core';
 import { RouterLink, RouterOutlet, RouterLinkActive } from '@angular/router';
+import { NgOptimizedImage } from '@angular/common';
 
 @Component({
   selector: 'app-about-page',
   imports: [
     RouterLink,
     RouterOutlet,
-    RouterLinkActive
+    RouterLinkActive,
+    NgOptimizedImage
   ],
   templateUrl: './about-page.html',
   styleUrl: './about-page.css',
