@@ -1,7 +1,6 @@
 import { Component, computed, signal } from '@angular/core';
 import { RouterLink, RouterOutlet, RouterLinkActive } from '@angular/router';
 
-
 @Component({
   selector: 'app-about-page',
   imports: [
