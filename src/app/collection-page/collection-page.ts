@@ -47,6 +47,10 @@ export class CollectionPage implements OnInit {
   selectedYear = signal<string | null>(null);
   selectedCountry = signal<string | null>(null);
 
+  viewMode = signal<'list' | 'grid'>('list');
+  showFilters = signal(true);
+  gridSize = signal(16);
+
   selectedPreview = signal<any | null>(null);
   
   togglePreview(review: any) {
@@ -58,7 +62,10 @@ export class CollectionPage implements OnInit {
   }
 
   currentPage = signal(1);
-  itemsPerPage = 7;
+
+  gridColumns = computed(() => Math.ceil(Math.sqrt(this.gridSize())));
+
+  itemsPerPage = computed(() => this.viewMode() === 'grid' ? this.gridSize() : 7);
 
   genres = ['Rock', 'Pop', 'Jazz', 'Soul', 'Electronic', 'Hip Hop', 'Indie', 'Folk', 'Metal', 'Classical', 'Reggae', 'Blues', 'Country'];
   decades = ['1960s', '1970s', '1980s', '1990s', '2000s', '2010s', '2020s'];
@@ -131,12 +138,12 @@ export class CollectionPage implements OnInit {
   });
 
   paginatedReviews = computed(() => {
-    const startIndex = (this.currentPage() - 1) * this.itemsPerPage;
-    return this.filteredReviews().slice(startIndex, startIndex + this.itemsPerPage);
+    const startIndex = (this.currentPage() - 1) * this.itemsPerPage();
+    return this.filteredReviews().slice(startIndex, startIndex + this.itemsPerPage());
   });
 
   totalPages = computed(() => {
-    return Math.ceil(this.filteredReviews().length / this.itemsPerPage);
+    return Math.ceil(this.filteredReviews().length / this.itemsPerPage());
   });
 
   visiblePages = computed(() => {
@@ -183,8 +190,8 @@ export class CollectionPage implements OnInit {
     const total = this.filteredReviews().length;
     if (total === 0) return 'No reviews found';
 
-    const start = ((this.currentPage() - 1) * this.itemsPerPage) + 1;
-    const end = Math.min(this.currentPage() * this.itemsPerPage, total);
+    const start = ((this.currentPage() - 1) * this.itemsPerPage()) + 1;
+    const end = Math.min(this.currentPage() * this.itemsPerPage(), total);
 
     return `Showing ${start}-${end} out of ${total} reviews`;
   });
@@ -201,6 +208,25 @@ export class CollectionPage implements OnInit {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       this.selectedPreview.set(null);
     }
+  }
+
+  setListView() {
+    this.viewMode.set('list');
+    this.showFilters.set(true);
+    this.currentPage.set(1);
+    this.selectedPreview.set(null);
+  }
+
+  setGridView() {
+    this.viewMode.set('grid');
+    this.showFilters.set(false);
+    this.currentPage.set(1);
+    this.selectedPreview.set(null);
+  }
+
+  updateGridSize(event: any) {
+    this.gridSize.set(Number(event));
+    this.currentPage.set(1);
   }
 
   toggleGenre(genre: string) {
