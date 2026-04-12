@@ -1,0 +1,659 @@
+.shop-container {
+  background-image: 
+        radial-gradient(
+            circle at bottom center, 
+            #1a1a1a 0%,
+            #0d0d0d 25%, 
+            #0d0d0d 100%
+        ),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.021'/%3E%3C/svg%3E");
+    
+    background-blend-mode: overlay;
+    background-attachment: fixed;
+    min-height: 170vh;
+    padding: 6rem 1.5rem 4rem;
+    font-family: 'Inter', sans-serif;
+    color: #e0e0e0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.collection-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 3.5rem;
+  color: white;
+  letter-spacing: 2px;
+  text-align: center; /* Centers the text */
+  margin: 3rem auto 4.7rem auto;
+  position: relative;
+  z-index: 10;
+}
+
+.shop-content-wrapper {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  padding-left: 1rem;
+}
+
+.sidebar {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid black;
+  box-shadow: 0px 0px 0px 2px white, 0px 5px 0px 2px white;
+  border-radius: 20px;
+  width: 260px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  overflow-y: auto;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.filter-title {
+  font-family: 'IBM Plex Mono', monospace;
+  color: #888;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  margin: 0;
+  letter-spacing: 1px;
+}
+
+.filter-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.filter-btn {
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid #333;
+  color: #888;
+  padding: 0.5rem 1rem;
+  border-radius: 16px;
+  cursor: pointer;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.filter-btn.active {
+  background-color: black;
+  border: 1px solid black;
+  color: white;
+  box-shadow: 0px 0px 0px 2px white, 0px 4px 0px 2px white;
+  transform: translateY(-2px);
+}
+
+.filter-select {
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid #333;
+  color: #888;
+  padding: 0.5rem;
+  border-radius: 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.search-input {
+  margin-left: -7px;
+  margin-bottom: -2.5px;
+  width: 100%;
+  padding: 12px 0 12px 14px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.95rem;
+  
+  background-color: rgba(255, 255, 255, 0.03);
+  color: #e0e0e0;
+  border: 1px solid #333;
+  border-radius: 20px;
+  
+  outline: none;
+  transition: all 0.25s ease;
+}
+
+.search-input:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.search-input:focus {
+  background-color: rgba(255, 255, 255, 0.07);
+  border-color: #A5CEC7; /* Highlights with your accent color! */
+  box-shadow: 0 0 0 1px rgba(165, 206, 199, 0.3);
+}
+
+.more-btn {
+  background-color: transparent;
+  border: 0.4px dashed #444; 
+  color: #777;
+  padding: 0.5rem 0.8rem;
+}
+
+.more-btn:hover {
+  border-color: #888;
+  color: #ccc;
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.more-btn.active {
+  background-color: transparent;
+  box-shadow: none;
+  border: 1px dashed #444;
+}
+
+/* Review List */
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.blog-list {
+  display: flex;
+  flex-direction: column;
+  flex: 3;
+  gap: 1.5rem;
+  margin-left: 2.4rem;
+}
+
+.blog-post {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  border: 1px solid #333;
+  border-radius: 16px;
+  padding: 1.5rem;
+  background-color: rgba(255, 255, 255, 0.03);
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.blog-post:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
+
+.blog-post.active {
+  border-color: #fff;
+  background-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0px 0px 0px 2px white, 0px 4px 0px 2px white;
+  transform: translateY(-2px);
+}
+
+.post-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 1rem 0.25rem 0 0.25rem;
+}
+
+.post-title {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin: -0.5rem 0 0.5rem 0;
+  color: #f0f0f0;
+  font-family: 'IBM Plex Mono', monospace;
+  text-transform: lowercase;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.post-description {
+  font-size: 1rem;
+  color: #888;
+  line-height: 1.4;
+  margin: 0;
+  font-family: sans-serif;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.post-image {
+  width: 120px;
+  height: 120px;
+  aspect-ratio: 1 / 1;
+  background-color: #1a1a1a;
+  overflow: hidden;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.post-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.blog-post:hover .post-image img {
+  transform: scale(1.05);
+}
+
+.post-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  padding: 1rem 0;
+  overflow: hidden;
+  margin-bottom: -1.5rem;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 1.18rem;
+  color: #888;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.meta-date {
+  margin-top: 3px;
+}
+
+.meta-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #888;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+
+.icon-btn:hover {
+  color: #fff;
+}
+
+.pagination {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  max-width: 700px;
+  position: relative;
+  margin: 3rem auto 0rem;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid black;
+  box-shadow: 0px 0px 0px 2px white, 0px 5px 0px 2px #6D7876;
+}
+
+.page-ellipsis {
+  color: #888;
+  padding: 0 0.25rem;
+  letter-spacing: 2px;
+}
+
+.page-btn {
+  background-color: transparent;
+  border: none;
+  color: #ccc;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.page-btn:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+.page-btn.active {
+  background-color: #000;
+  border: 1px solid white;
+  color: white;
+  pointer-events: none;
+  cursor: default;
+}
+
+.page-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  border-color: #555;
+}
+
+.pagination-info {
+  text-align: center;
+  color: #666; /* Matches the ellipsis dots */
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+  margin-top: 2rem; 
+  margin-bottom: 0; 
+}
+
+/* Preview pane */
+
+.preview-pane {
+  flex: 1;
+  position: sticky;
+  border-radius: 16px;
+  padding: 0 8rem 2rem 2rem;
+  min-width: 300px;
+  width: 100%;
+}
+
+.preview-card{
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid #333;
+  border-radius: 16px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.preview-image {
+  width: 50%;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0px 4px 10px rgba(0,0,0,0.5);
+}
+
+.preview-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 1.8rem;
+  margin: 0;
+  color: white;
+}
+
+.preview-artist {
+  font-size: 1.1rem;
+  color: #a0a0a0;
+  margin: 4px 0 12px 0;
+  font-weight: 500;
+}
+
+.preview-meta-tags {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.meta-tag {
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+  font-size: 0.8rem;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.preview-desc {
+  font-style: italic;
+  color: #c0c0c0;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.preview-price {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 1.2rem;
+  color: #A5CEC7;
+  margin: 0;
+}
+
+.preview-desc {
+  font-family: sans-serif;
+  color: #bbb;
+  line-height: 1.6;
+}
+
+.genre-tag {
+  background-color: rgba(255,255,255,0.1);
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.btn-show-more {
+  background-color: #A5CEC7; /* Re-using your app's accent color */
+  color: #000;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 1rem;
+  text-align: center;
+  text-decoration: none;
+  display: block;
+  width: 100%;
+}
+
+.btn-show-more:hover {
+  background-color: #7AB5B7;
+  transform: translateY(-2px);
+}
+
+/* Switch Layout */
+
+.left-controls {
+  margin-left: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  flex-shrink: 0;
+  position: sticky;
+  top: 8rem;
+  max-height: 85vh;
+}
+
+.layout-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-self: flex-start;
+  width: 100%;
+}
+
+.standalone-toggle {
+  display: flex;
+  gap: 0.5rem;
+  width: fit-content;
+  align-self: center;
+}
+
+.standalone-toggle .toggle-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.03);
+  color: #888;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: #777 solid 1px;
+}
+
+.standalone-toggle .toggle-btn:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: white;
+}
+
+.standalone-toggle .toggle-btn.active {
+  background-color: black;
+  color: white;
+  border-color: white;
+}
+
+/* Shared Container */
+.content-container {
+  display: flex;
+  flex-direction: column;
+  flex: 3;
+  margin-left: 2.4rem;
+}
+
+/* Album Collage Grid (Topster Style) */
+.album-grid {
+  display: grid;
+  /* 4 columns to mimic standard topster dimensions */
+  grid-template-columns: repeat(4, 1fr); 
+  gap: 0; /* No gap makes it look like a pure collage */
+  background: #000;
+  border: 1px solid #333;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.grid-item {
+  aspect-ratio: 1/1;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.grid-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.grid-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 1rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.grid-item:hover .grid-overlay {
+  opacity: 1;
+}
+
+.grid-item:hover img {
+  transform: scale(1.05);
+}
+
+.grid-item.active {
+  box-shadow: inset 0 0 0 4px #A5CEC7; /* Highlights selection */
+}
+
+.grid-item.active .grid-overlay {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.grid-title {
+  font-family: 'IBM Plex Mono', monospace;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.grid-artist {
+  font-family: sans-serif;
+  color: #a0a0a0;
+  font-size: 0.8rem;
+}
+
+.grid-settings-box {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px dashed #555;
+  border-radius: 12px;
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.settings-btn {
+  background-color: transparent;
+  border: 1px solid #A5CEC7; /* Highlights with your theme color */
+  color: #A5CEC7;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.settings-btn:hover {
+  background-color: #A5CEC7;
+  color: #000;
+  box-shadow: 0 0 10px rgba(165, 206, 199, 0.4);
+}
+
+.grid-size-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.grid-size-selector label {
+  font-family: 'IBM Plex Mono', monospace;
+  color: #888;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.filter-select.minimal {
+  padding: 0.5rem;
+  font-size: 0.85rem;
+  border-color: #444;
+}
+
+/* (Important) Remove the old hardcoded grid-template-columns from .album-grid if it is still there! */
+.album-grid {
+  display: grid;
+  gap: 0; 
+  background: #000;
+  border: 1px solid #333;
+  border-radius: 12px;
+  overflow: hidden;
+}

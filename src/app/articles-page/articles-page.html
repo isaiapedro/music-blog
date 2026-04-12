@@ -1,0 +1,63 @@
+<div class="articles-container">
+  <div class="search-section">
+    <div class="search-wrapper">
+      <input 
+        #searchBox
+        type="text" 
+        placeholder="Search articles..." 
+        class="search-bar"
+        [value]="searchTerm()"
+        (keyup.enter)="onSearch(searchBox.value)"
+        
+        (input)="isExpanded.set(false); searchBox.value === '' && onSearch(searchBox.value)"
+      >
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+    </div>
+
+    <div class="filter-section">
+      @for (theme of themes; track theme) {
+        @if (theme !== 'All') {
+          <button 
+            class="filter-rect" 
+            [class.active]="selectedTheme() === theme"
+            (click)="setTheme(theme)">
+            {{ theme }}
+          </button>
+        }
+      }
+    </div>
+  </div>
+  <div class="border"></div>
+  <h1 class="collection-title">Articles</h1>
+
+  <div class="expandable-container" [class.expanded]="isExpanded()">
+    <div class="masonry-grid">
+      @for (article of filteredArticles(); track article.title) {
+        <div class="masonry-item">
+          <a [routerLink]="['/articles-page', article.id]" class="post-wrapper">
+            <div class="article-card">
+              <img [src]="article.image" [alt]="article.title" class="article-image">
+              <div class="article-info">
+                <h3 class="article-title">{{ article.title }}</h3>
+                <div class="title-underline"></div>
+                <p class="article-date">{{ article.date | date:'longDate' }}</p>
+              </div>
+            </div>
+          </a>
+        </div>
+      }
+    </div>
+
+    @if (!isExpanded() && filteredArticles().length > 8) {
+      <div class="fade-overlay">
+        <button class="filter-rect show-more-btn" (click)="isExpanded.set(true)">
+          Show More
+        </button>
+      </div>
+    }
+
+  </div>
+</div>
