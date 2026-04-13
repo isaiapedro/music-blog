@@ -42,6 +42,30 @@ const initSchema = async () => {
         UNIQUE(review_id)
       );
     `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS cms_articles (
+        -- AUTO-GENERATED STATIC ELEMENTS
+        id SERIAL PRIMARY KEY,
+        publish_date DATE,                   /* Set automatically when published */
+        reading_time VARCHAR(50),            /* Calculated automatically on backend */
+        
+        -- MANUAL STATIC ELEMENTS
+        title VARCHAR(255) NOT NULL,
+        keywords VARCHAR(255),
+        description TEXT,
+        image TEXT,
+        content_blocks JSONB DEFAULT '[]',   /* Stores your ArticleBlock[] */
+        published BOOLEAN DEFAULT FALSE,
+        
+        -- DYNAMIC ELEMENTS
+        views INT DEFAULT 0,
+        likes INT DEFAULT 0,
+        comments JSONB DEFAULT '[]',         /* Flexible structure for future comments */
+        
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `);
   } finally {
     client.release();
   }

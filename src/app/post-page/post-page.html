@@ -3,8 +3,8 @@
     <article class="post-container">
       
       <header class="post-header">
-        <a routerLink="/articles-page" [queryParams]="{ theme: post.keywords }" class="back-link"> 
-          {{ post.keywords }}
+        <a routerLink="/articles-page" [queryParams]="{ theme: post.theme }" class="back-link"> 
+          {{ post.theme }}
         </a>
         <h1 class="post-title">{{ post.title }}</h1>
         <h2 class="post-subtitle">{{ post.description }}</h2>

@@ -2,7 +2,7 @@ import { Component, signal, computed, inject, OnInit, ViewChild, ElementRef, Aft
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ARTICLES } from '../article.data';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-articles-page',
@@ -14,7 +14,8 @@ import { ARTICLES } from '../article.data';
 export class ArticlesPage implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-
+  private http = inject(HttpClient);
+  
   @ViewChild('searchBox') searchInput!: ElementRef<HTMLInputElement>;
 
   private shouldFocus = false;
@@ -31,9 +32,16 @@ export class ArticlesPage implements OnInit {
   isExpanded = signal(false); // Controls the Show More toggle
   
   themes = ['All', 'Music', 'Technology', 'Literature', 'Travel', 'Fashion'];
-  articles = signal(ARTICLES);
+  
+  articles = signal<any[]>([]);
 
   ngOnInit() {
+    this.http.get<{articles: any[]}>('http://localhost:3000/api/articles?published=true')
+      .subscribe({
+        next: (data) => this.articles.set(data.articles),
+        error: (err) => console.error(err)
+      });
+      
     this.route.queryParams.subscribe(params => {
       if (params['theme']) {
         this.selectedTheme.set(params['theme']);
@@ -50,13 +58,18 @@ export class ArticlesPage implements OnInit {
   }
 
   filteredArticles = computed(() => {
-    const term = this.searchTerm().toLowerCase();
-    const theme = this.selectedTheme().toLowerCase();
+    const term = this.searchTerm().toLowerCase().trim();
+    const activeTheme = this.selectedTheme().toLowerCase();
     
     return this.articles().filter(article => {
-      const matchesSearch = article.title.toLowerCase().includes(term) || 
-                            article.keywords.toLowerCase().includes(term);
-      const matchesTheme = theme === 'all' || article.keywords.toLowerCase().includes(theme);
+      const title = article.title?.toLowerCase() || '';
+      const keywords = article.keywords?.toLowerCase() || '';
+      const theme = article.theme?.toLowerCase() || '';
+
+      const matchesSearch = title.includes(term) || keywords.includes(term);
+      
+      const matchesTheme = activeTheme === 'all' || theme === activeTheme;
+      
       return matchesSearch && matchesTheme;
     });
   });

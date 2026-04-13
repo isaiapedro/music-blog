@@ -1,7 +1,12 @@
 .articles-container {
-    padding: 120px 1px; 
-    max-width: 1400px;
-    margin: 0 auto;
+  padding: 120px 1px; 
+  max-width: 1400px;
+  margin: 0 auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
 /* Search bar */
@@ -57,7 +62,7 @@
   color: white;
   letter-spacing: 2px;
   text-align: center;
-  margin: 20px auto 30px auto;
+  margin: 20px auto 0 auto;
   position: relative;
   z-index: 10;
 }
@@ -81,6 +86,27 @@
   flex-direction: column;
   gap: 4rem;
   margin-left: 2.4rem;
+  margin-bottom: 80px;
+}
+
+.subtitle {
+  font-family: 'Playfair Display', serif;
+  font-size: 3rem;
+  color: #808080;
+  letter-spacing: 2px;
+  text-align: start;
+  margin: 40px 0 10px 10px;
+  position: relative;
+}
+
+.subtitle-review{
+  font-family: 'Playfair Display', serif;
+  font-size: 3rem;
+  color: #808080;
+  letter-spacing: 2px;
+  text-align: start;
+  margin: 40px 0 10px 10px;
+  position: relative;
 }
 
 .blog-post {

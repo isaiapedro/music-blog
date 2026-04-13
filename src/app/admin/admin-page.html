@@ -3,8 +3,8 @@
   <nav class="cms-navbar">
     <div class="cms-logo">Content Manager</div>
     <button class="btn-export" 
-            [disabled]="!selectedReview() || isSaving()" 
-            (click)="saveCurrentReview()">
+            [disabled]="(!selectedReview() && !selectedArticle()) || isSaving()" 
+            (click)="saveCurrentItem()">
       {{ isSaving() ? 'Saving...' : 'Save to Database' }}
     </button>
   </nav>
@@ -14,30 +14,221 @@
     
     <aside class="cms-sidebar">
       <div class="sidebar-section">
-        <h4 class="sidebar-title">Drafts</h4>
-        @for (review of drafts(); track review.id) {
-          <div class="sidebar-item" 
-               [class.active]="selectedReview()?.id === review.id" 
-               (click)="selectReview(review)">
-            {{ review.album }}
+        <div style="display: flex; justify-content: space-between; align-items: center; padding-right: 20px; margin-bottom: 20px;">
+          <h4 class="sidebar-mainTitle clickable" (click)="toggleArticlesList()">
+            <span>
+              <span class="toggle-mainIcon">{{ showArticles() ? '▼' : '▶' }}</span>
+              Articles 
+            </span>
+          </h4>
+
+          <button class="btn-add" (click)="createNewArticle()" [disabled]="isSaving()">
+            + New
+          </button>
+        </div>
+
+        @if (showArticles()) {
+          <div class="sidebar-section">
+            <h4 class="sidebar-title">
+              <span>Drafts</span>
+              <span class="badge">{{ articleDrafts().length }}</span>
+            </h4>
+            <div class="sidebar-list">
+              @for (article of articleDrafts(); track article.id) {
+                <div class="sidebar-item" 
+                    [class.active]="selectedArticle()?.id === article.id" 
+                    (click)="selectArticle(article)">
+                  {{ article.title || 'Untitled Draft' }}
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="sidebar-section">
+            <h4 class="sidebar-title">
+              <span>Published</span>
+              <span class="badge">{{ articlePublished().length }}</span>
+            </h4>
+            <div class="sidebar-list">
+              @for (article of articlePublished(); track article.id) {
+                <div class="sidebar-item" 
+                    [class.active]="selectedArticle()?.id === article.id" 
+                    (click)="selectArticle(article)">
+                  {{ article.title }}
+                </div>
+              }
+            </div>
           </div>
         }
       </div>
-
       <div class="sidebar-section">
-        <h4 class="sidebar-title">Published</h4>
-        @for (review of published(); track review.id) {
-          <div class="sidebar-item" 
-               [class.active]="selectedReview()?.id === review.id" 
-               (click)="selectReview(review)">
-            {{ review.album }}
+        <h4 class="sidebar-mainTitle clickable" (click)="toggleReviewList()">
+          <span>
+            <span class="toggle-mainIcon">{{ showReviews() ? '▼' : '▶' }}</span>
+            Reviews 
+          </span>
+        </h4>
+
+        @if (showReviews()) {
+          <div class="sidebar-section">
+            <h4 class="sidebar-title clickable" (click)="toggleDraftsList()">
+              <span>
+                <span class="toggle-icon">{{ showDrafts() ? '▼' : '▶' }}</span>
+                To Do / Drafts 
+              </span>
+              <span class="badge">{{ drafts().length }}</span>
+            </h4>
+            
+            @if (showDrafts()) {
+              <div class="sidebar-list">
+                @for (review of drafts(); track review.id) {
+                  <div class="sidebar-item" 
+                      [class.active]="selectedReview()?.id === review.id" 
+                      (click)="selectReview(review)">
+                    {{ review.album }}
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="sidebar-section">
+            <h4 class="sidebar-title clickable" (click)="togglePublishedList()">
+              <span>
+                <span class="toggle-icon">{{ showPublished() ? '▼' : '▶' }}</span>
+                Published 
+              </span>
+              <span class="badge">{{ published().length }}</span>
+            </h4>
+            
+            @if (showPublished()) {
+              <div class="sidebar-list">
+                @for (review of published(); track review.id) {
+                  <div class="sidebar-item" 
+                      [class.active]="selectedReview()?.id === review.id" 
+                      (click)="selectReview(review)">
+                    {{ review.album }}
+                  </div>
+                }
+              </div>
+            }
           </div>
         }
       </div>
     </aside>
 
     <main class="cms-editor">
-      @if (selectedReview(); as review) {
+      @if (selectedArticle(); as article) {
+        <div class="editor-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div>
+            <h2>{{ article.title || 'Untitled Article' }}</h2>
+            <p>ID: {{ article.id }} | Views: {{ article.views || 0 }}</p>
+          </div>
+
+          <button class="btn-delete" (click)="deleteCurrentArticle()" [disabled]="isSaving()">
+            Delete Article
+          </button>
+        </div>
+
+        <div class="form-grid">
+          
+          <div class="form-row two-col">
+            <div class="form-group">
+              <label>Article Title</label>
+              <input type="text" [(ngModel)]="article.title" placeholder="Catchy title...">
+            </div>
+            
+            <div class="form-group checkbox-group">
+              <label>Status</label>
+              <div class="toggle-wrapper">
+                <input type="checkbox" 
+                      [ngModel]="article.published" 
+                      (ngModelChange)="toggleArticlePublished(article, $event)"
+                      id="article-publish-toggle">
+                <label for="article-publish-toggle">Publish to Live Site</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row two-col">
+            <div class="form-group">
+              <label>Theme (Category)</label>
+              <select [(ngModel)]="article.theme" class="theme-select">
+                <option value="Music">Music</option>
+                <option value="Technology">Technology</option>
+                <option value="Fashion">Fashion</option>
+                <option value="Travel">Travel</option>
+                <option value="Literature">Literature</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Keywords (Comma separated)</label>
+              <input type="text" [(ngModel)]="article.keywords" placeholder="e.g. vinyl, analog, 80s...">
+            </div>
+          </div>
+          <div class="form-row two-col">
+            <div class="form-group">
+              <label>Homepage Placement</label>
+              <select [(ngModel)]="article.placement" class="theme-select">
+                <option value="none">Normal List</option>
+                <option value="main">Main Hero Feature</option>
+                <option value="side">Side Feature</option>
+              </select>
+            </div>
+            <div class="form-group">
+                <label>Main Cover Image URL</label>
+                <input type="text" [(ngModel)]="article.image" placeholder="https://...">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Short Description (Subtitle)</label>
+            <textarea [(ngModel)]="article.description" rows="2" placeholder="Summary for the card view..."></textarea>
+          </div>
+
+          <div class="widget-list">
+            <div class="widget-list-header">
+              <label>Article Content (Blocks)</label>
+              <div class="widget-actions">
+                <button class="btn-add" (click)="addArticleHeading()">+ Heading</button>
+                <button class="btn-add" (click)="addArticleParagraph()">+ Paragraph</button>
+                <button class="btn-add" (click)="addArticleImage()">+ Image Embed</button>
+              </div>
+            </div>
+
+            @for (block of article.contentBlocks; track $index) {
+              <div class="widget-card">
+                <div class="widget-card-header">
+                  <span class="widget-type">{{ block.type | uppercase }}</span>
+                  <button class="btn-remove" (click)="removeArticleBlock($index)">Remove</button>
+                </div>
+                
+                <div class="widget-card-body">
+                  
+                  @if (block.type === 'heading') {
+                    <input type="text" [(ngModel)]="block.content" placeholder="Type your heading here...">
+                  } 
+                  
+                  @else if (block.type === 'paragraph') {
+                    <textarea [(ngModel)]="block.content" rows="6" placeholder="Write your paragraph..."></textarea>
+                  } 
+                  
+                  @else if (block.type === 'image') {
+                    <div class="form-group">
+                      <input type="text" [(ngModel)]="block.imageUrl" placeholder="Image URL">
+                    </div>
+                    <div class="form-group mt-2">
+                      <input type="text" [(ngModel)]="block.caption" placeholder="Optional image caption">
+                    </div>
+                  }
+
+                </div>
+              </div>
+            }
+          </div>
+
+        </div>
+      } @else if (selectedReview(); as review) {
         <div class="editor-header">
           <h2>{{ review.album }}</h2>
           <p>{{ review.artist }} ({{ review.releaseDate }})</p>
