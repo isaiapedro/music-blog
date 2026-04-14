@@ -73,62 +73,65 @@
             <div class="facts-header">
                 <h2>AND SOME FUN FACTS</h2>
             </div>
-            <div class="scattered-tools">
-                <div class="tool-sample tool-1">
-                    <img ngSrc="/assets/images/laptop.png" width="250" height="250" alt="Laptop">
-                    <span class="sample-title">
-                        1. Company Laptop
-                        <br>(better than my own)</span>
+            <div class="scattered-facts">
+                <div class="fact-sample fact-1">
+                    <img ngSrc="/assets/images/letterboxd.png" width="580" height="200" alt="Laptop">
+                    <span class="sample-title">My Letterboxd top 4</span>
                 </div>
                 
-                <div class="tool-sample tool-2">
-                    <img ngSrc="/assets/images/headphones.png" width="250" height="250" alt="Headphones">
-                    <span class="sample-title">2. YouTube Playlists</span>
+                <div class="fact-sample fact-2">
+                <img ngSrc="/assets/images/lamen.png" width="250" height="250" alt="Headphones">
+                    <span class="sample-title">Favorite food
+                        <br>(lamen)
+                    </span>
                 </div>
                 
-                <div class="tool-sample tool-3">
-                    <img ngSrc="/assets/images/mug.png" width="250" height="250" alt="Mug">
-                    <span class="sample-title">3. Instant Coffee</span>
+                <div class="fact-sample fact-3">
+                    <img ngSrc="/assets/images/china.png" width="500" height="250" alt="Mug">
+                    <span class="sample-title">Next travel destination
+                        <br>(China)</span>
+                </div>
+
+                <div class="fact-sample fact-4">
+                    <img ngSrc="/assets/images/pets.png" width="350" height="300" alt="Mug">
+                    
+                    <svg class="pet-heart" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+
+                    <span class="sample-title">My pets</span>
                 </div>
 
             </div>
         </div>
-        <div class="bio-card">
-            <svg class="paperclip" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 100">
-                <path d="M12,20 V85 A4,4 0 0,0 20,85 V15 A8,8 0 0,0 4,15" 
-                      fill="none" stroke="#777777" stroke-width="2.5" stroke-linecap="round" />
-            </svg>
+        <div class="projects-paper">
             
-            <div class="bio-top-section">
-                <div class="bio-header-text">
-                    <div class="bio-signature-row">
-                        <span class="signature-label">NAME</span>
-                        <span class="bio-value large-signature">Pedro Isaia</span>
-                    </div>
-                    <div class="bio-signature-row">
-                        <span class="signature-label">CITY</span>
-                        <span class="bio-value large-signature">São Paulo</span>
-                    </div>
-                </div>
-                <div class="bio-photo-wrapper">
-                    <img src="https://picsum.photos/id/1005/400/400" alt="Pedro Souza">
-                </div>
-            </div>
-
-            <div class="bio-info">
-                <div class="bio-row">
-                    <span class="bio-label">OCCUPATION:</span>
-                    <span class="bio-value">Programmer</span>
-                </div>
-                <div class="bio-row">
-                    <span class="bio-label">SIGN:</span>
-                    <span class="bio-value">Libra</span>
-                </div>
-                <div class="bio-row">
-                    <span class="bio-label">HOBBIES:</span>
-                    <span class="bio-value">Music, Chess, Coding</span>
-                </div>
-            </div>
+            <div class="tape"></div>
+            
+            <h3 class="projects-title">Other Projects</h3>
+            
+            <ul class="project-list">
+                <li class="project-item">
+                    <span class="project-name">Medical Data Research</span>
+                    <span class="project-tech">Kafka / Spark</span>
+                    <span class="project-description">Graduate research on monitoring medical data through streaming pipeline.</span>
+                </li>
+                <li class="project-item">
+                    <span class="project-name">NBA website</span>
+                    <span class="project-tech">Python / Airflow</span>
+                    <span class="project-description">Shows cool basketball data and predicts future winners and awards.</span>
+                </li>
+                <li class="project-item">
+                    <span class="project-name">Grocery List Chatbot</span>
+                    <span class="project-tech">Twilio / AWS</span>
+                    <span class="project-description">Automated list that is connected to whatsapp for fast editing.</span>
+                </li>
+                <li class="project-item">
+                    <span class="project-name">Professional Portfolio</span>
+                    <span class="project-tech">HTML / CSS</span>
+                    <span class="project-description">See my experience and connect.</span>
+                </li>
+            </ul>
         </div>
     </div>
 </div>

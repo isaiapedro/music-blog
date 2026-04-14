@@ -1,4 +1,4 @@
-import { Component, signal, computed, OnInit, inject } from '@angular/core';
+import { Component, signal, computed, OnInit, inject, HostListener } from '@angular/core';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -41,6 +41,16 @@ export class CollectionPage implements OnInit {
     });
   }
   
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    
+    // If the menu is open, AND the click was not inside our sort component, close the menu
+    if (this.showSortMenu() && !target.closest('.sort-container')) {
+      this.showSortMenu.set(false);
+    }
+  }
+
   searchTerm = signal('');
   selectedGenre = signal<string | null>(null);
   selectedDecade = signal<string | null>(null);
@@ -50,6 +60,8 @@ export class CollectionPage implements OnInit {
   viewMode = signal<'list' | 'grid'>('list');
   showFilters = signal(true);
   gridSize = signal(16);
+  sortBy = signal<'date' | 'name' | 'score'>('date');
+  showSortMenu = signal(false);
 
   selectedPreview = signal<any | null>(null);
   
@@ -61,13 +73,54 @@ export class CollectionPage implements OnInit {
     }
   }
 
+  getSplitGenres(genreData: any): string[] {
+    if (!genreData) return [];
+    if (Array.isArray(genreData)) return genreData;
+    
+    // Splits by comma, removes whitespace, and filters out empty strings
+    return genreData.split(',')
+      .map((g: string) => g.trim())
+      .filter((g: string) => g.length > 0);
+  }
+
+  applyFilterFromTag(type: 'year' | 'country' | 'genre', value: string) {
+    if (!value) return;
+
+    if (type === 'year') {
+      this.selectedYear.set(value);
+      // Automatically set the decade so the UI dropdown matches!
+      const decade = value.slice(0, 3) + '0s';
+      this.selectedDecade.set(decade);
+    } 
+    else if (type === 'country') {
+      // Find the exact casing from your countries array, or default to the value
+      const exactCountry = this.countries.find(c => c.toLowerCase() === value.toLowerCase()) || value;
+      this.selectedCountry.set(exactCountry);
+    } 
+    else if (type === 'genre') {
+      const exactGenre = this.genres.find(g => g.toLowerCase() === value.toLowerCase()) || value;
+      this.selectedGenre.set(exactGenre);
+    }
+    
+    // Reset to page 1 and scroll to top
+    this.currentPage.set(1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  updateSort(sortType: string) {
+    this.sortBy.set(sortType as 'date' | 'name' | 'score');
+    this.currentPage.set(1);
+    this.selectedPreview.set(null);
+    this.showSortMenu.set(false); // Closes the dropdown after selection
+  }
+  
   currentPage = signal(1);
 
   gridColumns = computed(() => Math.ceil(Math.sqrt(this.gridSize())));
 
   itemsPerPage = computed(() => this.viewMode() === 'grid' ? this.gridSize() : 7);
 
-  genres = ['Rock', 'Pop', 'Jazz', 'Soul', 'Electronic', 'Hip Hop', 'Indie', 'Folk', 'Metal', 'Classical', 'Reggae', 'Blues', 'Country'];
+  genres = ['Rock', 'Pop', 'Jazz', 'Soul', 'Electronica', 'Hip Hop', 'Indie', 'Folk', 'Metal', 'Classical', 'Reggae', 'Blues', 'Country'];
   decades = ['1960s', '1970s', '1980s', '1990s', '2000s', '2010s', '2020s'];
   countries = ['US', 'UK', 'Brazil', 'Japan', 'Germany', 'France', 'Canada'];
 
@@ -117,17 +170,37 @@ export class CollectionPage implements OnInit {
       const matchesDecade = !decade || reviewYear.startsWith(decade.slice(0, 3));
       const matchesYear = !year || reviewYear.startsWith(year);
 
-      const reviewCountry = review.country ? review.country.toLowerCase() : '';
-      const matchesCountry = !country || reviewCountry === country;
+      const reviewCountry = review.country ? review.country.toLowerCase().trim() : '';
+      const matchesCountry = !country || reviewCountry === country.trim();
       
 
       return matchesSearch && matchesGenre && matchesDecade && matchesYear && matchesCountry;
     });
 
     filteredArray.sort((a: any, b: any) => {
-      const dateA = a.date || '';
-      const dateB = b.date || '';
-      return dateB.localeCompare(dateA); 
+      const currentSort = this.sortBy();
+
+      if (currentSort === 'date') {
+        // Sort by Recency (Newest first)
+        const dateA = a.date || '';
+        const dateB = b.date || '';
+        return dateB.localeCompare(dateA); 
+      } 
+      else if (currentSort === 'name') {
+        // Sort by Album Name (A-Z)
+        const nameA = a.album || '';
+        const nameB = b.album || '';
+        return nameA.localeCompare(nameB);
+      } 
+      else if (currentSort === 'score') {
+        // Sort by Recommendation Score (Highest first)
+        // We use Number() to ensure we are comparing mathematical values
+        const scoreA = a.score != null ? Number(a.score) : 0;
+        const scoreB = b.score != null ? Number(b.score) : 0;
+        return scoreB - scoreA;
+      }
+      
+      return 0; // Default fallback
     });
 
     if (this.showLatestOnly()) {

@@ -256,6 +256,15 @@
             </div>
           </div>
 
+          <div class="form-row two-col">
+            <div class="form-group">
+              <label>Country of Origin</label>
+              <input type="text" [(ngModel)]="review.country" placeholder="e.g. Brazil, US, UK, Japan...">
+            </div>
+            
+            <div></div> 
+          </div>
+
           <div class="form-group">
             <label>Context (Historical background, impact, etc.)</label>
             <textarea [(ngModel)]="review.context" rows="4" placeholder="Write context markdown here..."></textarea>

@@ -219,6 +219,7 @@
     font-family: 'Special Elite', monospace;
     color: #fff;
     font-size: 1.1rem;
+    text-align: center;
 }
 
 /* Fun Facts List */
@@ -236,4 +237,168 @@
     margin: 0 0 8px 0;
     font-weight: 550;
     color: #e0e0e0;
+}
+
+.scattered-facts {
+    display: grid;
+    /* Creates a 2x2 square grid. Change to 'repeat(4, 1fr)' for a 1x4 row! */
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 40px; /* Consistent spacing between all rows and columns */
+    max-width: 700px;
+}
+
+.fact-sample {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    padding: 0px 70px;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.fact-1 {
+    align-self: flex-start;
+    transform: rotate(-2deg);
+    margin-left: -270px;
+}
+
+.fact-2 {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+    transform: rotate(4deg);
+    margin-top: 80px;
+    margin-left: -100px;
+}
+
+.fact-3 {
+    align-self: flex-start;
+    transform: rotate(1deg);
+    margin-top: 30px;
+    margin-left: -130px;
+}
+
+.fact-4 {
+    align-self: center;
+    transform: rotate(-1deg);
+    margin-left: -100px;
+    margin-top: 120px;
+    position: relative; 
+}
+
+.pet-heart {
+    position: absolute; 
+    
+    /* 2. Coordinates: moves it relative to the upper-right of fact-4's box */
+    top: 5px;   
+    right: 100px; 
+    transform: rotate(10deg);
+    /* 3. Sets the size of the heart */
+    width: 32px;
+    height: 32px;
+    
+    /* 4. Opacity and shadow help it float over the image cleanly */
+    opacity: 0.8;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    
+    color: #ff4d4d;
+}
+
+/* Projects section */
+.projects-paper {
+    flex: 1;
+    background-color: #ede4d3; /* Matches your bio-card paper color */
+    padding: 50px 5px 0px 5px; /* Extra top padding gives room for the tape */
+    position: relative;
+    transform: rotate(2deg); /* Slightly skewed on the desk for that messy look */
+    border: 1px solid rgba(0,0,0,0.05);
+    border-radius: 2px;
+    box-shadow: 3px 5px 15px rgba(0, 0, 0, 0.2);
+    max-width: 440px;
+    width: 100%;
+    color: #333;
+}
+
+.tape {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-3deg);
+    width: 170px;
+    height: 50px;
+    background-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);background-color
+    backdrop-filter: blur(2px); /* Makes it look like actual frosted scotch tape */
+    border-radius: 2px;
+    z-index: 10;
+}
+
+.projects-title {
+    font-family: 'Special Elite', monospace;
+    font-size: 1.8rem;
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 25px;
+    color: #111;
+    border-bottom: 2px solid #333;
+    padding-bottom: 25px;
+}
+
+.project-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    perspective: 800px; /* CRITICAL: Activates the 3D space for the roll effect */
+}
+
+.project-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;;
+    justify-content: space-between;
+    padding: 20px 10px;
+    border-bottom: 2px dotted #888;
+    cursor: pointer;
+    
+    /* Prepares the physics for the hover effect */
+    transform-origin: left center;
+    transition: transform 0.4s ease, box-shadow 0.4s ease, background 0.4s ease, border-color 0.4s ease;
+}
+
+.project-item:last-child {
+    border-bottom: none; /* Keeps the bottom of the paper clean */
+}
+
+.project-name {
+    font-family: 'Helvetica', sans-serif;
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #222;
+}
+
+.project-tech {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.project-description {
+    margin-top: 30px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* The 3D Roll/Rip to the left effect */
+.project-item:hover {
+    /* Rotates the right edge toward the user, pushes left, and adds a slight skew */
+    transform: rotateY(15deg) translateX(-15px) skewY(-1deg);
+    
+    /* Simulates the shadow of the curling paper */
+    background: linear-gradient(to right, #ede4d3 80%, #d8d0b8 100%);
+    box-shadow: 15px 10px 15px rgba(0,0,0,0.15);
+    
+    border-bottom-color: transparent; /* Hides the dotted line to sell the "ripped" look */
+    border-radius: 4px;
+    z-index: 5;
+    position: relative;
 }

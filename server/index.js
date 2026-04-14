@@ -368,12 +368,13 @@ app.put('/api/reviews/:id', async (req, res) => {
         total_duration = $10,
         producer = $11,
         recorded_at = $12,
+        country = $13,
         
         -- MAGIC DATE LOGIC: Stamps today's date ONLY the first time it is published
         publish_date = CASE WHEN $2 = true AND publish_date IS NULL THEN TO_CHAR(NOW(), 'YYYY-MM-DD') ELSE publish_date END,
         
         updated_at = NOW()
-      WHERE id = $13`,
+      WHERE id = $14`,
       [
         b.score != null ? Number(b.score) : null,
         Boolean(b.published),
@@ -386,7 +387,8 @@ app.put('/api/reviews/:id', async (req, res) => {
         JSON.stringify(b.tracklist || []), 
         b.totalDuration || '',             
         b.producer || '',                  
-        b.recordedAt || '',                
+        b.recordedAt || '',   
+        b.country || '',          
         id
       ]
     );
