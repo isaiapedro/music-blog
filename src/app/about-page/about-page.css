@@ -275,14 +275,16 @@
     transform: rotate(1deg);
     margin-top: 30px;
     margin-left: -130px;
+    flex-direction: column-reverse;
 }
 
 .fact-4 {
     align-self: center;
     transform: rotate(-1deg);
     margin-left: -100px;
-    margin-top: 120px;
+    margin-top: 70px;
     position: relative; 
+    flex-direction: column-reverse;
 }
 
 .pet-heart {
@@ -306,13 +308,12 @@
 /* Projects section */
 .projects-paper {
     flex: 1;
-    background-color: #ede4d3; /* Matches your bio-card paper color */
-    padding: 50px 5px 0px 5px; /* Extra top padding gives room for the tape */
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0px 5px 0px 5px; /* Removed the 50px top padding */
     position: relative;
-    transform: rotate(2deg); /* Slightly skewed on the desk for that messy look */
-    border: 1px solid rgba(0,0,0,0.05);
-    border-radius: 2px;
-    box-shadow: 3px 5px 15px rgba(0, 0, 0, 0.2);
+    transform: rotate(2deg); 
     max-width: 440px;
     width: 100%;
     color: #333;
@@ -333,14 +334,20 @@
 }
 
 .projects-title {
+    background-color: #ede4d3; 
+    box-shadow: 3px 5px 15px rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+    
+    /* 45px top padding gives that big blank space for the tape */
+    padding: 45px 20px 20px 20px; 
+    margin-top: 0;
+    margin-bottom: 10px; 
+    
     font-family: 'Special Elite', monospace;
     font-size: 1.8rem;
     text-align: center;
-    margin-top: 0;
-    margin-bottom: 25px;
     color: #111;
-    border-bottom: 2px solid #333;
-    padding-bottom: 25px;
+    border-bottom: none; 
 }
 
 .project-list {
@@ -348,24 +355,6 @@
     padding: 0;
     margin: 0;
     perspective: 800px; /* CRITICAL: Activates the 3D space for the roll effect */
-}
-
-.project-item {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;;
-    justify-content: space-between;
-    padding: 20px 10px;
-    border-bottom: 2px dotted #888;
-    cursor: pointer;
-    
-    /* Prepares the physics for the hover effect */
-    transform-origin: left center;
-    transition: transform 0.4s ease, box-shadow 0.4s ease, background 0.4s ease, border-color 0.4s ease;
-}
-
-.project-item:last-child {
-    border-bottom: none; /* Keeps the bottom of the paper clean */
 }
 
 .project-name {
@@ -388,17 +377,72 @@
     color: #666;
 }
 
-/* The 3D Roll/Rip to the left effect */
+.project-item {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 20px 15px;
+    margin-top: -13px;
+    margin-bottom: 10px; 
+    border-top: 2px dotted #888; /* <-- Brought this back! */
+    cursor: pointer;
+    transform-origin: center;
+    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative; 
+    z-index: 1; 
+}
+
+/* Base dimensions for the layers */
+.project-item::after, .project-item::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0; /* Snug fit at rest */
+    z-index: -1;
+    border-radius: 2px;
+    transition: background 0.25s ease, opacity 0.25s ease, clip-path 0.25s ease, top 0.2s, bottom 0.2s, left 0.2s, right 0.2s;
+}
+
+/* The resting bright paper background for each item */
+.project-item::after {
+    background-color: #ede4d3; /* Always bright paper color */
+    box-shadow: 3px 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* The dark hole (matches your page body background) */
+.project-item::before {
+    background-color: #0d0d0d; 
+    z-index: -2;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Hover State: Move the entire block */
 .project-item:hover {
-    /* Rotates the right edge toward the user, pushes left, and adds a slight skew */
-    transform: rotateY(15deg) translateX(-15px) skewY(-1deg);
-    
-    /* Simulates the shadow of the curling paper */
-    background: linear-gradient(to right, #ede4d3 80%, #d8d0b8 100%);
-    box-shadow: 15px 10px 15px rgba(0,0,0,0.15);
-    
-    border-bottom-color: transparent; /* Hides the dotted line to sell the "ripped" look */
-    border-radius: 4px;
+    transform: rotateZ(2deg) rotateY(-12deg) translateX(15px) translateY(-5px);
     z-index: 5;
-    position: relative;
+}
+
+/* Hover State: Expand slightly, add texture, and tear the edges */
+.project-item:hover::after {
+    top: -8px; left: -5px; right: -5px; bottom: -8px;
+    background: linear-gradient(135deg, #ede4d3 0%, #dfd6c3 100%);
+    clip-path: var(--tear-path);
+    box-shadow: none; /* Clip-path hides box shadows... */
+    filter: drop-shadow(8px 12px 10px rgba(0,0,0,0.3)); /* ...so we use drop-shadow! */
+}
+
+/* Hover State: The dark hole left behind on the desk */
+.project-item:hover::before {
+    opacity: 1;
+    top: -8px; left: -5px; right: -5px; bottom: -8px;
+    clip-path: var(--tear-path);
+    transform: translateY(0px) translateX(-12px) rotateY(12deg) rotateZ(0deg);
+    box-shadow: inset 4px 4px 10px rgba(0,0,0,0.8);
+}
+
+.project-item:last-child {
+    border-bottom: none;
 }

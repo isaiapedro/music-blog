@@ -2,13 +2,7 @@ import { Component, signal, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-
-export interface ArticleBlock {
-  type: 'heading' | 'paragraph' | 'image';
-  content?: string;
-  imageUrl?: string;
-  caption?: string;
-}
+import { MarkdownModule } from 'ngx-markdown';
 
 export interface Article {
   id: number;
@@ -21,13 +15,13 @@ export interface Article {
   readingTime?: string;
   views?: number;
   likes?: number;
-  contentBlocks?: ArticleBlock[];
+  markdownContent?: string;
 }
 
 @Component({
   selector: 'app-post-page',
   standalone: true,
-  imports: [RouterModule, CommonModule],
+  imports: [RouterModule, CommonModule, MarkdownModule],
   templateUrl: './post-page.html',
   styleUrl: './post-page.css'
 })

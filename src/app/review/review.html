@@ -100,31 +100,37 @@
                                             @if (block.title) {
                                                 <h4 class="player-title">{{ block.title }}</h4>
                                             }
-                                            @if (block.spotifyId) {
+                                            
+                                            @if (block.audioUrl) {
+                                                <audio 
+                                                    controls 
+                                                    preload="metadata" 
+                                                    style="width: 100%; margin-top: 8px; border-radius: 8px;">
+                                                    <source [src]="block.audioUrl" type="audio/mpeg">
+                                                    Your browser does not support the audio element.
+                                                </audio>
+                                            }
+                                            
+                                            @else if (block.spotifyId) {
                                                 <iframe
                                                 [src]="spotifyEmbedUrl(block.spotifyId)"
                                                 class="embed-spotify"
                                                 width="100%"
                                                 height="152"
                                                 frameborder="0"
-                                                allowfullscreen
                                                 allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                                                loading="lazy"
-                                                title="Spotify player"
-                                                ></iframe>
+                                                loading="lazy"></iframe>
                                             }
-                                            @if (!block.spotifyId && block.youtubeMusicId) {
+                                            
+                                            @else if (block.youtubeMusicId) {
                                                 <iframe
                                                 [src]="youtubeEmbedUrl(block.youtubeMusicId)"
                                                 class="embed-youtube"
                                                 width="100%"
                                                 height="152"
                                                 frameborder="0"
-                                                allowfullscreen
                                                 allow="autoplay; encrypted-media"
-                                                loading="lazy"
-                                                title="YouTube Music player"
-                                                ></iframe>
+                                                loading="lazy"></iframe>
                                             }
                                             </div>
                                         }

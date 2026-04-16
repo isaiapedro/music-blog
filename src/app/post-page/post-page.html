@@ -43,31 +43,15 @@
       </figure>
 
       <div class="post-body">
-        @if (post.contentBlocks && post.contentBlocks.length) {
-          @for (block of post.contentBlocks; track $index) {
-            
-            @if (block.type === 'heading') {
-              <h2>{{ block.content }}</h2>
-            } 
-            
-            @else if (block.type === 'paragraph') {
-              <p>{{ block.content }}</p>
-            } 
-            
-            @else if (block.type === 'image') {
-              <figure class="body-image">
-                <img [src]="block.imageUrl" alt="Article visual">
-                @if (block.caption) {
-                  <figcaption>{{ block.caption }}</figcaption>
-                }
-              </figure>
-            }
-          }
+        @if (post.markdownContent) {
+          
+          <markdown [data]="post.markdownContent" [disableSanitizer]="true"></markdown>
+          
         } @else {
           <p class="placeholder-text">This article is currently being written. Please check back later for the full story.</p>
         }
       </div>
-
+      
     </article>
   } @else {
     <div class="error-state">

@@ -27,12 +27,13 @@ export class ArticlesPage implements OnInit {
     }
   }
 
+  // --- STATE SIGNALS ---
   searchTerm = signal('');
   selectedTheme = signal('All');
+  
+  // --- LOCAL UI STATE ---
   isExpanded = signal(false); // Controls the Show More toggle
-  
   themes = ['All', 'Music', 'Technology', 'Literature', 'Travel', 'Fashion'];
-  
   articles = signal<any[]>([]);
 
   ngOnInit() {
@@ -43,9 +44,7 @@ export class ArticlesPage implements OnInit {
       });
       
     this.route.queryParams.subscribe(params => {
-      if (params['theme']) {
-        this.selectedTheme.set(params['theme']);
-      }
+      this.selectedTheme.set(params['theme'] || 'All');
     });
   }
 
@@ -55,6 +54,15 @@ export class ArticlesPage implements OnInit {
         this.searchInput?.nativeElement.focus();
       }, 100); 
     }
+  }
+
+  private updateUrl(newParams: any, replaceHistory: boolean = false) {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: newParams,
+      queryParamsHandling: 'merge', 
+      replaceUrl: replaceHistory 
+    });
   }
 
   filteredArticles = computed(() => {
@@ -74,6 +82,8 @@ export class ArticlesPage implements OnInit {
     });
   });
 
+  // --- ACTIONS ---
+
   onSearch(text: string) {
     if (text === '') {
       // This is the trigger the constructor above is looking for!
@@ -85,11 +95,11 @@ export class ArticlesPage implements OnInit {
   }
 
   setTheme(theme: string) {
-    if (this.selectedTheme() === theme) {
-      this.selectedTheme.set('All');
-    } else {
-      this.selectedTheme.set(theme);
-    }
+    const newTheme = this.selectedTheme() === theme ? 'All' : theme;
+    
+    // Pass null if 'All' is selected to completely remove the ?theme= parameter from the URL
+    this.updateUrl({ theme: newTheme === 'All' ? null : newTheme });
+    
     this.isExpanded.set(false);
   }
 }

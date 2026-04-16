@@ -1,4 +1,6 @@
-const initSchema = async () => {
+const { Pool } = require('pg');
+
+const initSchema = async (pool) => {
   const client = await pool.connect();
   try {
     await client.query(`
@@ -46,21 +48,23 @@ const initSchema = async () => {
       CREATE TABLE IF NOT EXISTS cms_articles (
         -- AUTO-GENERATED STATIC ELEMENTS
         id SERIAL PRIMARY KEY,
-        publish_date DATE,                   /* Set automatically when published */
-        reading_time VARCHAR(50),            /* Calculated automatically on backend */
+        publish_date DATE,                   
+        reading_time VARCHAR(50),            
         
         -- MANUAL STATIC ELEMENTS
         title VARCHAR(255) NOT NULL,
+        theme VARCHAR(100),                  /* <-- Good practice to define theme here */
+        placement VARCHAR(50) DEFAULT 'none',/* <-- Added this since it's in your PUT route! */
         keywords VARCHAR(255),
         description TEXT,
         image TEXT,
-        content_blocks JSONB DEFAULT '[]',   /* Stores your ArticleBlock[] */
+        markdown_content TEXT DEFAULT '',    /* <-- NEW: Replaced content_blocks with this */
         published BOOLEAN DEFAULT FALSE,
         
         -- DYNAMIC ELEMENTS
         views INT DEFAULT 0,
         likes INT DEFAULT 0,
-        comments JSONB DEFAULT '[]',         /* Flexible structure for future comments */
+        comments JSONB DEFAULT '[]',         
         
         created_at TIMESTAMPTZ DEFAULT NOW(),
         updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -70,3 +74,5 @@ const initSchema = async () => {
     client.release();
   }
 };
+
+module.exports = { initSchema };

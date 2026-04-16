@@ -1,5 +1,5 @@
 import { Component, signal, computed, OnInit, inject, HostListener } from '@angular/core';
-import { RouterModule, ActivatedRoute } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Review } from '../review.data';
@@ -15,24 +15,46 @@ import { HttpClient } from '@angular/common/http';
 export class CollectionPage implements OnInit {
 
   private http = inject(HttpClient);
+  private router = inject(Router);
   private route = inject(ActivatedRoute);
 
   reviews = signal<Review[]>([]);
 
   showLatestOnly = signal(false);
-
-  // Add your API url
   private apiUrl = 'http://localhost:3000/api';
+
+  // --- STATE SIGNALS ---
+  searchTerm = signal('');
+  selectedGenre = signal<string | null>(null);
+  selectedDecade = signal<string | null>(null);
+  selectedYear = signal<string | null>(null);
+  selectedCountry = signal<string | null>(null);
+  sortBy = signal<'date' | 'name' | 'score'>('date');
+  currentPage = signal(1);
+
+  // UI STATE
+  viewMode = signal<'list' | 'grid'>('list');
+  showFilters = signal(true);
+  gridSize = signal(16);
+  showSortMenu = signal(false);
+  selectedPreview = signal<any | null>(null);
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
       this.showLatestOnly.set(params['filter'] === 'latest');
+
+      this.currentPage.set(params['page'] ? Number(params['page']) : 1);
+      this.searchTerm.set(params['search'] || '');
+      this.selectedGenre.set(params['genre'] || null);
+      this.selectedDecade.set(params['decade'] || null);
+      this.selectedYear.set(params['year'] || null);
+      this.selectedCountry.set(params['country'] || null);
+      this.sortBy.set(params['sort'] || 'date');
     });
 
     // Query the database, asking specifically for published=true
     this.http.get<{ reviews: Review[] }>(`${this.apiUrl}/reviews?published=true`).subscribe({
       next: (data) => {
-        // Data is now live from the database!
         this.reviews.set(data.reviews); 
       },
       error: (error) => {
@@ -41,6 +63,15 @@ export class CollectionPage implements OnInit {
     });
   }
   
+  private updateUrl(newParams: any, replaceHistory: boolean = false) {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: newParams,
+      queryParamsHandling: 'merge', // Keeps existing filters intact!
+      replaceUrl: replaceHistory // True = don't clutter the back button history
+    });
+  }
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
@@ -51,19 +82,72 @@ export class CollectionPage implements OnInit {
     }
   }
 
-  searchTerm = signal('');
-  selectedGenre = signal<string | null>(null);
-  selectedDecade = signal<string | null>(null);
-  selectedYear = signal<string | null>(null);
-  selectedCountry = signal<string | null>(null);
+  // --- Actions ---
 
-  viewMode = signal<'list' | 'grid'>('list');
-  showFilters = signal(true);
-  gridSize = signal(16);
-  sortBy = signal<'date' | 'name' | 'score'>('date');
-  showSortMenu = signal(false);
+  updateSearch(term: string) {
+    this.updateUrl({ search: term || null, page: 1 }, true); 
+    this.selectedPreview.set(null);
+  }
 
-  selectedPreview = signal<any | null>(null);
+  changePage(page: number) {
+    if (page >= 1 && page <= this.totalPages()) {
+      this.updateUrl({ page: page });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      this.selectedPreview.set(null);
+    }
+  }
+
+  toggleGenre(genre: string) {
+    const newGenre = this.selectedGenre() === genre ? null : genre;
+    this.updateUrl({ genre: newGenre, page: 1 });
+    this.selectedPreview.set(null);
+  }
+
+  selectDecade(event: Event) {
+    const val = (event.target as HTMLSelectElement).value;
+    this.updateUrl({ decade: val === '' ? null : val, year: null, page: 1 });
+    this.selectedPreview.set(null);
+  }
+
+  selectYear(event: Event) {
+    const val = (event.target as HTMLSelectElement).value;
+    this.updateUrl({ year: val === '' ? null : val, page: 1 });
+    this.selectedPreview.set(null);
+  }
+
+  toggleCountry(country: string) {
+    const newCountry = this.selectedCountry() === country ? null : country;
+    this.updateUrl({ country: newCountry, page: 1 });
+    this.selectedPreview.set(null);
+  }
+
+  updateSort(sortType: string) {
+    this.updateUrl({ sort: sortType, page: 1 });
+    this.selectedPreview.set(null);
+    this.showSortMenu.set(false);
+  }
+
+  applyFilterFromTag(type: 'year' | 'country' | 'genre', value: string) {
+    if (!value) return;
+
+    let newParams: any = { page: 1 };
+
+    if (type === 'year') {
+      newParams.year = value;
+      newParams.decade = value.slice(0, 3) + '0s';
+    } 
+    else if (type === 'country') {
+      newParams.country = this.countries.find(c => c.toLowerCase() === value.toLowerCase()) || value;
+    } 
+    else if (type === 'genre') {
+      newParams.genre = this.genres.find(g => g.toLowerCase() === value.toLowerCase()) || value;
+    }
+    
+    this.updateUrl(newParams);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // --- LOCAL UI TOGGLES ---
   
   togglePreview(review: any) {
     if (this.selectedPreview()?.id === review.id) {
@@ -71,6 +155,23 @@ export class CollectionPage implements OnInit {
     } else {
       this.selectedPreview.set(review);
     }
+  }
+
+  setListView() {
+    this.viewMode.set('list');
+    this.showFilters.set(true);
+  }
+
+  setGridView() {
+    this.viewMode.set('grid');
+    this.showFilters.set(false);
+    this.currentPage.set(1);
+    this.selectedPreview.set(null);
+  }
+
+  updateGridSize(event: any) {
+    this.gridSize.set(Number(event));
+    this.currentPage.set(1);
   }
 
   getSplitGenres(genreData: any): string[] {
@@ -83,46 +184,14 @@ export class CollectionPage implements OnInit {
       .filter((g: string) => g.length > 0);
   }
 
-  applyFilterFromTag(type: 'year' | 'country' | 'genre', value: string) {
-    if (!value) return;
-
-    if (type === 'year') {
-      this.selectedYear.set(value);
-      // Automatically set the decade so the UI dropdown matches!
-      const decade = value.slice(0, 3) + '0s';
-      this.selectedDecade.set(decade);
-    } 
-    else if (type === 'country') {
-      // Find the exact casing from your countries array, or default to the value
-      const exactCountry = this.countries.find(c => c.toLowerCase() === value.toLowerCase()) || value;
-      this.selectedCountry.set(exactCountry);
-    } 
-    else if (type === 'genre') {
-      const exactGenre = this.genres.find(g => g.toLowerCase() === value.toLowerCase()) || value;
-      this.selectedGenre.set(exactGenre);
-    }
-    
-    // Reset to page 1 and scroll to top
-    this.currentPage.set(1);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  updateSort(sortType: string) {
-    this.sortBy.set(sortType as 'date' | 'name' | 'score');
-    this.currentPage.set(1);
-    this.selectedPreview.set(null);
-    this.showSortMenu.set(false); // Closes the dropdown after selection
-  }
-  
-  currentPage = signal(1);
+  // --- DATA ARRAYS & COMPUTEDS ---
 
   gridColumns = computed(() => Math.ceil(Math.sqrt(this.gridSize())));
-
   itemsPerPage = computed(() => this.viewMode() === 'grid' ? this.gridSize() : 7);
 
   genres = ['Rock', 'Pop', 'Jazz', 'Soul', 'Electronica', 'Hip Hop', 'Indie', 'Folk', 'Metal', 'Classical', 'Reggae', 'Blues', 'Country'];
   decades = ['1960s', '1970s', '1980s', '1990s', '2000s', '2010s', '2020s'];
-  countries = ['US', 'UK', 'Brazil', 'Japan', 'Germany', 'France', 'Canada'];
+  countries = ['US', 'UK', 'Germany'];
 
   showAllGenres = signal(false);
   showAllCountries = signal(false);
@@ -268,66 +337,6 @@ export class CollectionPage implements OnInit {
 
     return `Showing ${start}-${end} out of ${total} reviews`;
   });
-
-  updateSearch(term: string) {
-    this.searchTerm.set(term);
-    this.currentPage.set(1);
-    this.selectedPreview.set(null);
-  }
-
-  changePage(page: number) {
-    if (page >= 1 && page <= this.totalPages()) {
-      this.currentPage.set(page);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      this.selectedPreview.set(null);
-    }
-  }
-
-  setListView() {
-    this.viewMode.set('list');
-    this.showFilters.set(true);
-    this.currentPage.set(1);
-    this.selectedPreview.set(null);
-  }
-
-  setGridView() {
-    this.viewMode.set('grid');
-    this.showFilters.set(false);
-    this.currentPage.set(1);
-    this.selectedPreview.set(null);
-  }
-
-  updateGridSize(event: any) {
-    this.gridSize.set(Number(event));
-    this.currentPage.set(1);
-  }
-
-  toggleGenre(genre: string) {
-    this.selectedGenre.update(v => v === genre ? null : genre);
-    this.currentPage.set(1);
-    this.selectedPreview.set(null);
-  }
-
-  selectDecade(event: Event) {
-    const val = (event.target as HTMLSelectElement).value;
-    this.selectedDecade.set(val === '' ? null : val);
-    this.selectedYear.set(null);
-    this.currentPage.set(1);
-    this.selectedPreview.set(null);
-  }
-
-  selectYear(event: Event) {
-    const val = (event.target as HTMLSelectElement).value;
-    this.selectedYear.set(val === '' ? null : val);
-    this.currentPage.set(1);
-    this.selectedPreview.set(null); // Clear preview
-  }
-
-  toggleCountry(country: string) {
-    this.selectedCountry.update(v => v === country ? null : country);
-    this.currentPage.set(1);
-    this.selectedPreview.set(null); // Clear preview
-  }
 
   getPreviewIntro(text: string | undefined): string {
     if (!text) return 'No introduction written yet.';

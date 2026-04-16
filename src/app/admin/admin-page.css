@@ -151,6 +151,16 @@
   background-color: #0d0d0d;
 }
 
+.markdown-editor {
+  min-height: 400px;
+  /* Monospace font is highly recommended for raw markdown writing */
+  font-family: 'IBM Plex Mono', monospace; 
+  font-size: 0.95rem;
+  line-height: 1.6;
+  resize: vertical; /* Allows the user to drag the box taller if they write a long article */
+  background-color: #111; /* Slightly darker to differentiate from standard inputs */
+}
+
 .editor-header {
   margin-bottom: 30px;
   padding-bottom: 20px;

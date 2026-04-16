@@ -18,6 +18,7 @@ export interface ReviewBlock {
   imageAlt?: string;
   spotifyId?: string;
   youtubeMusicId?: string;
+  audioUrl?: string;
 }
 
 export interface ReviewDetail {

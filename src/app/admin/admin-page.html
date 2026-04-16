@@ -186,48 +186,34 @@
             <textarea [(ngModel)]="article.description" rows="2" placeholder="Summary for the card view..."></textarea>
           </div>
 
-          <div class="widget-list">
-            <div class="widget-list-header">
-              <label>Article Content (Blocks)</label>
-              <div class="widget-actions">
-                <button class="btn-add" (click)="addArticleHeading()">+ Heading</button>
-                <button class="btn-add" (click)="addArticleParagraph()">+ Paragraph</button>
-                <button class="btn-add" (click)="addArticleImage()">+ Image Embed</button>
-              </div>
+          <div class="form-group mt-4">
+            <label>Article Markdown Content</label>
+            
+            <div class="markdown-toolbar" style="display: flex; gap: 15px; margin-bottom: 10px; align-items: center;">
+              
+              <input type="file" 
+                    accept="image/*" 
+                    id="articleImageUpload" 
+                    style="display: none;" 
+                    (change)="uploadArticleImage($event)">
+                    
+              <button class="btn-add" (click)="triggerFileInput()" [disabled]="isUploadingImage()">
+                {{ isUploadingImage() ? 'Uploading to S3...' : '+ Upload Image for Markdown' }}
+              </button>
+
+              @if (showCopySuccess()) {
+                <span style="color: #A5CEC7; font-size: 0.85rem; font-family: 'IBM Plex Mono', monospace;">
+                  ✅ Markdown copied to clipboard! Paste it below.
+                </span>
+              }
             </div>
 
-            @for (block of article.contentBlocks; track $index) {
-              <div class="widget-card">
-                <div class="widget-card-header">
-                  <span class="widget-type">{{ block.type | uppercase }}</span>
-                  <button class="btn-remove" (click)="removeArticleBlock($index)">Remove</button>
-                </div>
-                
-                <div class="widget-card-body">
-                  
-                  @if (block.type === 'heading') {
-                    <input type="text" [(ngModel)]="block.content" placeholder="Type your heading here...">
-                  } 
-                  
-                  @else if (block.type === 'paragraph') {
-                    <textarea [(ngModel)]="block.content" rows="6" placeholder="Write your paragraph..."></textarea>
-                  } 
-                  
-                  @else if (block.type === 'image') {
-                    <div class="form-group">
-                      <input type="text" [(ngModel)]="block.imageUrl" placeholder="Image URL">
-                    </div>
-                    <div class="form-group mt-2">
-                      <input type="text" [(ngModel)]="block.caption" placeholder="Optional image caption">
-                    </div>
-                  }
-
-                </div>
-              </div>
-            }
+            <textarea [(ngModel)]="article.markdownContent" 
+                      class="markdown-editor" 
+                      placeholder="# Your Awesome Header..."></textarea>
           </div>
-
         </div>
+        
       } @else if (selectedReview(); as review) {
         <div class="editor-header">
           <h2>{{ review.album }}</h2>
@@ -281,6 +267,7 @@
               <div class="widget-actions">
                 <button class="btn-add" (click)="addParagraphBlock()">+ Paragraph</button>
                 <button class="btn-add" (click)="addMusicBlock()">+ Music Embed</button>
+                <button class="btn-add" (click)="addImageBlock()">+ Image Embed</button>
               </div>
             </div>
 
@@ -295,11 +282,30 @@
                   @if (block.type === 'paragraph') {
                     <textarea [(ngModel)]="block.content" rows="4" placeholder="Write paragraph markdown here..."></textarea>
                   } @else if (block.type === 'music') {
-                    <input type="text" [(ngModel)]="block.title" placeholder="Track / Album Title">
-                    <div class="form-row two-col mt-2">
-                      <input type="text" [(ngModel)]="block.spotifyId" placeholder="Spotify ID">
-                      <input type="text" [(ngModel)]="block.youtubeMusicId" placeholder="YouTube ID">
-                    </div>
+                      <input type="text" [(ngModel)]="block.title" placeholder="Track / Album Title">
+                      
+                      <div class="form-row two-col mt-2">
+                        <input type="text" [(ngModel)]="block.spotifyId" placeholder="Spotify ID">
+                        <input type="text" [(ngModel)]="block.youtubeMusicId" placeholder="YouTube ID">
+                      </div>
+
+                      <div class="form-row mt-2" style="background: #111; padding: 10px; border-radius: 6px;">
+                        <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+                          <label style="color: #A5CEC7;">Or Upload Direct Audio File (MP3/WAV)</label>
+                          <input type="text" [(ngModel)]="block.audioUrl" placeholder="Direct Audio URL will appear here..." readonly>
+                          <input type="file" accept="audio/*" (change)="uploadAudio($event, block)">
+                        </div>
+                      </div>
+                  } @else if (block.type === 'image') {
+                      <div class="form-row two-col">
+                        <input type="text" [(ngModel)]="block.imageUrl" placeholder="Image URL (Upload or paste link)">
+                        <input type="text" [(ngModel)]="block.imageAlt" placeholder="Alt Text (describe the image)">
+                      </div>
+
+                      <div class="form-group mt-2">
+                        <label>Upload to S3:</label>
+                        <input type="file" accept="image/*" (change)="uploadImage($event, block)">
+                      </div>
                   }
                 </div>
               </div>
