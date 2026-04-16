@@ -30,13 +30,13 @@ export class ArticleSearchPage implements OnInit {
   reviews = signal<any[]>([]);
 
   ngOnInit() {
-    this.http.get<{articles: any[]}>('http://localhost:3000/api/articles?published=true')
+    this.http.get<{articles: any[]}>('http://56.124.116.216:3000/api/articles?published=true')
       .subscribe({
         next: (data) => this.articles.set(data.articles),
         error: (err) => console.error(err)
       });
 
-    this.http.get<{reviews: any[]}>('http://localhost:3000/api/reviews?published=true')
+    this.http.get<{reviews: any[]}>('http://56.124.116.216:3000/api/reviews?published=true')
       .subscribe({
         next: (data) => this.reviews.set(data.reviews),
         error: (err) => console.error('Failed to load reviews', err)

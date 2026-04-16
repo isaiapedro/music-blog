@@ -36,7 +36,7 @@ export class ArticlesPage implements OnInit {
   articles = signal<any[]>([]);
 
   ngOnInit() {
-    this.http.get<{articles: any[]}>('http://localhost:3000/api/articles?published=true')
+    this.http.get<{articles: any[]}>('http://56.124.116.216:3000/api/articles?published=true')
       .subscribe({
         next: (data) => this.articles.set(data.articles),
         error: (err) => console.error(err)
