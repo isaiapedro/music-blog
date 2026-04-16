@@ -15,7 +15,7 @@ import { CommonModule } from '@angular/common';
 export class AdminPage implements OnInit {
   private http = inject(HttpClient);
   // Replace with your actual backend URL if different
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = 'http://56.124.116.216:3000';
 
   // --- REVIEW STATE ---
   showReviews = signal<boolean>(false);

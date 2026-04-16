@@ -35,7 +35,7 @@ export interface Article {
 export class PostPage implements OnInit {
   private route = inject(ActivatedRoute);
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = 'http://56.124.116.216:3000';
 
   article = signal<Article | null>(null);
   hasLiked = signal(false);

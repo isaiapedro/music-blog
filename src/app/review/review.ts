@@ -58,7 +58,7 @@ export class ReviewComponent implements OnInit {
   private http = inject(HttpClient);
   private sanitizer = inject(DomSanitizer);
 
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = 'http://56.124.116.216:3000';
 
   review = signal<ReviewDetail | null>(null);
   isLoading = signal(true);
