@@ -1,5 +1,46 @@
 ![](diagram.png)
 
+Local (staging/dev)
+
+
+# Terminal 1 — backend (uses .env, connects to localhost DB by default)
+node server/index.js
+
+# Terminal 2 — frontend (uses environment.ts → localhost:3000)
+npm start
+# → ng serve → http://localhost:4200
+Production
+
+
+# 1. Build frontend with prod config (swaps environment.prod.ts)
+npm run build
+# Output goes to dist/leavesshop/browser/
+
+# 2. Serve the dist/ folder via nginx or serve it from the EC2 Node server
+# Option A: have Express serve the Angular build
+# Add to server/index.js (before the listen call):
+#   const path = require('path');
+#   app.use(express.static(path.join(__dirname, '../dist/leavesshop/browser')));
+#   app.get('*', (req, res) => res.sendFile(path.join(__dirname, '../dist/leavesshop/browser/index.html')));
+
+# 3. Start the backend on EC2
+node server/index.js
+# Or with PM2 (recommended for production):
+pm2 start server/index.js --name music-blog
+Key differences per env
+
+Local	Production
+apiUrl	http://localhost:3000/api	http://56.124.116.216:3000/api
+ng build config	development (default for ng serve)	production (npm run build)
+ALLOWED_ORIGINS in .env	http://localhost:4200	your real domain
+DB	local postgres or RDS	RDS
+To test prod build locally (e.g. verify the bundle before deploying):
+
+
+npm run build
+npx serve dist/leavesshop/browser
+This serves the production bundle at localhost:3000 but still hits whatever apiUrl is set in environment.prod.ts.
+
 The provided code snippet appears to be a mix of HTML, CSS, and JavaScript files for a web application. It includes various components such as a search bar, post list, and meta actions. However, without more context or information about the specific functionality or requirements of this code, it's challenging to provide a comprehensive review.
 
 That being said, here are some observations and potential improvements:
