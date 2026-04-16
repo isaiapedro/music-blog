@@ -7,6 +7,8 @@ import { PostPage } from './post-page/post-page';
 import { HomePage } from './home-page/home-page';
 import { ReviewComponent } from './review/review';
 import { AdminPage } from './admin/admin-page';
+import { LoginComponent } from './auth/login/login';
+import { authGuard } from './auth/auth.guard';
 
 export const routes: Routes = [
     { path: "", redirectTo: "home-page", pathMatch: "full" },
@@ -30,13 +32,18 @@ export const routes: Routes = [
         path: 'collection-page',
         component: CollectionPage,
     },
-    { 
-        path: 'collection-page/:id', 
-        component: ReviewComponent 
+    {
+        path: 'collection-page/:id',
+        component: ReviewComponent
     },
     {
         path: 'admin',
         component: AdminPage,
+        canActivate: [authGuard],
+    },
+    {
+        path: 'login',
+        component: LoginComponent,
     },
     {
         path: 'about-page',

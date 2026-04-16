@@ -1,0 +1,25 @@
+<div class="login-wrapper">
+  <div class="login-card">
+    <h2>Admin Access</h2>
+    <form (ngSubmit)="submit()">
+      <div class="field">
+        <label for="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          [(ngModel)]="password"
+          name="password"
+          placeholder="Enter admin password"
+          autocomplete="current-password"
+          [disabled]="loading()"
+        />
+      </div>
+      @if (error()) {
+        <p class="error-msg">{{ error() }}</p>
+      }
+      <button type="submit" [disabled]="loading() || !password">
+        {{ loading() ? 'Signing in...' : 'Sign In' }}
+      </button>
+    </form>
+  </div>
+</div>

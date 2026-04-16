@@ -23,7 +23,7 @@ export class CollectionPage implements OnInit {
   showLatestOnly = signal(false);
 
   // Add your API url
-  private apiUrl = 'http://56.124.116.216:3000';
+  private apiUrl = 'http://56.124.116.216:3000/api';
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {

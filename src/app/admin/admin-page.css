@@ -41,6 +41,23 @@
   background-color: #8bb3ab;
 }
 
+.btn-logout {
+  background-color: transparent;
+  color: #888;
+  border: 1px solid #444;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-logout:hover {
+  background-color: #e05c5c;
+  border-color: #e05c5c;
+  color: #fff;
+}
+
 /* --- Body Layout --- */
 .cms-body {
   display: flex;

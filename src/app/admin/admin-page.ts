@@ -3,6 +3,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../auth/auth.service';
 
 @Component({
   selector: 'app-admin-page',
@@ -14,8 +15,9 @@ import { CommonModule } from '@angular/common';
 
 export class AdminPage implements OnInit {
   private http = inject(HttpClient);
+  private auth = inject(AuthService);
   // Replace with your actual backend URL if different
-  private apiUrl = 'http://56.124.116.216:3000';
+  private apiUrl = 'http://56.124.116.216:3000/api';
 
   // --- REVIEW STATE ---
   showReviews = signal<boolean>(false);
@@ -197,6 +199,10 @@ export class AdminPage implements OnInit {
         this.isSaving.set(false);
       }
     });
+  }
+
+  logout() {
+    this.auth.logout();
   }
 
   deleteCurrentArticle() {

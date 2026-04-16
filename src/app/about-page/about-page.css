@@ -351,6 +351,8 @@
 }
 
 .project-item {
+    text-decoration: none;
+    color: inherit;
     display: flex;
     flex-direction: column;
     align-items: flex-start;;

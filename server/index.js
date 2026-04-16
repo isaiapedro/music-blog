@@ -1,8 +1,9 @@
-require('dotenv').config();
+require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
 const sharp = require('sharp');
+const jwt = require('jsonwebtoken');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const { pool, initSchema } = require('./db');
 
@@ -13,6 +14,27 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/favicon.ico', (req, res) => res.status(204).end());
+
+// --- AUTH MIDDLEWARE ---
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'Access denied. No token provided.' });
+  jwt.verify(token, process.env.JWT_SECRET, (err) => {
+    if (err) return res.status(403).json({ error: 'Invalid or expired token.' });
+    next();
+  });
+}
+
+// --- AUTH ROUTE ---
+app.post('/api/auth/login', (req, res) => {
+  const { password } = req.body;
+  if (!password || password !== process.env.ADMIN_PASSWORD) {
+    return res.status(401).json({ error: 'Invalid password.' });
+  }
+  const token = jwt.sign({ role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '8h' });
+  res.json({ token });
+});
 
 // --- AWS S3 CONFIGURATION ---
 const upload = multer({ storage: multer.memoryStorage() });
@@ -142,7 +164,7 @@ app.get('/api/articles/:id', async (req, res) => {
   }
 });
 
-app.post('/api/articles', async (req, res) => {
+app.post('/api/articles', authenticateToken, async (req, res) => {
   try {
     // 1. Insert a blank row. 
     // PostgreSQL auto-generates the 'id' and our schema defaults 'published' to false.
@@ -180,7 +202,7 @@ app.post('/api/articles', async (req, res) => {
   }
 });
 
-app.delete('/api/articles/:id', async (req, res) => {
+app.delete('/api/articles/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
   try {
     const result = await pool.query('DELETE FROM cms_articles WHERE id = $1', [id]);
@@ -197,7 +219,7 @@ app.delete('/api/articles/:id', async (req, res) => {
   }
 });
 
-app.put('/api/articles/:id', async (req, res) => {
+app.put('/api/articles/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
   const b = req.body;
   const placement = b.placement || 'none';
@@ -307,7 +329,7 @@ app.get('/api/reviews/:id', async (req, res) => {
 });
 
 // POST Route: Image Upload & Compression
-app.post('/api/upload', upload.single('image'), async (req, res) => {
+app.post('/api/upload', authenticateToken, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded.' });
@@ -341,7 +363,7 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
   }
 });
 
-app.put('/api/reviews/:id', async (req, res) => {
+app.put('/api/reviews/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
   const b = req.body;
 
@@ -406,14 +428,12 @@ app.put('/api/reviews/:id', async (req, res) => {
 });
 
 // --- 4. SERVER START ---
+app.listen(port, () => {
+  console.log(`\n🚀 Backend Server is officially running!`);
+  console.log(`📡 Listening for Angular on: http://localhost:${port}\n`);
+});
+
+// Init DB schema in background — does not block server startup
 initSchema()
-  .then(() => {
-    app.listen(port, () => {
-      console.log(`\n🚀 Backend Server is officially running!`);
-      console.log(`📡 Listening for Angular on: http://localhost:${port}\n`);
-    });
-  })
-  .catch((err) => {
-    console.error('Failed to initialize database schema:', err);
-    process.exit(1);
-  });
+  .then(() => console.log('✅ DB schema verified.'))
+  .catch((err) => console.error('⚠️  DB schema init failed (DB may be unreachable locally):', err.message));

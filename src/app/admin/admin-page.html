@@ -2,11 +2,14 @@
   
   <nav class="cms-navbar">
     <div class="cms-logo">Content Manager</div>
-    <button class="btn-export" 
-            [disabled]="(!selectedReview() && !selectedArticle()) || isSaving()" 
-            (click)="saveCurrentItem()">
-      {{ isSaving() ? 'Saving...' : 'Save to Database' }}
-    </button>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <button class="btn-export"
+              [disabled]="(!selectedReview() && !selectedArticle()) || isSaving()"
+              (click)="saveCurrentItem()">
+        {{ isSaving() ? 'Saving...' : 'Save to Database' }}
+      </button>
+      <button class="btn-logout" (click)="logout()">Logout</button>
+    </div>
   </nav>
 
   
