@@ -392,13 +392,191 @@
 .project-item:hover {
     /* Rotates the right edge toward the user, pushes left, and adds a slight skew */
     transform: rotateY(15deg) translateX(-15px) skewY(-1deg);
-    
+
     /* Simulates the shadow of the curling paper */
     background: linear-gradient(to right, #ede4d3 80%, #d8d0b8 100%);
     box-shadow: 15px 10px 15px rgba(0,0,0,0.15);
-    
+
     border-bottom-color: transparent; /* Hides the dotted line to sell the "ripped" look */
     border-radius: 4px;
     z-index: 5;
     position: relative;
+}
+
+@media (max-width: 768px) {
+  .about-container {
+    padding: 4.5rem 1rem 3rem;
+    position: relative;
+  }
+
+  .about-title {
+    font-size: 2.2rem;
+    margin: 2rem auto 2rem auto;
+  }
+
+  .content-split {
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    margin: 20px 0;
+  }
+
+  /* Hide decorative paperclip */
+  .paperclip {
+    display: none;
+  }
+
+  /* Bio card — compact, no rotation */
+  .bio-card {
+    max-width: 320px;
+    width: 100%;
+    transform: none;
+    max-height: none;
+    border-radius: 8px;
+    padding: 20px;
+  }
+
+  .bio-top-section {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .bio-photo-wrapper {
+    width: 100px;
+    height: 110px;
+    flex-shrink: 0;
+    margin-right: 0;
+  }
+
+  .bio-header-text {
+    margin-left: 0;
+    margin-top: 0;
+    gap: 12px;
+    flex: 1;
+  }
+
+  .bio-value {
+    font-size: 1.6rem;
+  }
+
+  .large-signature {
+    font-size: 1.8rem;
+  }
+
+  .bio-info {
+    margin-left: 0;
+    margin-right: 0;
+    gap: 12px;
+  }
+
+  .bio-label {
+    font-size: 0.95rem;
+    width: 95px;
+  }
+
+  /* Tools section */
+  .tools-collection-container {
+    margin: 0;
+    width: 100%;
+  }
+
+  .collection-header {
+    text-align: left;
+    margin-right: 0;
+  }
+
+  .scattered-tools {
+    margin-left: 0;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 30px;
+  }
+
+  .tool-sample img {
+    max-width: 120px;
+    max-height: 120px;
+    }
+
+  .tool-2 img {
+    width: 35%;
+    height: auto;
+  }
+
+  .tool-3 img {
+    width: 32%;
+    height: auto;
+  }
+
+  .tool-1,
+  .tool-2,
+  .tool-3 {
+    align-self: auto;
+    transform: none;
+    flex-direction: row;
+    text-align: left;
+    margin-left: 0;
+  }
+
+  /* Fun facts — stacked, centered, no clipping */
+  .facts-header {
+    margin-top: 20px;
+    margin-bottom: 16px;
+  }
+
+  .scattered-facts {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 100%;
+    margin-top: 30px;
+  }
+
+  .fact-sample {
+    padding: 0;
+    gap: 10px;
+    align-items: center;
+    text-align: center;
+  }
+
+  .fact-1,
+  .fact-2,
+  .fact-3,
+  .fact-4 {
+    align-self: auto;
+    transform: none;
+    flex-direction: column;
+    align-items: center;
+    margin-left: 0;
+    margin-top: 0;
+  }
+
+  .fact-sample img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .fact-2 img {
+    width: 50%;
+    height: auto;
+  }
+
+  .fact-4 img {
+    width: 75%;
+    height: auto;
+  }
+
+  .pet-heart {
+    position: static;
+    width: 24px;
+    height: 24px;
+  }
+
+  /* Projects paper — full width, no rotation */
+  .projects-paper {
+    max-width: 90%;
+    width: 90%;
+    transform: none;
+  }
 }

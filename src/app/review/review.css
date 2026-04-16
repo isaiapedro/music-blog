@@ -302,11 +302,69 @@ figcaption { font-size: 0.85rem; color: #666; margin-top: 0.25rem; }
     font-weight: normal;
 }
 
-@media (max-width: 600px) {
-    .score-card {
-        flex-direction: column;
-        text-align: center;
-    }
+@media (max-width: 768px) {
+  .review-article {
+    padding: 4.5rem 1rem 3rem;
+  }
+
+  .top-row {
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: flex-start;
+  }
+
+  .cover-wrap {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .article-cover {
+    width: 100%;
+    height: auto;
+  }
+
+  .article-header-column {
+    margin-top: 0;
+    margin-left: 0;
+    gap: 1rem;
+  }
+
+  .article-title {
+    font-size: 2rem;
+    line-height: 2.2rem;
+  }
+
+  .article-artist {
+    font-size: 1.3rem;
+  }
+
+  .main-content {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .score {
+    min-width: unset;
+    width: 100%;
+  }
+
+  .similar-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .similar-cover-wrap {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .similar {
+    padding: 1.5rem;
+  }
+
+  .section {
+    padding: 1.2rem;
+  }
 }
 
 /* Tracklist */

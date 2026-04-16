@@ -1,5 +1,5 @@
 import { Component, signal, computed, OnInit, inject, HostListener } from '@angular/core';
-import { RouterModule, ActivatedRoute } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Review } from '../review.data';
@@ -16,6 +16,7 @@ export class CollectionPage implements OnInit {
 
   private http = inject(HttpClient);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
   reviews = signal<Review[]>([]);
 
@@ -66,6 +67,10 @@ export class CollectionPage implements OnInit {
   selectedPreview = signal<any | null>(null);
   
   togglePreview(review: any) {
+    if (window.innerWidth <= 768) {
+      this.router.navigate(['/collection-page', review.id]);
+      return;
+    }
     if (this.selectedPreview()?.id === review.id) {
       this.selectedPreview.set(null);
     } else {

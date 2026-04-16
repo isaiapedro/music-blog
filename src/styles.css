@@ -3,5 +3,11 @@ html, body {
   padding: 0;
   width: 100%;
   background-color: #000 !important;
-  touch-action: none;
+}
+
+@media (max-width: 768px) {
+  html, body {
+    touch-action: auto;
+    overflow-x: hidden;
+  }
 }

@@ -716,3 +716,99 @@
   font-size: 0.85rem;
   border-color: #444;
 }
+
+@media (max-width: 768px) {
+  .shop-container {
+    padding: 4.5rem 1rem 3rem;
+    position: relative;
+  }
+
+  .collection-title {
+    font-size: 2.2rem;
+    margin: 1.5rem auto 2rem auto;
+  }
+
+  .shop-content-wrapper {
+    flex-direction: column;
+    padding-left: 0;
+    gap: 1.5rem;
+  }
+
+  .sidebar {
+    width: 100%;
+    border-radius: 12px;
+    padding: 1.2rem;
+    gap: 1.5rem;
+  }
+
+  .main-content {
+    flex-direction: column;
+  }
+
+  .left-controls {
+    margin: 0;
+    position: static;
+    max-height: none;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .layout-controls {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .standalone-toggle {
+    width: auto;
+  }
+
+  .content-container {
+    width: 100%;
+  }
+
+  .blog-list {
+    gap: 1rem;
+  }
+
+  .blog-post {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .post-title {
+    font-size: 1.1rem;
+    white-space: normal;
+  }
+
+  .post-image {
+    width: 80px;
+    height: 80px;
+  }
+
+  .preview-pane {
+    display: none;
+  }
+
+  .meta-actions {
+    display: none;
+  }
+
+  .sort-container {
+    margin-top: 0;
+    margin-left: 0;
+  }
+
+  .pagination {
+    max-width: 100%;
+  }
+
+  .album-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  .grid-settings-box {
+    padding: 1rem;
+  }
+}

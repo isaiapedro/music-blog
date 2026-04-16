@@ -246,3 +246,51 @@
 @media (max-width: 500px) {
   .masonry-grid { column-count: 1; }
 }
+
+@media (max-width: 768px) {
+  .articles-container {
+    padding: 80px 16px;
+    position: relative;
+  }
+
+  .search-wrapper {
+    margin-left: 0;
+    max-width: 100%;
+  }
+
+  .search-bar {
+    width: 85%;
+    padding: 10px 16px 10px 38px;
+    font-size: 0.95rem;
+  }
+
+  .search-icon {
+    left: 12px;
+    width: 16px;
+    height: 16px;
+  }
+
+  .collection-title {
+    font-size: 2.2rem;
+    margin: 1.5rem auto 2rem auto;
+  }
+
+  .filter-section {
+    gap: 10px;
+  }
+
+  .filter-rect {
+    padding: 10px 16px;
+    font-size: 0.85rem;
+  }
+
+  .masonry-grid {
+    column-count: 1;
+    padding: 16px 0;
+  }
+
+  .show-more-btn {
+    padding: 12px 24px;
+    font-size: 1rem;
+  }
+}

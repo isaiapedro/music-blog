@@ -65,9 +65,11 @@ export class ReviewComponent implements OnInit {
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+
       const idParam = params.get('id');
       const id = idParam ? String(idParam) : null;
-      
+
       if (!id) {
         this.isLoading.set(false);
         return;
