@@ -30,10 +30,10 @@
         <div class="subtitle"> Articles </div>
         @for (article of filteredArticles(); track article.title; let i = $index) {
           <div class="blog-post" 
-            [routerLink]="['/articles-page', article.id]"
+            [routerLink]="['/articles', article.slug || article.id]"
             [class.disabled-post]="!isArticlesExpanded() && i > 2">
             <div class="post-content">
-              <a [routerLink]="['/articles-page', article.id]" routerLinkActive="active-link" class="article-title">
+              <a [routerLink]="['/articles', article.slug || article.id]" routerLinkActive="active-link" class="article-title">
                 {{ article.title }}
               </a>
               <p class="post-description">
@@ -74,10 +74,10 @@
         <div class="subtitle-review"> Reviews </div>
         @for (review of filteredReviews(); track review.album; let i = $index) {
           <div class="blog-post" 
-            [routerLink]="['/collection-page', review.id]"
+            [routerLink]="['/reviews', review.slug || review.id]"
             [class.disabled-post]="!isReviewsExpanded() && i > 2">
             <div class="post-content">
-              <a [routerLink]="['/collection-page', review.id]" routerLinkActive="active-link" class="article-title">
+              <a [routerLink]="['/reviews', review.slug || review.id]" routerLinkActive="active-link" class="article-title">
                 {{ review.album }} - {{ review.artist }}
               </a>
               <p class="post-description">

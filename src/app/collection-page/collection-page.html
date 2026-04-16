@@ -236,7 +236,7 @@
 
             <p class="preview-desc">"{{ getPreviewIntro(review.introduction) }}"</p>
             
-            <button class="btn-show-more" [routerLink]="['/collection-page', review.id]">
+            <button class="btn-show-more" [routerLink]="['/reviews', review.slug || review.id]">
               Read Full Review
             </button>
           </div>

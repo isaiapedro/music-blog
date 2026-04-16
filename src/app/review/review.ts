@@ -1,9 +1,10 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { Component, inject, OnInit, signal, DOCUMENT } from '@angular/core';
+import { Title, Meta, DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { MarkdownComponent } from 'ngx-markdown';
 import { HttpClient } from '@angular/common/http';
 import { ImgFadeDirective } from '../shared/img-fade.directive';
+import { environment } from '../../environments/environment';
 
 export interface Track {
   number: number;
@@ -43,7 +44,7 @@ export interface ReviewDetail {
   introduction?: string;
   breakdown?: ReviewBlock[];
   conclusion?: string;
-  similarAlbums?: Array<{ id: string | number; image: string; album: string; artist: string, releaseDate: string }>;
+  similarAlbums?: Array<{ id: string | number; slug?: string; image: string; album: string; artist: string, releaseDate: string }>;
   comments?: Array<{ user: string; date: string; text: string }>;
 }
  
@@ -58,8 +59,11 @@ export class ReviewComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private http = inject(HttpClient);
   private sanitizer = inject(DomSanitizer);
+  private titleService = inject(Title);
+  private metaService = inject(Meta);
+  private document = inject(DOCUMENT);
 
-  private apiUrl = 'http://56.124.116.216:3000/api';
+  private apiUrl = environment.apiUrl;
 
   review = signal<ReviewDetail | null>(null);
   isLoading = signal(true);
@@ -68,18 +72,16 @@ export class ReviewComponent implements OnInit {
     this.route.paramMap.subscribe(params => {
       window.scrollTo({ top: 0, behavior: 'instant' });
 
-      const idParam = params.get('id');
-      const id = idParam ? String(idParam) : null;
+      const slug = params.get('slug') || params.get('id');
 
-      if (!id) {
+      if (!slug) {
         this.isLoading.set(false);
         return;
       }
 
       this.isLoading.set(true);
-      
-      // Force the browser to skip the cache and hit your database directly
-      this.http.get<any>(`${this.apiUrl}/reviews/${id}`, {
+
+      this.http.get<any>(`${this.apiUrl}/reviews/${slug}`, {
         headers: {
           'Cache-Control': 'no-cache',
           'Pragma': 'no-cache'
@@ -93,6 +95,27 @@ export class ReviewComponent implements OnInit {
             similarAlbums: typeof data.similarAlbums === 'string' ? JSON.parse(data.similarAlbums) : data.similarAlbums,
           });
           this.isLoading.set(false);
+          const pageTitle = `${data.album} — ${data.artist} Review | Isaia`;
+          this.titleService.setTitle(pageTitle);
+          const desc = data.description || data.context || '';
+          this.metaService.updateTag({ name: 'description', content: desc });
+          this.metaService.updateTag({ property: 'og:title', content: pageTitle });
+          this.metaService.updateTag({ property: 'og:description', content: desc });
+          this.metaService.updateTag({ property: 'og:image', content: data.image || '' });
+          this.metaService.updateTag({ property: 'og:url', content: window.location.href });
+          this.metaService.updateTag({ property: 'og:type', content: 'music.album' });
+          this.setCanonical(window.location.href);
+          this.setJsonLd({
+            '@context': 'https://schema.org',
+            '@type': 'MusicAlbum',
+            name: data.album,
+            byArtist: { '@type': 'MusicGroup', name: data.artist },
+            description: desc,
+            image: data.image || '',
+            datePublished: data.releaseDate || '',
+            genre: data.genre || '',
+            url: window.location.href
+          });
         },
         error: (err) => {
           console.error("Failed to load review:", err);
@@ -151,5 +174,25 @@ export class ReviewComponent implements OnInit {
     return this.sanitizer.bypassSecurityTrustResourceUrl(
       `https://www.youtube.com/embed/${videoId}`
     );
+  }
+
+  private setCanonical(url: string) {
+    let link: HTMLLinkElement = this.document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+    if (!link) {
+      link = this.document.createElement('link');
+      link.setAttribute('rel', 'canonical');
+      this.document.head.appendChild(link);
+    }
+    link.setAttribute('href', url);
+  }
+
+  private setJsonLd(data: object) {
+    let script: HTMLScriptElement = this.document.querySelector('script[type="application/ld+json"]') as HTMLScriptElement;
+    if (!script) {
+      script = this.document.createElement('script');
+      script.type = 'application/ld+json';
+      this.document.head.appendChild(script);
+    }
+    script.textContent = JSON.stringify(data);
   }
 }

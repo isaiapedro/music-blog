@@ -1,8 +1,10 @@
-import { Component, signal, inject, OnInit } from '@angular/core';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { Component, signal, inject, OnInit, DOCUMENT } from '@angular/core';
+import { ActivatedRoute, RouterModule, Router } from '@angular/router';
+import { Title, Meta } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { ImgFadeDirective } from '../shared/img-fade.directive';
+import { environment } from '../../environments/environment';
 
 export interface ArticleBlock {
   type: 'heading' | 'paragraph' | 'image';
@@ -35,22 +37,44 @@ export interface Article {
 
 export class PostPage implements OnInit {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private http = inject(HttpClient);
-  private apiUrl = 'http://56.124.116.216:3000/api';
+  private titleService = inject(Title);
+  private metaService = inject(Meta);
+  private document = inject(DOCUMENT);
+  private apiUrl = environment.apiUrl;
 
   article = signal<Article | null>(null);
   hasLiked = signal(false);
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
-      const id = Number(params.get('id'));
-      
-      // Fetch live data from your shiny new database
-      this.http.get<Article>(`${this.apiUrl}/articles/${id}`).subscribe({
+      const slug = params.get('slug') || params.get('id');
+
+      this.http.get<Article>(`${this.apiUrl}/articles/${slug}`).subscribe({
         next: (data) => {
           this.article.set(data);
           this.hasLiked.set(false);
           window.scrollTo({ top: 0, behavior: 'smooth' });
+          const pageTitle = `${data.title} — Isaia`;
+          this.titleService.setTitle(pageTitle);
+          this.metaService.updateTag({ name: 'description', content: data.description || '' });
+          this.metaService.updateTag({ property: 'og:title', content: pageTitle });
+          this.metaService.updateTag({ property: 'og:description', content: data.description || '' });
+          this.metaService.updateTag({ property: 'og:image', content: data.image || '' });
+          this.metaService.updateTag({ property: 'og:url', content: window.location.href });
+          this.metaService.updateTag({ property: 'og:type', content: 'article' });
+          this.setCanonical(window.location.href);
+          this.setJsonLd({
+            '@context': 'https://schema.org',
+            '@type': 'BlogPosting',
+            headline: data.title,
+            description: data.description || '',
+            image: data.image || '',
+            datePublished: data.date || '',
+            keywords: data.keywords || '',
+            url: window.location.href
+          });
         },
         error: (err) => {
           console.error("Couldn't find the article!", err);
@@ -92,5 +116,25 @@ export class PostPage implements OnInit {
   sharePost() {
     navigator.clipboard.writeText(window.location.href);
     alert('Link copied to clipboard!');
+  }
+
+  private setCanonical(url: string) {
+    let link: HTMLLinkElement = this.document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+    if (!link) {
+      link = this.document.createElement('link');
+      link.setAttribute('rel', 'canonical');
+      this.document.head.appendChild(link);
+    }
+    link.setAttribute('href', url);
+  }
+
+  private setJsonLd(data: object) {
+    let script: HTMLScriptElement = this.document.querySelector('script[type="application/ld+json"]') as HTMLScriptElement;
+    if (!script) {
+      script = this.document.createElement('script');
+      script.type = 'application/ld+json';
+      this.document.head.appendChild(script);
+    }
+    script.textContent = JSON.stringify(data);
   }
 }

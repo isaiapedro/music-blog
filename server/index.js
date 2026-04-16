@@ -1,6 +1,8 @@
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const multer = require('multer');
 const sharp = require('sharp');
 const jwt = require('jsonwebtoken');
@@ -10,8 +12,30 @@ const { pool, initSchema } = require('./db');
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(cors());
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+  : ['http://localhost:4200'];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true
+}));
+
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' }
+}));
 app.use(express.json());
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many login attempts. Try again in 15 minutes.' }
+});
 
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 
@@ -27,7 +51,7 @@ function authenticateToken(req, res, next) {
 }
 
 // --- AUTH ROUTE ---
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', loginLimiter, (req, res) => {
   const { password } = req.body;
   if (!password || password !== process.env.ADMIN_PASSWORD) {
     return res.status(401).json({ error: 'Invalid password.' });
@@ -45,6 +69,29 @@ const s3Client = new S3Client({
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
   }
 });
+
+function generateSlug(text) {
+  return text
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+async function uniqueSlug(pool, table, baseSlug, excludeId = null) {
+  let slug = baseSlug;
+  let count = 1;
+  while (true) {
+    const query = excludeId
+      ? `SELECT id FROM ${table} WHERE slug = $1 AND id != $2`
+      : `SELECT id FROM ${table} WHERE slug = $1`;
+    const params = excludeId ? [slug, excludeId] : [slug];
+    const result = await pool.query(query, params);
+    if (result.rows.length === 0) return slug;
+    slug = `${baseSlug}-${count++}`;
+  }
+}
 
 function calculateReadingTime(contentBlocks) {
   if (!contentBlocks || contentBlocks.length === 0) return '1 min read';
@@ -101,6 +148,25 @@ function rowToReview(row) {
 // ARTICLE ROUTES
 // ----------------------------------------------------
 
+function rowToArticle(row) {
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    theme: row.theme,
+    placement: row.placement || 'none',
+    keywords: row.keywords,
+    description: row.description,
+    date: row.publish_date,
+    image: row.image,
+    readingTime: row.reading_time,
+    views: row.views,
+    likes: row.likes,
+    contentBlocks: row.content_blocks,
+    published: row.published
+  };
+}
+
 app.get('/api/articles', async (req, res) => {
   const { published } = req.query;
   try {
@@ -108,57 +174,34 @@ app.get('/api/articles', async (req, res) => {
     if (published === 'true') {
       query = 'SELECT * FROM cms_articles WHERE published = true ORDER BY id DESC';
     }
-
     const result = await pool.query(query);
-    
-    const articles = result.rows.map(row => ({
-      id: row.id,
-      title: row.title,
-      theme: row.theme,
-      placement: row.placement || 'none',
-      keywords: row.keywords,
-      description: row.description,
-      date: row.publish_date,
-      image: row.image,
-      readingTime: row.reading_time,
-      views: row.views,
-      likes: row.likes,
-      contentBlocks: row.content_blocks,
-      published: row.published
-    }));
-    
-    res.json({ articles });
+    res.json({ articles: result.rows.map(rowToArticle) });
   } catch (err) {
     console.error('Error fetching articles:', err);
     res.status(500).json({ error: 'Database error' });
   }
 });
 
-app.get('/api/articles/:id', async (req, res) => {
-  const { id } = req.params;
+// Supports both slug and legacy numeric id — numeric id returns 301 redirect to slug URL
+app.get('/api/articles/:slug', async (req, res) => {
+  const { slug } = req.params;
   try {
-
-    const result = await pool.query('SELECT * FROM cms_articles WHERE id = $1', [id]);
+    const isNumeric = /^\d+$/.test(slug);
+    const query = isNumeric
+      ? 'SELECT * FROM cms_articles WHERE id = $1'
+      : 'SELECT * FROM cms_articles WHERE slug = $1';
+    const result = await pool.query(query, [slug]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'Article not found' });
-    
-    pool.query('UPDATE cms_articles SET views = views + 1 WHERE id = $1', [id]);
 
     const row = result.rows[0];
-    res.json({
-      id: row.id,
-      title: row.title,
-      theme: row.theme,
-      placement: row.placement || 'none',
-      keywords: row.keywords,
-      description: row.description,
-      date: row.publish_date,
-      image: row.image,
-      readingTime: row.reading_time,
-      views: row.views + 1,
-      likes: row.likes,
-      contentBlocks: row.content_blocks,
-      published: row.published
-    }); 
+
+    // Redirect old numeric-id URLs to slug URL
+    if (isNumeric && row.slug) {
+      return res.redirect(301, `/api/articles/${row.slug}`);
+    }
+
+    pool.query('UPDATE cms_articles SET views = views + 1 WHERE id = $1', [row.id]);
+    res.json({ ...rowToArticle(row), views: row.views + 1 });
   } catch (err) {
     res.status(500).json({ error: 'Database error' });
   }
@@ -166,36 +209,14 @@ app.get('/api/articles/:id', async (req, res) => {
 
 app.post('/api/articles', authenticateToken, async (req, res) => {
   try {
-    // 1. Insert a blank row. 
-    // PostgreSQL auto-generates the 'id' and our schema defaults 'published' to false.
-    // The RETURNING * clause gives us the newly created row immediately!
+    const baseSlug = await uniqueSlug(pool, 'cms_articles', 'untitled-draft');
     const result = await pool.query(`
-      INSERT INTO cms_articles (title, theme, published, views, likes, content_blocks) 
-      VALUES ('Untitled Draft', 'Music', false, 0, 0, '[]'::jsonb) 
+      INSERT INTO cms_articles (title, slug, theme, published, views, likes, content_blocks)
+      VALUES ('Untitled Draft', $1, 'Music', false, 0, 0, '[]'::jsonb)
       RETURNING *;
-    `);
+    `, [baseSlug]);
 
-    const row = result.rows[0];
-    
-    // 2. Map the snake_case DB columns back to your camelCase Angular format
-    const newArticle = {
-      id: row.id,
-      title: row.title,
-      theme: row.theme,
-      placement: row.placement || 'none',
-      keywords: row.keywords,
-      description: row.description,
-      date: row.publish_date,
-      image: row.image,
-      readingTime: row.reading_time,
-      views: row.views,
-      likes: row.likes,
-      contentBlocks: row.content_blocks,
-      published: row.published
-    };
-
-    // 3. Send it back with a 201 Created status
-    res.status(201).json(newArticle);
+    res.status(201).json(rowToArticle(result.rows[0]));
   } catch (err) {
     console.error('Error creating draft:', err);
     res.status(500).json({ error: 'Failed to create new article draft' });
@@ -223,37 +244,40 @@ app.put('/api/articles/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
   const b = req.body;
   const placement = b.placement || 'none';
-  
   const calculatedReadingTime = calculateReadingTime(b.contentBlocks);
 
   try {
+    const newSlug = await uniqueSlug(pool, 'cms_articles', generateSlug(b.title || 'untitled-draft'), id);
+
     if (placement === 'main') {
       await pool.query(`UPDATE cms_articles SET placement = 'none' WHERE placement = 'main' AND id != $1`, [id]);
     } else if (placement === 'side') {
       await pool.query(`UPDATE cms_articles SET placement = 'none' WHERE placement = 'side' AND id != $1`, [id]);
     }
     const result = await pool.query(
-      `UPDATE cms_articles SET 
-        title = $1, 
-        theme = $2,               
-        keywords = $3, 
-        description = $4, 
-        image = $5, 
-        content_blocks = $6::jsonb,
-        published = $7,
-        reading_time = $8,
-        placement = $9,           /* <-- NEW FIELD */
-        publish_date = CASE WHEN $7 = true AND publish_date IS NULL THEN CURRENT_DATE ELSE publish_date END,
+      `UPDATE cms_articles SET
+        title = $1,
+        slug = $2,
+        theme = $3,
+        keywords = $4,
+        description = $5,
+        image = $6,
+        content_blocks = $7::jsonb,
+        published = $8,
+        reading_time = $9,
+        placement = $10,
+        publish_date = CASE WHEN $8 = true AND publish_date IS NULL THEN CURRENT_DATE ELSE publish_date END,
         updated_at = NOW()
-      WHERE id = $10
+      WHERE id = $11
       RETURNING *`,
       [
-        b.title || 'Untitled Draft', 
-        b.theme || 'Music',       // <-- NEW FIELD
+        b.title || 'Untitled Draft',
+        newSlug,
+        b.theme || 'Music',
         b.keywords || '',
         b.description || '',
         b.image || '',
-        JSON.stringify(b.contentBlocks || []), 
+        JSON.stringify(b.contentBlocks || []),
         Boolean(b.published),
         calculatedReadingTime,
         placement,
@@ -261,14 +285,10 @@ app.put('/api/articles/:id', authenticateToken, async (req, res) => {
       ]
     );
 
-    if (result.rowCount === 0) {
-      return res.status(404).json({ error: 'Article not found in DB' });
-    }
-
-    res.json({ message: 'Article updated successfully' });
-    
+    if (result.rowCount === 0) return res.status(404).json({ error: 'Article not found in DB' });
+    res.json({ message: 'Article updated successfully', slug: result.rows[0].slug });
   } catch (err) {
-    console.error('❌ Error updating article:', err);
+    console.error('Error updating article:', err);
     res.status(500).json({ error: 'Failed to update database' });
   }
 });
@@ -313,15 +333,22 @@ app.get('/api/reviews', async (req, res) => {
   }
 });
 
-// GET Route: Single Review
-app.get('/api/reviews/:id', async (req, res) => {
-  const { id } = req.params;
+// GET Route: Single Review — supports slug and legacy numeric id (numeric → 301 redirect to slug)
+app.get('/api/reviews/:slug', async (req, res) => {
+  const { slug } = req.params;
   try {
-    const result = await pool.query('SELECT * FROM cms_reviews WHERE id = $1', [id]);
+    const isNumeric = /^\d+$/.test(slug);
+    const query = isNumeric
+      ? 'SELECT * FROM cms_reviews WHERE id = $1'
+      : 'SELECT * FROM cms_reviews WHERE slug = $1';
+    const result = await pool.query(query, [slug]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'Review not found' });
-    
-    // Uses the rowToReview function to format it perfectly for your Angular frontend
-    res.json(rowToReview(result.rows[0])); 
+
+    const row = result.rows[0];
+    if (isNumeric && row.slug) {
+      return res.redirect(301, `/api/reviews/${row.slug}`);
+    }
+    res.json(rowToReview(row));
   } catch (err) {
     console.error('Error fetching single review:', err);
     res.status(500).json({ error: 'Database error' });
@@ -329,10 +356,19 @@ app.get('/api/reviews/:id', async (req, res) => {
 });
 
 // POST Route: Image Upload & Compression
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
 app.post('/api/upload', authenticateToken, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded.' });
+    }
+    if (!ALLOWED_MIME_TYPES.includes(req.file.mimetype)) {
+      return res.status(400).json({ error: 'Invalid file type. Only JPEG, PNG, WebP and GIF are allowed.' });
+    }
+    if (req.file.size > MAX_FILE_SIZE) {
+      return res.status(400).json({ error: 'File too large. Maximum size is 10MB.' });
     }
 
     // Compress to WebP format
@@ -424,6 +460,58 @@ app.put('/api/reviews/:id', authenticateToken, async (req, res) => {
   } catch (err) {
     console.error('Error updating review:', err);
     res.status(500).json({ error: 'Failed to update database' });
+  }
+});
+
+// --- SITEMAP ---
+app.get('/sitemap.xml', async (req, res) => {
+  const baseUrl = process.env.SITE_URL || 'https://isaia.com.br';
+  try {
+    const [articles, reviews] = await Promise.all([
+      pool.query(`SELECT slug, updated_at FROM cms_articles WHERE published = true AND slug IS NOT NULL`),
+      pool.query(`SELECT slug, updated_at FROM cms_reviews WHERE published = true AND slug IS NOT NULL`)
+    ]);
+
+    const articleUrls = articles.rows.map(row => `
+  <url>
+    <loc>${baseUrl}/articles/${row.slug}</loc>
+    <lastmod>${new Date(row.updated_at).toISOString().split('T')[0]}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>`).join('');
+
+    const reviewUrls = reviews.rows.map(row => `
+  <url>
+    <loc>${baseUrl}/reviews/${row.slug}</loc>
+    <lastmod>${new Date(row.updated_at).toISOString().split('T')[0]}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>`).join('');
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>${baseUrl}/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/articles-page</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/collection-page</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>${articleUrls}${reviewUrls}
+</urlset>`;
+
+    res.set('Content-Type', 'application/xml');
+    res.send(xml);
+  } catch (err) {
+    console.error('Sitemap error:', err);
+    res.status(500).send('Failed to generate sitemap');
   }
 });
 

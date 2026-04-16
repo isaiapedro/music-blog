@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { Review } from '../review.data';
 import { HttpClient } from '@angular/common/http';
 import { ImgFadeDirective } from '../shared/img-fade.directive';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-collection-page',
@@ -24,7 +25,7 @@ export class CollectionPage implements OnInit {
   showLatestOnly = signal(false);
 
   // Add your API url
-  private apiUrl = 'http://56.124.116.216:3000/api';
+  private apiUrl = environment.apiUrl;
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
@@ -69,7 +70,7 @@ export class CollectionPage implements OnInit {
   
   togglePreview(review: any) {
     if (window.innerWidth <= 768) {
-      this.router.navigate(['/collection-page', review.id]);
+      this.router.navigate(['/reviews', review.slug || review.id]);
       return;
     }
     if (this.selectedPreview()?.id === review.id) {

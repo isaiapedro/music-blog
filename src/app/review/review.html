@@ -216,7 +216,7 @@
                     <div class="similar-grid">
                         @for (sim of content.similarAlbums; track sim.id) {
                             
-                            <a [routerLink]="['/collection-page', sim.id]" class="similar-card">
+                            <a [routerLink]="['/reviews', sim.slug || sim.id]" class="similar-card">
                                 
                                 <div class="similar-cover-wrap">
                                     <img

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { ImgFadeDirective } from '../shared/img-fade.directive';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-home-page',
@@ -25,7 +26,7 @@ export class HomePage implements OnInit {
 
   ngOnInit() {
     // Fetch ONLY published articles from the DB
-    this.http.get<{articles: any[]}>('http://56.124.116.216:3000/api/articles?published=true')
+    this.http.get<{articles: any[]}>(`${environment.apiUrl}/articles?published=true`)
       .subscribe({
         next: (data) => this.articles.set(data.articles),
         error: (err) => console.error('Failed to load articles', err)

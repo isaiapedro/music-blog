@@ -40,19 +40,19 @@
             <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=800&auto=format&fit=crop" class="article-img" alt="Latest Reviews" imgFade>
           </div>
           <span class="filter-rect article-theme">Reviews</span>
-          <h4 class="serif-heading">Seven Records We Spun This Week</h4>
+          <h2 class="serif-heading">Seven Records We Spun This Week</h2>
           <time class="article-date">Weekly Update</time>
         </a>
       </article> 
 
       @if (sideArticle(); as side) {
         <article class="side-item">
-          <a [routerLink]="['/articles-page', side.id]" class="post-wrapper">
+          <a [routerLink]="['/articles', side.slug || side.id]" class="post-wrapper">
             <div class="img-wrapper">
               <img [src]="side.image" class="article-img" alt="Article image" imgFade>
             </div>
             <span class="filter-rect article-theme">{{ side.theme }}</span>
-            <h4 class="serif-heading">{{ side.title }}</h4>
+            <h2 class="serif-heading">{{ side.title }}</h2>
             <time class="article-date">{{ side.date | date:'longDate' }}</time>
           </a>
         </article>
@@ -62,7 +62,7 @@
     @if (mainArticle(); as main) {
       <div class="main-column">
         <article class="main-story">
-          <a [routerLink]="['/articles-page', main.id]" class="post-wrapper">
+          <a [routerLink]="['/articles', main.slug || main.id]" class="post-wrapper">
             <div class="img-wrapper main-img-wrapper">
               <img [src]="main.image" class="article-img" alt="Main article image" imgFade>
             </div>
@@ -90,7 +90,7 @@
       <h2 class="serif-heading column-title">Latest Posts</h2>
       @for (article of listArticles(); track article.id) {
         <article class="list-item">
-          <a [routerLink]="['/articles-page', article.id]" class="post-wrapper">
+          <a [routerLink]="['/articles', article.slug || article.id]" class="post-wrapper">
             <h3 class="serif-heading">{{ article.title }}</h3>
             <time class="article-date">{{ article.date | date:'longDate' }}</time>
           </a>

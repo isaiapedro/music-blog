@@ -7,7 +7,9 @@ const pool = new Pool({
   database: process.env.DB_NAME || 'postgres',
   password: process.env.DB_PASSWORD || 'password',
   port: process.env.DB_PORT || 5432,
-  ssl: process.env.DB_HOST ? { rejectUnauthorized: false } : false,
+  ssl: (process.env.DB_HOST && process.env.DB_HOST !== 'localhost' && process.env.DB_HOST !== '127.0.0.1') ? { rejectUnauthorized: true } : false,
+  connectionTimeoutMillis: 5000,
+  idleTimeoutMillis: 10000,
 });
 
 const initSchema = async () => {
@@ -64,6 +66,7 @@ const initSchema = async () => {
     await client.query(`
       CREATE TABLE IF NOT EXISTS cms_articles (
         id SERIAL PRIMARY KEY,
+        slug VARCHAR(255) UNIQUE,
         publish_date DATE,
         reading_time VARCHAR(50),
         title VARCHAR(255) NOT NULL,
@@ -80,6 +83,25 @@ const initSchema = async () => {
         created_at TIMESTAMPTZ DEFAULT NOW(),
         updated_at TIMESTAMPTZ DEFAULT NOW()
       );
+    `);
+    // Migrate: add missing columns to existing tables
+    await client.query(`ALTER TABLE cms_articles ADD COLUMN IF NOT EXISTS slug VARCHAR(255) UNIQUE;`);
+    await client.query(`ALTER TABLE cms_articles ADD COLUMN IF NOT EXISTS content_blocks JSONB DEFAULT '[]';`);
+    await client.query(`ALTER TABLE cms_articles ADD COLUMN IF NOT EXISTS placement VARCHAR(50) DEFAULT 'none';`);
+    await client.query(`ALTER TABLE cms_articles ADD COLUMN IF NOT EXISTS views INT DEFAULT 0;`);
+    await client.query(`ALTER TABLE cms_articles ADD COLUMN IF NOT EXISTS likes INT DEFAULT 0;`);
+    await client.query(`ALTER TABLE cms_articles ADD COLUMN IF NOT EXISTS comments JSONB DEFAULT '[]';`);
+    await client.query(`ALTER TABLE cms_reviews ADD COLUMN IF NOT EXISTS slug VARCHAR(255);`);
+    // Backfill slugs for existing records that don't have one
+    await client.query(`
+      UPDATE cms_articles
+      SET slug = LOWER(REGEXP_REPLACE(REPLACE(title, ' ', '-'), '[^a-z0-9-]', '', 'g'))
+      WHERE slug IS NULL AND title IS NOT NULL;
+    `);
+    await client.query(`
+      UPDATE cms_reviews
+      SET slug = LOWER(REGEXP_REPLACE(REPLACE(album || '-' || artist, ' ', '-'), '[^a-z0-9-]', '', 'g'))
+      WHERE slug IS NULL AND album IS NOT NULL;
     `);
     console.log('Database schema verified/created successfully.');
   } finally {

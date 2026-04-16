@@ -26,6 +26,11 @@ export const routes: Routes = [
     },
     {
         path: 'articles-page/:id',
+        redirectTo: 'articles/:id',
+        pathMatch: 'full'
+    },
+    {
+        path: 'articles/:slug',
         component: PostPage,
     },
     {
@@ -34,6 +39,11 @@ export const routes: Routes = [
     },
     {
         path: 'collection-page/:id',
+        redirectTo: 'reviews/:id',
+        pathMatch: 'full'
+    },
+    {
+        path: 'reviews/:slug',
         component: ReviewComponent
     },
     {

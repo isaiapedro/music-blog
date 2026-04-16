@@ -3,6 +3,7 @@ import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-articles-page',
@@ -36,7 +37,7 @@ export class ArticlesPage implements OnInit {
   articles = signal<any[]>([]);
 
   ngOnInit() {
-    this.http.get<{articles: any[]}>('http://56.124.116.216:3000/api/articles?published=true')
+    this.http.get<{articles: any[]}>(`${environment.apiUrl}/articles?published=true`)
       .subscribe({
         next: (data) => this.articles.set(data.articles),
         error: (err) => console.error(err)
