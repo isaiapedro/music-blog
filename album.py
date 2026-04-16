@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import pandas as pd
 import logging
@@ -7,25 +8,23 @@ import psycopg2
 from psycopg2.extensions import register_adapter, AsIs
 register_adapter(np.int64, AsIs)
 
-hostname = 'localhost'
-database = 'music_blog'
-username = 'postgres'
-pwd = 'password'
-port_id = 5432
-
-conn = None
-cur = None
-
-file = open("log.txt", "a")
-file.write(f"Admin Task executed at {datetime.datetime.now()}\n")
-file.close()
-
 PROJECT_ID = "um-ano-e-meio-de-musica"
 
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
+
+
+def get_db_connection():
+    return psycopg2.connect(
+        host=os.environ['DB_HOST'],
+        dbname=os.environ['DB_NAME'],
+        user=os.environ['DB_USER'],
+        password=os.environ['DB_PASSWORD'],
+        port=os.environ.get('DB_PORT', 5432)
+    )
+
 
 def extract_music():
     logging.info("Requesting API data...")
@@ -78,28 +77,21 @@ def extract_music():
 def transform_music(df1, df2):
     logging.info("Transforming data...")
 
-    # Convert list columns to strings
     for col in ['genres', 'subGenres']:
         df1[col] = df1[col].apply(lambda x: ', '.join(x) if isinstance(x, list) else x)
         df2[col] = df2[col].apply(lambda x: ', '.join(x) if isinstance(x, list) else x)
 
-    # THE FIX: Coerce bad strings to NaN, fill them with 0, and KEEP the row!
     df2['rating'] = pd.to_numeric(df2['rating'], errors='coerce').fillna(0).astype(int)
 
     logging.info("Data transformed successfully.")
     return df1, df2
 
+
 def load_music(df1, df2):
-    """
-    Loads transformed data into the PostgreSQL CMS tables.
-    Updates Group 1 columns if the album exists, leaves Editor columns (Group 3) untouched.
-    """
     conn = None
     cur = None
     try:
-        conn = psycopg2.connect(
-            host=hostname, dbname=database, user=username, password=pwd, port=port_id
-        )
+        conn = get_db_connection()
         cur = conn.cursor()
         logging.info("Connected to database successfully.")
 
@@ -110,44 +102,40 @@ def load_music(df1, df2):
         for _, row in df_combined.iterrows():
             album_name = row.get('name', '')
             artist_name = row.get('artist', '')
-            
-            # --- CONTAINER 2 DATA GATHERING (Group 1) ---
+
             image_url = row.get('images', '')
             try:
                 release_date = int(row.get('releaseDate'))
             except (ValueError, TypeError):
                 release_date = datetime.datetime.now().year
-                
-            genre = row.get('genres', '')        
-            subgenres = row.get('subGenres', '') 
+
+            genre = row.get('genres', '')
+            subgenres = row.get('subGenres', '')
             artist_origin = row.get('artistOrigin', '')
-            description = row.get('review', '') # API review mapped to description
+            description = row.get('review', '')
             current_date = datetime.datetime.now().strftime('%Y-%m-%d')
 
-            # --- CONTAINER 3 COMPARISON ---
             cur.execute("SELECT id FROM cms_reviews WHERE album = %s AND artist = %s", (album_name, artist_name))
             existing_row = cur.fetchone()
 
             if existing_row:
-                # ALBUM EXISTS: Update ONLY Group 1 columns!
                 review_id = existing_row[0]
-                
+
                 cur.execute('''
-                    UPDATE cms_reviews 
+                    UPDATE cms_reviews
                     SET image = %s, release_date = %s, genre = %s, subgenres = %s, description = %s, country = %s, updated_at = NOW()
                     WHERE id = %s
                 ''', (image_url, release_date, genre, subgenres, description, artist_origin, review_id))
-                
+
                 cur.execute('''
                     UPDATE cms_list_meta
                     SET image = %s, year = %s, genres = %s, subgenres = %s, country = %s, description = %s
                     WHERE review_id = %s
                 ''', (image_url, release_date, genre, subgenres, artist_origin, description, review_id))
-                
+
                 updated_count += 1
-                
+
             else:
-                # NEW ALBUM: Insert Group 1, Leave Group 2 & 3 as defaults/empty
                 cur.execute('''
                     INSERT INTO cms_reviews (
                         album, artist, image, release_date, genre, subgenres, description, country,
@@ -157,7 +145,7 @@ def load_music(df1, df2):
                     ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, '', '', '[]', '', '[]', '[]', NULL, FALSE, '[]', '', '', '')
                     RETURNING id;
                 ''', (album_name, artist_name, image_url, release_date, genre, subgenres, description, artist_origin))
-                
+
                 new_review_id = cur.fetchone()[0]
 
                 cur.execute('''
@@ -165,23 +153,42 @@ def load_music(df1, df2):
                         review_id, album, artist, year, image, date, genres, subgenres, country, description, score, published
                     ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NULL, FALSE)
                 ''', (new_review_id, album_name, artist_name, release_date, image_url, current_date, genre, subgenres, artist_origin, description))
-                
+
                 inserted_count += 1
-                
+
             conn.commit()
 
         logging.info(f"Successfully inserted {inserted_count} new albums and updated {updated_count} existing albums.")
+        return {"inserted": inserted_count, "updated": updated_count}
 
     except Exception as e:
         logging.error(f"Failed to load data to database: {e}")
         if conn is not None:
             conn.rollback()
+        raise
     finally:
         if cur is not None:
             cur.close()
         if conn is not None:
             conn.close()
 
+
+def lambda_handler(event, context):
+    """AWS Lambda entry point — triggered by EventBridge on a schedule."""
+    logging.info("Lambda execution started.")
+
+    df1_extracted, df2_extracted = extract_music()
+    if df1_extracted is None or df2_extracted is None:
+        return {"statusCode": 500, "body": "Failed to extract data from API"}
+
+    transformed_df1, transformed_df2 = transform_music(df1_extracted, df2_extracted)
+    result = load_music(transformed_df1, transformed_df2)
+
+    logging.info("Lambda execution finished.")
+    return {"statusCode": 200, "body": result}
+
+
+# Local development entry point
 if __name__ == "__main__":
     df1_extracted, df2_extracted = extract_music()
     if df1_extracted is not None and df2_extracted is not None:

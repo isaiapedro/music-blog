@@ -1,10 +1,10 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const { Pool } = require('pg');
 const multer = require('multer');
 const sharp = require('sharp');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { pool, initSchema } = require('./db');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -13,14 +13,6 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/favicon.ico', (req, res) => res.status(204).end());
-
-const pool = new Pool({
-  user: process.env.DB_USER || 'postgres',
-  host: process.env.DB_HOST || 'localhost',
-  database: process.env.DB_NAME || 'music_blog',
-  password: process.env.DB_PASSWORD || 'password', 
-  port: process.env.DB_PORT || 5432,
-});
 
 // --- AWS S3 CONFIGURATION ---
 const upload = multer({ storage: multer.memoryStorage() });
@@ -414,7 +406,14 @@ app.put('/api/reviews/:id', async (req, res) => {
 });
 
 // --- 4. SERVER START ---
-app.listen(port, () => {
-  console.log(`\n🚀 Backend Server is officially running!`);
-  console.log(`📡 Listening for Angular on: http://localhost:${port}\n`);
-});
+initSchema()
+  .then(() => {
+    app.listen(port, () => {
+      console.log(`\n🚀 Backend Server is officially running!`);
+      console.log(`📡 Listening for Angular on: http://localhost:${port}\n`);
+    });
+  })
+  .catch((err) => {
+    console.error('Failed to initialize database schema:', err);
+    process.exit(1);
+  });
