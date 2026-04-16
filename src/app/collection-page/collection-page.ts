@@ -4,10 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Review } from '../review.data';
 import { HttpClient } from '@angular/common/http';
+import { ImgFadeDirective } from '../shared/img-fade.directive';
 
 @Component({
   selector: 'app-collection-page',
-  imports: [RouterModule, FormsModule, CommonModule],
+  imports: [RouterModule, FormsModule, CommonModule, ImgFadeDirective],
   templateUrl: './collection-page.html',
   styleUrl: './collection-page.css'
 })

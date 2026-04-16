@@ -143,7 +143,7 @@
                 </div>
                 
                 <div class="post-image">
-                  <img [src]="review.image" [alt]="review.album" loading="lazy">
+                  <img [src]="review.image" [alt]="review.album" loading="lazy" imgFade>
                 </div>
               </div>
             }
@@ -193,8 +193,8 @@
                   [class.active]="selectedPreview()?.id === review.id"
                   (click)="togglePreview(review)">
                   
-                  <img [src]="review.image" [alt]="review.album" loading="lazy">
-                  
+                  <img [src]="review.image" [alt]="review.album" loading="lazy" imgFade>
+
                   <div class="grid-overlay">
                     <span class="grid-title">{{ review.album }}</span>
                     <span class="grid-artist">{{ review.artist }}</span>
@@ -209,7 +209,7 @@
           <div class="preview-card">
             
             <div class="preview-details">
-              <img [src]="review.image" [alt]="review.album" class="preview-image">
+              <img [src]="review.image" [alt]="review.album" class="preview-image" imgFade>
               <h2 class="preview-title">{{ review.album }}</h2>
               <h3 class="preview-artist">{{ review.artist }}</h3>
               

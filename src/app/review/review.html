@@ -11,6 +11,7 @@
                         width="400"
                         height="400"
                         loading="eager"
+                        imgFade
                         />
                     </div>
                     <div class="article-header-column ">
@@ -88,6 +89,7 @@
                                                 [alt]="block.imageAlt || block.title || ''"
                                                 class="breakdown-image"
                                                 loading="lazy"
+                                                imgFade
                                                 />
                                                 @if (block.title) {
                                                 <figcaption>{{ block.title }}</figcaption>
@@ -222,6 +224,7 @@
                                         [alt]="sim.album"
                                         class="similar-cover"
                                         loading="lazy"
+                                        imgFade
                                     />
                                 </div>
                                 <h3 class="similar-title">{{ sim.album }}</h3>

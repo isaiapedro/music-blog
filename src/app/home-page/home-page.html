@@ -37,7 +37,7 @@
       <article class="side-item">
         <a routerLink="/collection-page" [queryParams]="{ filter: 'latest' }" class="post-wrapper">
           <div class="img-wrapper">
-            <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=800&auto=format&fit=crop" class="article-img" alt="Latest Reviews">
+            <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=800&auto=format&fit=crop" class="article-img" alt="Latest Reviews" imgFade>
           </div>
           <span class="filter-rect article-theme">Reviews</span>
           <h4 class="serif-heading">Seven Records We Spun This Week</h4>
@@ -49,7 +49,7 @@
         <article class="side-item">
           <a [routerLink]="['/articles-page', side.id]" class="post-wrapper">
             <div class="img-wrapper">
-              <img [src]="side.image" class="article-img" alt="Article image">
+              <img [src]="side.image" class="article-img" alt="Article image" imgFade>
             </div>
             <span class="filter-rect article-theme">{{ side.theme }}</span>
             <h4 class="serif-heading">{{ side.title }}</h4>
@@ -64,7 +64,7 @@
         <article class="main-story">
           <a [routerLink]="['/articles-page', main.id]" class="post-wrapper">
             <div class="img-wrapper main-img-wrapper">
-              <img [src]="main.image" class="article-img" alt="Main article image">
+              <img [src]="main.image" class="article-img" alt="Main article image" imgFade>
             </div>
             <h1 class="serif-heading main-heading">{{ main.title }}</h1>
             <p class="description">{{ main.description }}</p>

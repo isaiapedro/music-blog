@@ -2,6 +2,7 @@ import { Component, signal, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { ImgFadeDirective } from '../shared/img-fade.directive';
 
 export interface ArticleBlock {
   type: 'heading' | 'paragraph' | 'image';
@@ -27,7 +28,7 @@ export interface Article {
 @Component({
   selector: 'app-post-page',
   standalone: true,
-  imports: [RouterModule, CommonModule],
+  imports: [RouterModule, CommonModule, ImgFadeDirective],
   templateUrl: './post-page.html',
   styleUrl: './post-page.css'
 })

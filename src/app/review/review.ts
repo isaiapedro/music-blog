@@ -3,6 +3,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { MarkdownComponent } from 'ngx-markdown';
 import { HttpClient } from '@angular/common/http';
+import { ImgFadeDirective } from '../shared/img-fade.directive';
 
 export interface Track {
   number: number;
@@ -49,7 +50,7 @@ export interface ReviewDetail {
 @Component({
   selector: 'app-review',
   standalone: true,
-  imports: [RouterModule, MarkdownComponent],
+  imports: [RouterModule, MarkdownComponent, ImgFadeDirective],
   templateUrl: './review.html',
   styleUrl: './review.css',
 })

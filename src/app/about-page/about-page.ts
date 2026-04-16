@@ -1,6 +1,7 @@
 import { Component, computed, signal } from '@angular/core';
 import { RouterLink, RouterOutlet, RouterLinkActive } from '@angular/router';
 import { NgOptimizedImage } from '@angular/common';
+import { ImgFadeDirective } from '../shared/img-fade.directive';
 
 @Component({
   selector: 'app-about-page',
@@ -8,7 +9,8 @@ import { NgOptimizedImage } from '@angular/common';
     RouterLink,
     RouterOutlet,
     RouterLinkActive,
-    NgOptimizedImage
+    NgOptimizedImage,
+    ImgFadeDirective
   ],
   templateUrl: './about-page.html',
   styleUrl: './about-page.css',

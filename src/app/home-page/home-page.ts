@@ -3,11 +3,12 @@ import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { ImgFadeDirective } from '../shared/img-fade.directive';
 
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [RouterModule, FormsModule, CommonModule],
+  imports: [RouterModule, FormsModule, CommonModule, ImgFadeDirective],
   templateUrl: './home-page.html',
   styleUrl: './home-page.css'
 })
