@@ -9,7 +9,6 @@
 - [Cloud Architecture & Security](#cloud-architecture--security)
 - [Improvements](#improvements)
 - [Conclusion](#conclusion)
-- [Code Review](#code-review)
 
 ## Introduction
 
