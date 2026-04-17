@@ -32,6 +32,8 @@ npm run start:dev
 
 ## Architecture
 
+![Diagram](diagram.png)
+
 - Local Environment (Angular/CMS): Handles the client-side rendering for public views and the secure interface for content editors.
 - Amazon EC2 (Node.js/Express): Acts as the primary API gateway, orchestrating incoming requests, authenticating users, and routing database operations.
 - AWS Lambda: Runs scheduled Python scripts independently from the main web server to handle background tasks like data scraping and ingestion.
