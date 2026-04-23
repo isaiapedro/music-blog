@@ -1,0 +1,121 @@
+Local Setup
+Step 1 — Create .env for the backend
+Create server/.env:
+
+
+PORT=3000
+ALLOWED_ORIGINS=http://localhost:4200
+JWT_SECRET=your-local-secret
+ADMIN_PASSWORD=your-admin-password
+
+# Local PostgreSQL
+DB_HOST=localhost
+DB_NAME=music_blog
+DB_USER=postgres
+DB_PASSWORD=yourpassword
+DB_PORT=5432
+
+# S3 (can use real bucket even locally)
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY_ID=your-key
+AWS_SECRET_ACCESS_KEY=your-secret
+S3_BUCKET_NAME=your-bucket-name
+SITE_URL=http://localhost:4200
+Step 2 — Start local PostgreSQL and create the database
+
+psql -U postgres -c "CREATE DATABASE music_blog;"
+The schema (tables) is created automatically when the server starts — server/db.js runs CREATE TABLE IF NOT EXISTS on init.
+
+Step 3 — Install dependencies and start the backend
+
+# Root dependencies (Angular + shared)
+npm install
+
+# Backend dependencies
+cd server && npm install && cd ..
+Start the Express server:
+
+
+node server/index.js
+API will be available at http://localhost:3000.
+
+Step 4 — Start the Angular frontend
+
+ng serve
+Frontend at http://localhost:4200. It proxies API calls to the backend via src/environments/environment.ts.
+
+Step 5 — Run the Python ETL script locally
+
+pip install -r requirements.txt
+
+# Set env vars inline or use a .env loader
+DB_HOST=localhost DB_NAME=music_blog DB_USER=postgres DB_PASSWORD=yourpassword \
+python album.py
+This runs the same lambda_handler logic but in your terminal — it fetches albums from the API and upserts to your local DB.
+
+AWS Setup (Production)
+Step 1 — RDS (PostgreSQL)
+In AWS Console → RDS → Create Database → PostgreSQL
+Note the endpoint, username, password
+Set VPC security group to allow inbound port 5432 from your EC2's security group
+Step 2 — S3 Bucket
+Create bucket (e.g. music-blog-assets)
+Enable public read for the /uploads/ prefix (or use CloudFront)
+Create an IAM user with s3:PutObject + s3:GetObject permissions on that bucket
+Save the Access Key ID and Secret Access Key
+Step 3 — EC2 (Node.js Backend)
+Launch EC2 (Ubuntu 22.04, t3.micro is fine to start)
+SSH in and install Node.js:
+
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+Clone your repo or copy server/ to the instance
+Set environment variables — never commit these. Use a .env file or EC2 Systems Manager Parameter Store:
+
+# On EC2, create server/.env with production values:
+DB_HOST=your-rds-endpoint.rds.amazonaws.com
+DB_NAME=music_blog
+DB_USER=postgres
+DB_PASSWORD=your-rds-password
+DB_PORT=5432
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY_ID=your-iam-key
+AWS_SECRET_ACCESS_KEY=your-iam-secret
+S3_BUCKET_NAME=music-blog-assets
+ALLOWED_ORIGINS=https://yourdomain.com
+JWT_SECRET=strong-random-secret
+ADMIN_PASSWORD=strong-admin-password
+SITE_URL=https://yourdomain.com
+Start with PM2 (keeps the process alive):
+
+npm install -g pm2
+cd server && npm install
+pm2 start index.js --name music-blog-api
+pm2 save && pm2 startup
+Open EC2 security group: port 3000 (or put Nginx in front on port 80/443)
+Step 4 — Lambda (Python ETL)
+The lambda.zip at the root is already packaged. Deploy it:
+
+
+aws lambda create-function \
+  --function-name music-blog-etl \
+  --runtime python3.11 \
+  --handler album.lambda_handler \
+  --zip-file fileb://lambda.zip \
+  --role arn:aws:iam::YOUR_ACCOUNT:role/lambda-rds-role
+Set Lambda environment variables (in AWS Console → Lambda → Configuration → Environment variables):
+
+
+DB_HOST, DB_NAME, DB_USER, DB_PASSWORD, DB_PORT
+Schedule via EventBridge:
+
+AWS Console → EventBridge → Rules → Create Rule
+Schedule: rate(1 day) or cron expression
+Target: your Lambda function
+Step 5 — Angular Frontend
+Build for production:
+
+
+# Set the API base URL in environment.prod.ts to your EC2 public URL
+ng build --configuration production
+Upload the dist/ output to S3 + CloudFront, or serve it from EC2 via Nginx.
