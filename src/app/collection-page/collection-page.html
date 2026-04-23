@@ -1,4 +1,4 @@
-<div class="shop-container">
+<div class="shop-container" [class.is-grid]="viewMode() === 'grid'">
   
   <h1 class="collection-title">Albums</h1>
 
@@ -64,11 +64,9 @@
         
         @if (viewMode() === 'grid') {
           <div class="grid-settings-box">
-            @if (!showFilters()) {
-              <button class="settings-btn" (click)="showFilters.set(true)">
-                + Show Filters
-              </button>
-            }
+            <button class="settings-btn" (click)="showFilters.set(!showFilters())">
+              {{ showFilters() ? '- Hide Filters' : '+ Show Filters' }}
+            </button>
             <div class="grid-size-selector">
               <label>Grid Size</label>
               <select class="filter-select minimal" [ngModel]="gridSize()" (ngModelChange)="updateGridSize($event)">
@@ -154,7 +152,10 @@
                   class="page-btn nav-btn" 
                   [disabled]="currentPage() === 1"
                   (click)="changePage(currentPage() - 1)">
-                  Previous
+                  <span class="nav-text">Previous</span>
+                  <svg class="nav-icon" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
                 </button>
 
                 @for (item of visiblePages(); track $index) {
@@ -174,7 +175,10 @@
                   class="page-btn nav-btn" 
                   [disabled]="currentPage() === totalPages()"
                   (click)="changePage(currentPage() + 1)">
-                  Next
+                  <span class="nav-text">Next</span>
+                  <svg class="nav-icon" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
                 </button>
               </div>
             }

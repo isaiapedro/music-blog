@@ -340,3 +340,105 @@ input[type="checkbox"] {
   height: 48px;
   margin-bottom: 16px;
 }
+
+/* --- Individual Item Stats --- */
+.item-stats {
+  display: flex;
+  gap: 16px;
+  margin-top: 10px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.85rem;
+  color: #A5CEC7;
+  background-color: rgba(165, 206, 199, 0.05);
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(165, 206, 199, 0.2);
+  display: inline-flex;
+}
+
+/* --- Dashboard Layout & Controls --- */
+.dashboard-state {
+  height: 100%;
+}
+
+.dashboard-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.dashboard-controls label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.85rem;
+  color: #bbb;
+}
+
+.dash-select {
+  width: 200px;
+  padding: 10px 12px;
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 6px;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.dash-select:focus {
+  outline: none;
+  border-color: #A5CEC7;
+}
+
+/* --- Single Dashboard Card --- */
+.single-dash-card {
+  max-width: 350px; /* Keeps the card compact instead of stretching full width */
+}
+
+.dash-card {
+  background-color: #141414;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 24px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.dash-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border-color: #444;
+}
+
+.dash-card h3 {
+  margin-top: 0;
+  color: #fff;
+  border-bottom: 1px solid #333;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  letter-spacing: 0.5px;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  color: #aaa;
+  font-size: 0.95rem;
+}
+
+.stat-row:last-child {
+  margin-bottom: 0;
+}
+
+.stat-row strong {
+  color: #A5CEC7;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 1.1rem;
+  background-color: #222;
+  padding: 2px 8px;
+  border-radius: 4px;
+}

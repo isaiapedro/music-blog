@@ -125,7 +125,12 @@
         <div class="editor-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
           <div>
             <h2>{{ article.title || 'Untitled Article' }}</h2>
-            <p>ID: {{ article.id }} | Views: {{ article.views || 0 }}</p>
+            <div class="item-stats">
+              <span>👁️ {{ article.views || 0 }} Views</span>
+              <span>❤️ {{ article.likes || 0 }} Likes</span>
+              <span>🔗 {{ article.shares || 0 }} Shares</span>
+              <span>💬 {{ article.comments?.length || 0 }} Comments</span>
+            </div>
           </div>
 
           <button class="btn-delete" (click)="deleteCurrentArticle()" [disabled]="isSaving()">
@@ -234,7 +239,13 @@
       } @else if (selectedReview(); as review) {
         <div class="editor-header">
           <h2>{{ review.album }}</h2>
-          <p>{{ review.artist }} ({{ review.releaseDate }})</p>
+          <p style="margin-bottom: 8px;">{{ review.artist }} ({{ review.releaseDate }})</p>
+          <div class="item-stats">
+            <span>👁️ {{ review.views || 0 }} Views</span>
+            <span>❤️ {{ review.likes || 0 }} Likes</span>
+            <span>🔗 {{ review.shares || 0 }} Shares</span>
+            <span>💬 {{ review.comments?.length || 0 }} Comments</span>
+          </div>
         </div>
 
         <div class="form-grid">
@@ -316,9 +327,42 @@
 
         </div>
       } @else {
-        <div class="empty-state">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-          <p>Select a review from the sidebar to start editing.</p>
+        <div class="dashboard-state">
+          <div class="editor-header">
+            <h2>Analytics Overview</h2>
+            <p>Global engagement across all published articles and reviews.</p>
+          </div>
+
+          @if (dashboardStats(); as stats) {
+            <div class="dashboard-controls">
+              <label for="time-range">Time Range Filter:</label>
+              <select id="time-range" 
+                      [ngModel]="selectedDashRange()" 
+                      (ngModelChange)="selectedDashRange.set($event)" 
+                      class="theme-select dash-select">
+                <option value="week">Past 7 Days</option>
+                <option value="month">Past 30 Days</option>
+                <option value="year">Past Year</option>
+              </select>
+            </div>
+
+            <div class="dash-card single-dash-card">
+              <h3>
+                {{ selectedDashRange() === 'week' ? 'Past 7 Days' : 
+                   selectedDashRange() === 'month' ? 'Past 30 Days' : 'Past Year' }}
+              </h3>
+              
+              <div class="stat-row"><span>Views</span> <strong>{{ stats[selectedDashRange()].view }}</strong></div>
+              <div class="stat-row"><span>Likes</span> <strong>{{ stats[selectedDashRange()].like }}</strong></div>
+              <div class="stat-row"><span>Shares</span> <strong>{{ stats[selectedDashRange()].share }}</strong></div>
+              <div class="stat-row"><span>Comments</span> <strong>{{ stats[selectedDashRange()].comment }}</strong></div>
+            </div>
+            
+          } @else {
+            <div class="empty-state">
+              <p>Loading analytics...</p>
+            </div>
+          }
         </div>
       }
     </main>

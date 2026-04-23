@@ -21,7 +21,7 @@
 }
 
 .back-link {
-    margin-left: 2px;
+    margin-left: 1px;
     margin-top: 1.1rem;
     color: #888 !important;
     text-decoration: none;
@@ -183,6 +183,83 @@
 .back-link:hover {
   text-decoration: underline;
 }
+
+/* --- COMMENTS --- */
+.comments-section {
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.comment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin: 1.5rem 0 1.5rem 0;
+}
+
+.comment-input {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    color: #e0e0e0;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    padding: 0.75rem 1rem;
+    resize: vertical;
+    transition: border-color 0.2s;
+    field-sizing: content; 
+    resize: none;
+    min-height: 100px;
+    max-height: 300px;
+}
+
+.comment-input:focus {
+    outline: none;
+    border-color: rgba(255,255,255,0.25);
+}
+
+.comment-submit {
+    align-self: flex-end;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px;
+    color: #e0e0e0;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    padding: 0.5rem 1.25rem;
+    transition: background 0.2s;
+}
+
+.comment-submit:hover:not(:disabled) { background: rgba(255,255,255,0.13); }
+.comment-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.comment-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.comment-item {
+    border-left: 2px solid rgba(255,255,255,0.08);
+    padding-left: 1rem;
+}
+
+.comment-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
+.comment-user { color: #aaa; font-size: 0.85rem; }
+.comment-date { color: #555; font-size: 0.8rem; }
+.comment-text { color: #ccc; font-size: 0.95rem; line-height: 1.6; margin: 0; }
+.no-comments { color: #555; font-size: 0.9rem; font-style: italic; padding-left: 0.5rem; }
+
 
 @media (max-width: 768px) {
   .page-wrapper {

@@ -2,8 +2,10 @@ import { Component, signal, inject, OnInit, DOCUMENT } from '@angular/core';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { ImgFadeDirective } from '../shared/img-fade.directive';
+
 import { environment } from '../../environments/environment';
 
 export interface ArticleBlock {
@@ -24,17 +26,18 @@ export interface Article {
   readingTime?: string;
   views?: number;
   likes?: number;
+  shares?: number;
+  comments?: Array<{ user: string; date: string; text: string }>;
   contentBlocks?: ArticleBlock[];
 }
 
 @Component({
   selector: 'app-post-page',
   standalone: true,
-  imports: [RouterModule, CommonModule, ImgFadeDirective],
+  imports: [RouterModule, CommonModule, FormsModule, ImgFadeDirective],
   templateUrl: './post-page.html',
   styleUrl: './post-page.css'
 })
-
 export class PostPage implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -46,6 +49,8 @@ export class PostPage implements OnInit {
 
   article = signal<Article | null>(null);
   hasLiked = signal(false);
+  commentText = signal('');
+  submittingComment = signal(false);
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
@@ -56,6 +61,15 @@ export class PostPage implements OnInit {
           this.article.set(data);
           this.hasLiked.set(false);
           window.scrollTo({ top: 0, behavior: 'smooth' });
+
+          // Record unique view
+          this.http.post(`${this.apiUrl}/articles/${data.id}/view`, {}).subscribe();
+
+          // Get visitor state (liked?)
+          this.http.get<{ liked: boolean }>(`${this.apiUrl}/articles/${data.id}/visitor-state`).subscribe({
+            next: (state) => this.hasLiked.set(state.liked)
+          });
+
           const pageTitle = `${data.title} — Isaia`;
           this.titleService.setTitle(pageTitle);
           this.metaService.updateTag({ name: 'description', content: data.description || '' });
@@ -85,37 +99,37 @@ export class PostPage implements OnInit {
   }
 
   toggleLike() {
-    const currentArticle = this.article();
-    if (!currentArticle) return;
-
-    // Optimistic UI Update: update UI instantly for a snappy feel
-    const isNowLiked = !this.hasLiked();
-    this.hasLiked.set(isNowLiked);
-    
-    // Update the signal with the optimistic count
-    this.article.update(a => {
-        if(!a) return a;
-        return { ...a, likes: (a.likes || 0) + (isNowLiked ? 1 : -1) };
+    const a = this.article();
+    if (!a || this.hasLiked()) return;
+    this.http.post<{ liked: boolean; likes: number }>(`${this.apiUrl}/articles/${a.id}/like`, {}).subscribe({
+      next: (res) => {
+        this.hasLiked.set(res.liked);
+        this.article.update(art => art ? { ...art, likes: res.likes } : art);
+      }
     });
-
-    // Send the dynamic update to the backend
-    this.http.put<{likes: number}>(`${this.apiUrl}/articles/${currentArticle.id}/like`, { isLiked: isNowLiked })
-      .subscribe({
-          error: (err) => {
-              // Revert optimistic update on failure
-              console.error('Failed to save like', err);
-              this.hasLiked.set(!isNowLiked);
-              this.article.update(a => {
-                  if(!a) return a;
-                  return { ...a, likes: (a.likes || 0) + (isNowLiked ? -1 : 1) };
-              });
-          }
-      });
   }
 
   sharePost() {
+    const a = this.article();
     navigator.clipboard.writeText(window.location.href);
-    alert('Link copied to clipboard!');
+    if (a) this.http.post(`${this.apiUrl}/articles/${a.id}/share`, {}).subscribe();
+  }
+
+  submitComment() {
+    const a = this.article();
+    const text = this.commentText().trim();
+    if (!a || !text) return;
+    this.submittingComment.set(true);
+    this.http.post<{ user: string; date: string; text: string }>(
+      `${this.apiUrl}/articles/${a.id}/comment`, { text }
+    ).subscribe({
+      next: (comment) => {
+        this.article.update(art => art ? { ...art, comments: [...(art.comments || []), comment] } : art);
+        this.commentText.set('');
+        this.submittingComment.set(false);
+      },
+      error: () => this.submittingComment.set(false)
+    });
   }
 
   private setCanonical(url: string) {

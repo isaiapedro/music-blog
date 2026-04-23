@@ -6,6 +6,8 @@ const rateLimit = require('express-rate-limit');
 const multer = require('multer');
 const sharp = require('sharp');
 const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
+const { v4: uuidv4 } = require('uuid');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const { pool, initSchema } = require('./db');
 
@@ -28,6 +30,30 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' }
 }));
 app.use(express.json());
+app.use(cookieParser());
+
+app.use((req, res, next) => {
+  const headerId = req.headers['x-visitor-id'];
+  if (headerId && /^[0-9a-f-]{36}$/.test(headerId)) {
+    req.visitor_id = headerId;
+  } else if (req.cookies?.visitor_id) {
+    req.visitor_id = req.cookies.visitor_id;
+  } else {
+    const id = uuidv4();
+    res.cookie('visitor_id', id, { maxAge: 365 * 24 * 3600 * 1000, httpOnly: false, sameSite: 'lax' });
+    req.visitor_id = id;
+  }
+  next();
+});
+
+const ANIMALS = ['Fox', 'Wolf', 'Bear', 'Owl', 'Lynx', 'Deer', 'Hawk', 'Seal',
+  'Crow', 'Mole', 'Newt', 'Frog', 'Moth', 'Crab', 'Swan', 'Hare',
+  'Ibis', 'Kite', 'Lark', 'Mink', 'Puma', 'Rook', 'Vole', 'Wren'];
+
+function visitorAnimal(visitorId) {
+  const hash = [...visitorId].reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return `Anonymous ${ANIMALS[hash % ANIMALS.length]}`;
+}
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -139,8 +165,9 @@ function rowToReview(row) {
     published: Boolean(row.published),
     
     comments: typeof row.comments === 'string' ? JSON.parse(row.comments) : (row.comments || []),
-    
-    
+    views: row.views || 0,
+    likes: row.likes || 0,
+    shares: row.shares || 0,
   };
 }
 
@@ -160,8 +187,10 @@ function rowToArticle(row) {
     date: row.publish_date,
     image: row.image,
     readingTime: row.reading_time,
-    views: row.views,
-    likes: row.likes,
+    views: row.views || 0,
+    likes: row.likes || 0,
+    shares: row.shares || 0,
+    comments: typeof row.comments === 'string' ? JSON.parse(row.comments) : (row.comments || []),
     contentBlocks: row.content_blocks,
     published: row.published
   };
@@ -200,8 +229,7 @@ app.get('/api/articles/:slug', async (req, res) => {
       return res.redirect(301, `/api/articles/${row.slug}`);
     }
 
-    pool.query('UPDATE cms_articles SET views = views + 1 WHERE id = $1', [row.id]);
-    res.json({ ...rowToArticle(row), views: row.views + 1 });
+    res.json(rowToArticle(row));
   } catch (err) {
     res.status(500).json({ error: 'Database error' });
   }
@@ -293,20 +321,182 @@ app.put('/api/articles/:id', authenticateToken, async (req, res) => {
   }
 });
 
-app.put('/api/articles/:id/like', async (req, res) => {
-    const { id } = req.params;
-    const { isLiked } = req.body; // true if adding like, false if removing
-    
-    try {
-        const query = isLiked 
-            ? 'UPDATE cms_articles SET likes = likes + 1 WHERE id = $1 RETURNING likes'
-            : 'UPDATE cms_articles SET likes = GREATEST(likes - 1, 0) WHERE id = $1 RETURNING likes';
-            
-        const result = await pool.query(query, [id]);
-        res.json({ likes: result.rows[0].likes });
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to update likes' });
-    }
+// ----------------------------------------------------
+// ENGAGEMENT ENDPOINTS (articles + reviews)
+// ----------------------------------------------------
+
+async function recordView(contentType, contentId, visitorId) {
+  const r = await pool.query(
+    `INSERT INTO visitor_interactions(visitor_id, content_type, content_id, action)
+     VALUES($1,$2,$3,'view') ON CONFLICT DO NOTHING RETURNING id`,
+    [visitorId, contentType, contentId]
+  );
+  if (r.rowCount > 0) {
+    const table = contentType === 'article' ? 'cms_articles' : 'cms_reviews';
+    await pool.query(`UPDATE ${table} SET views = views + 1 WHERE id = $1`, [contentId]);
+  }
+}
+
+async function toggleLike(contentType, contentId, visitorId) {
+  const table = contentType === 'article' ? 'cms_articles' : 'cms_reviews';
+  const existing = await pool.query(
+    `SELECT id FROM visitor_interactions WHERE visitor_id=$1 AND content_type=$2 AND content_id=$3 AND action='like'`,
+    [visitorId, contentType, contentId]
+  );
+  if (existing.rowCount > 0) {
+    await pool.query(
+      `DELETE FROM visitor_interactions WHERE visitor_id=$1 AND content_type=$2 AND content_id=$3 AND action='like'`,
+      [visitorId, contentType, contentId]
+    );
+    const result = await pool.query(
+      `UPDATE ${table} SET likes = GREATEST(likes - 1, 0) WHERE id = $1 RETURNING likes`, [contentId]
+    );
+    return { liked: false, likes: result.rows[0].likes };
+  } else {
+    await pool.query(
+      `INSERT INTO visitor_interactions(visitor_id, content_type, content_id, action) VALUES($1,$2,$3,'like')`,
+      [visitorId, contentType, contentId]
+    );
+    const result = await pool.query(
+      `UPDATE ${table} SET likes = likes + 1 WHERE id = $1 RETURNING likes`, [contentId]
+    );
+    return { liked: true, likes: result.rows[0].likes };
+  }
+}
+
+async function addComment(contentType, contentId, visitorId, text) {
+  const animal = visitorAnimal(visitorId);
+  const data = { text, animal_name: animal, date: new Date().toISOString() };
+  await pool.query(
+    `INSERT INTO visitor_interactions(visitor_id, content_type, content_id, action, data) VALUES($1,$2,$3,'comment',$4::jsonb)`,
+    [visitorId, contentType, contentId, JSON.stringify(data)]
+  );
+  const table = contentType === 'article' ? 'cms_articles' : 'cms_reviews';
+  await pool.query(
+    `UPDATE ${table} SET comments = comments || $1::jsonb WHERE id = $2`,
+    [JSON.stringify([{ user: animal, date: data.date, text }]), contentId]
+  );
+  return { user: animal, date: data.date, text };
+}
+
+async function recordShare(contentType, contentId, visitorId) {
+  const table = contentType === 'article' ? 'cms_articles' : 'cms_reviews';
+  const r = await pool.query(
+    `INSERT INTO visitor_interactions(visitor_id, content_type, content_id, action)
+     VALUES($1,$2,$3,'share') ON CONFLICT DO NOTHING RETURNING id`,
+    [visitorId, contentType, contentId]
+  );
+  if (r.rowCount > 0) {
+    await pool.query(`UPDATE ${table} SET shares = shares + 1 WHERE id = $1`, [contentId]);
+  }
+}
+
+async function getVisitorState(contentType, contentId, visitorId) {
+  const result = await pool.query(
+    `SELECT action FROM visitor_interactions WHERE visitor_id=$1 AND content_type=$2 AND content_id=$3 AND action IN ('like','view')`,
+    [visitorId, contentType, contentId]
+  );
+  const actions = result.rows.map(r => r.action);
+  return { liked: actions.includes('like'), viewed: actions.includes('view') };
+}
+
+// Articles engagement
+app.post('/api/articles/:id/view', async (req, res) => {
+  try { await recordView('article', req.params.id, req.visitor_id); res.json({ ok: true }); }
+  catch (err) { res.status(500).json({ error: 'Failed to record view' }); }
+});
+
+app.post('/api/articles/:id/like', async (req, res) => {
+  try { res.json(await toggleLike('article', req.params.id, req.visitor_id)); }
+  catch (err) { res.status(500).json({ error: 'Failed to toggle like' }); }
+});
+
+app.post('/api/articles/:id/comment', async (req, res) => {
+  const { text } = req.body;
+  if (!text?.trim()) return res.status(400).json({ error: 'Comment text required' });
+  try { res.json(await addComment('article', req.params.id, req.visitor_id, text.trim())); }
+  catch (err) { res.status(500).json({ error: 'Failed to add comment' }); }
+});
+
+app.post('/api/articles/:id/share', async (req, res) => {
+  try { await recordShare('article', req.params.id, req.visitor_id); res.json({ ok: true }); }
+  catch (err) { res.status(500).json({ error: 'Failed to record share' }); }
+});
+
+app.get('/api/articles/:id/visitor-state', async (req, res) => {
+  try { res.json(await getVisitorState('article', req.params.id, req.visitor_id)); }
+  catch (err) { res.status(500).json({ error: 'Failed to get visitor state' }); }
+});
+
+// Reviews engagement
+app.post('/api/reviews/:id/view', async (req, res) => {
+  try { await recordView('review', req.params.id, req.visitor_id); res.json({ ok: true }); }
+  catch (err) { res.status(500).json({ error: 'Failed to record view' }); }
+});
+
+app.post('/api/reviews/:id/like', async (req, res) => {
+  try { res.json(await toggleLike('review', req.params.id, req.visitor_id)); }
+  catch (err) { res.status(500).json({ error: 'Failed to toggle like' }); }
+});
+
+app.post('/api/reviews/:id/comment', async (req, res) => {
+  const { text } = req.body;
+  if (!text?.trim()) return res.status(400).json({ error: 'Comment text required' });
+  try { res.json(await addComment('review', req.params.id, req.visitor_id, text.trim())); }
+  catch (err) { res.status(500).json({ error: 'Failed to add comment' }); }
+});
+
+app.post('/api/reviews/:id/share', async (req, res) => {
+  try { await recordShare('review', req.params.id, req.visitor_id); res.json({ ok: true }); }
+  catch (err) { res.status(500).json({ error: 'Failed to record share' }); }
+});
+
+app.get('/api/reviews/:id/visitor-state', async (req, res) => {
+  try { res.json(await getVisitorState('review', req.params.id, req.visitor_id)); }
+  catch (err) { res.status(500).json({ error: 'Failed to get visitor state' }); }
+});
+
+// Admin analytics
+app.get('/api/admin/analytics', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT content_type, content_id, action, COUNT(*) as count
+       FROM visitor_interactions GROUP BY content_type, content_id, action ORDER BY content_type, content_id`
+    );
+    res.json({ analytics: result.rows });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch analytics' });
+  }
+});
+
+// --- ADMIN DASHBOARD STATS ---
+app.get('/api/admin/dashboard', authenticateToken, async (req, res) => {
+  try {
+    // Querying the last 7 days, 30 days, and 365 days
+    const queries = [
+      `SELECT action, COUNT(*) FROM visitor_interactions WHERE created_at >= NOW() - INTERVAL '7 days' GROUP BY action`,
+      `SELECT action, COUNT(*) FROM visitor_interactions WHERE created_at >= NOW() - INTERVAL '1 month' GROUP BY action`,
+      `SELECT action, COUNT(*) FROM visitor_interactions WHERE created_at >= NOW() - INTERVAL '1 year' GROUP BY action`
+    ];
+
+    const [weekRes, monthRes, yearRes] = await Promise.all(queries.map(q => pool.query(q)));
+
+    // Helper to map DB rows to a clean object
+    const formatStats = (rows) => {
+      const stats = { view: 0, like: 0, share: 0, comment: 0 };
+      rows.forEach(r => stats[r.action] = parseInt(r.count, 10));
+      return stats;
+    };
+
+    res.json({
+      week: formatStats(weekRes.rows),
+      month: formatStats(monthRes.rows),
+      year: formatStats(yearRes.rows)
+    });
+  } catch (err) {
+    console.error('Error fetching dashboard stats:', err);
+    res.status(500).json({ error: 'Failed to fetch dashboard stats' });
+  }
 });
 
 // ----------------------------------------------------
@@ -348,7 +538,35 @@ app.get('/api/reviews/:slug', async (req, res) => {
     if (isNumeric && row.slug) {
       return res.redirect(301, `/api/reviews/${row.slug}`);
     }
-    res.json(rowToReview(row));
+
+    const candidates = await pool.query(
+      `SELECT id, slug, album, artist, image, genre, subgenres, country, release_date, score
+       FROM cms_reviews
+       WHERE published = true AND id != $1`,
+      [row.id]
+    );
+    const rowSubgenres = row.subgenres ? row.subgenres.split(',').map(s => s.trim()).filter(Boolean) : [];
+    const similarAlbums = candidates.rows
+      .map(r => {
+        let s = 0;
+        if (r.genre && r.genre === row.genre) s += 3;
+        if (r.artist && r.artist === row.artist) s += 2;
+        if (r.country && r.country === row.country) s += 1;
+        if (row.release_date && r.release_date && Math.abs(r.release_date - row.release_date) <= 10) s += 1;
+        if (row.release_date && r.release_date && Math.abs(r.release_date - row.release_date) <= 4) s += 1;
+        if (r.subgenres && rowSubgenres.length > 0) {
+          const rSubgenres = r.subgenres.split(',').map(sg => sg.trim()).filter(Boolean);
+          const matches = rSubgenres.filter(sg => rowSubgenres.includes(sg)).length;
+          s += matches * 2;
+        }
+        return { ...r, _score: s };
+      })
+      .filter(r => r._score > 0)
+      .sort((a, b) => b._score - a._score)
+      .slice(0, 4)
+      .map(({ _score, ...r }) => r);
+
+    res.json({ ...rowToReview(row), similarAlbums });
   } catch (err) {
     console.error('Error fetching single review:', err);
     res.status(500).json({ error: 'Database error' });
@@ -404,12 +622,17 @@ app.put('/api/reviews/:id', authenticateToken, async (req, res) => {
   const b = req.body;
 
   try {
+    const current = await pool.query('SELECT album, artist FROM cms_reviews WHERE id = $1', [id]);
+    if (current.rowCount === 0) return res.status(404).json({ error: 'Review not found' });
+    const { album, artist } = current.rows[0];
+    const newSlug = await uniqueSlug(pool, 'cms_reviews', generateSlug(`${album}-${artist}`), id);
+
     await pool.query(
-      `UPDATE cms_reviews SET 
-        score = $1, 
-        published = $2, 
-        introduction = $3, 
-        conclusion = $4, 
+      `UPDATE cms_reviews SET
+        score = $1,
+        published = $2,
+        introduction = $3,
+        conclusion = $4,
         breakdown = $5::jsonb,
         description = $6,
         image = $7,
@@ -419,12 +642,11 @@ app.put('/api/reviews/:id', authenticateToken, async (req, res) => {
         producer = $11,
         recorded_at = $12,
         country = $13,
-        
-        -- MAGIC DATE LOGIC: Stamps today's date ONLY the first time it is published
+        slug = $14,
+        comments = $15::jsonb,
         publish_date = CASE WHEN $2 = true AND publish_date IS NULL THEN TO_CHAR(NOW(), 'YYYY-MM-DD') ELSE publish_date END,
-        
         updated_at = NOW()
-      WHERE id = $14`,
+      WHERE id = $16`,
       [
         b.score != null ? Number(b.score) : null,
         Boolean(b.published),
@@ -434,11 +656,13 @@ app.put('/api/reviews/:id', authenticateToken, async (req, res) => {
         b.description || '',
         b.image || '',
         b.context || '',
-        JSON.stringify(b.tracklist || []), 
-        b.totalDuration || '',             
-        b.producer || '',                  
-        b.recordedAt || '',   
-        b.country || '',          
+        JSON.stringify(b.tracklist || []),
+        b.totalDuration || '',
+        b.producer || '',
+        b.recordedAt || '',
+        b.country || '',
+        newSlug,
+        JSON.stringify(b.comments || []),
         id
       ]
     );

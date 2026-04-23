@@ -6,7 +6,7 @@ import requests
 import datetime
 import psycopg2
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv(override=True)
 from psycopg2.extensions import register_adapter, AsIs
 register_adapter(np.int64, AsIs)
 

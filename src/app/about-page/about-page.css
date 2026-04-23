@@ -66,13 +66,14 @@
 }
 
 .paperclip {
-    position: absolute;
-    top: -25px;
-    right: 8px;
-    width: 100px;
-    height: 150px;
-    z-index: 10;
-    transform: rotate(25deg);
+  display: block !important;
+  position: absolute;
+  top: -25px;
+  right: 8px;
+  width: 100px;
+  height: 150px;
+  z-index: 10;
+  transform: rotate(25deg);
 }
 
 .bio-top-section {
@@ -438,7 +439,7 @@
 
   /* Hide decorative paperclip */
   .paperclip {
-    display: none;
+    display: none !important;
   }
 
   /* Bio card — compact, no rotation */

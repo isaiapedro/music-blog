@@ -1,9 +1,12 @@
 import { Component, inject, OnInit, signal, DOCUMENT } from '@angular/core';
 import { Title, Meta, DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { MarkdownComponent } from 'ngx-markdown';
 import { HttpClient } from '@angular/common/http';
 import { ImgFadeDirective } from '../shared/img-fade.directive';
+
 import { environment } from '../../environments/environment';
 
 export interface Track {
@@ -44,14 +47,17 @@ export interface ReviewDetail {
   introduction?: string;
   breakdown?: ReviewBlock[];
   conclusion?: string;
-  similarAlbums?: Array<{ id: string | number; slug?: string; image: string; album: string; artist: string, releaseDate: string }>;
+  similarAlbums?: Array<{ id: string | number; slug?: string; image: string; album: string; artist: string; releaseDate: string }>;
   comments?: Array<{ user: string; date: string; text: string }>;
+  views?: number;
+  likes?: number;
+  shares?: number;
 }
- 
+
 @Component({
   selector: 'app-review',
   standalone: true,
-  imports: [RouterModule, MarkdownComponent, ImgFadeDirective],
+  imports: [RouterModule, CommonModule, FormsModule, MarkdownComponent, ImgFadeDirective],
   templateUrl: './review.html',
   styleUrl: './review.css',
 })
@@ -62,30 +68,27 @@ export class ReviewComponent implements OnInit {
   private titleService = inject(Title);
   private metaService = inject(Meta);
   private document = inject(DOCUMENT);
-
   private apiUrl = environment.apiUrl;
 
   review = signal<ReviewDetail | null>(null);
   isLoading = signal(true);
+  hasLiked = signal(false);
+  commentText = signal('');
+  submittingComment = signal(false);
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
       window.scrollTo({ top: 0, behavior: 'instant' });
 
       const slug = params.get('slug') || params.get('id');
-
-      if (!slug) {
-        this.isLoading.set(false);
-        return;
-      }
+      if (!slug) { this.isLoading.set(false); return; }
 
       this.isLoading.set(true);
+      this.hasLiked.set(false);
+      this.commentText.set('');
 
       this.http.get<any>(`${this.apiUrl}/reviews/${slug}`, {
-        headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        }
+        headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
       }).subscribe({
         next: (data) => {
           this.review.set({
@@ -95,6 +98,13 @@ export class ReviewComponent implements OnInit {
             similarAlbums: typeof data.similarAlbums === 'string' ? JSON.parse(data.similarAlbums) : data.similarAlbums,
           });
           this.isLoading.set(false);
+
+          // Record unique view and fetch visitor state
+          this.http.post(`${this.apiUrl}/reviews/${data.id}/view`, {}).subscribe();
+          this.http.get<{ liked: boolean }>(`${this.apiUrl}/reviews/${data.id}/visitor-state`).subscribe({
+            next: (state) => this.hasLiked.set(state.liked)
+          });
+
           const pageTitle = `${data.album} — ${data.artist} Review | Isaia`;
           this.titleService.setTitle(pageTitle);
           const desc = data.description || data.context || '';
@@ -122,17 +132,47 @@ export class ReviewComponent implements OnInit {
           this.isLoading.set(false);
         }
       });
+    });
+  }
 
+  toggleLike() {
+    const r = this.review();
+    if (!r || this.hasLiked()) return;
+    this.http.post<{ liked: boolean; likes: number }>(`${this.apiUrl}/reviews/${r.id}/like`, {}).subscribe({
+      next: (res) => {
+        this.hasLiked.set(res.liked);
+        this.review.update(rev => rev ? { ...rev, likes: res.likes } : rev);
+      }
+    });
+  }
+
+  shareReview() {
+    const r = this.review();
+    navigator.clipboard.writeText(window.location.href);
+    if (r) this.http.post(`${this.apiUrl}/reviews/${r.id}/share`, {}).subscribe();
+  }
+
+  submitComment() {
+    const r = this.review();
+    const text = this.commentText().trim();
+    if (!r || !text) return;
+    this.submittingComment.set(true);
+    this.http.post<{ user: string; date: string; text: string }>(
+      `${this.apiUrl}/reviews/${r.id}/comment`, { text }
+    ).subscribe({
+      next: (comment) => {
+        this.review.update(rev => rev ? { ...rev, comments: [...(rev.comments || []), comment] } : rev);
+        this.commentText.set('');
+        this.submittingComment.set(false);
+      },
+      error: () => this.submittingComment.set(false)
     });
   }
 
   getGenreList(content: ReviewDetail): string[] {
     const genres = content.genre;
     if (!genres) return [];
-    
-    if (Array.isArray(genres)) {
-      return genres;
-    }
+    if (Array.isArray(genres)) return genres;
     return genres.split(',').map(g => g.trim());
   }
 
@@ -162,6 +202,15 @@ export class ReviewComponent implements OnInit {
     if (score >= 5.0) return 'Average & Flawed';
     if (score >= 3.0) return 'Disappointing';
     return 'Not Recommended';
+  }
+
+  getReleaseYear(dateStr: string | undefined): string {
+    if (!dateStr) return '';
+    if (/^\d{4}$/.test(dateStr.trim())) return dateStr.trim();
+    const date = new Date(dateStr);
+    if (!isNaN(date.getTime())) return date.getFullYear().toString();
+    const match = dateStr.match(/\b\d{4}\b/);
+    return match ? match[0] : dateStr;
   }
 
   spotifyEmbedUrl(albumId: string): SafeResourceUrl {

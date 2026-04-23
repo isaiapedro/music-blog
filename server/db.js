@@ -92,6 +92,28 @@ const initSchema = async () => {
     await client.query(`ALTER TABLE cms_articles ADD COLUMN IF NOT EXISTS likes INT DEFAULT 0;`);
     await client.query(`ALTER TABLE cms_articles ADD COLUMN IF NOT EXISTS comments JSONB DEFAULT '[]';`);
     await client.query(`ALTER TABLE cms_reviews ADD COLUMN IF NOT EXISTS slug VARCHAR(255);`);
+    await client.query(`ALTER TABLE cms_reviews ADD COLUMN IF NOT EXISTS musicbrainz_mbid VARCHAR(36);`);
+    await client.query(`ALTER TABLE cms_reviews ADD COLUMN IF NOT EXISTS enriched_at TIMESTAMPTZ;`);
+    await client.query(`ALTER TABLE cms_reviews ADD COLUMN IF NOT EXISTS views INT DEFAULT 0;`);
+    await client.query(`ALTER TABLE cms_reviews ADD COLUMN IF NOT EXISTS likes INT DEFAULT 0;`);
+    await client.query(`ALTER TABLE cms_reviews ADD COLUMN IF NOT EXISTS shares INT DEFAULT 0;`);
+    await client.query(`ALTER TABLE cms_articles ADD COLUMN IF NOT EXISTS shares INT DEFAULT 0;`);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS visitor_interactions (
+        id SERIAL PRIMARY KEY,
+        visitor_id VARCHAR(36) NOT NULL,
+        content_type VARCHAR(10) NOT NULL,
+        content_id INT NOT NULL,
+        action VARCHAR(10) NOT NULL,
+        data JSONB DEFAULT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `);
+    await client.query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_visitor_unique_action
+        ON visitor_interactions(visitor_id, content_type, content_id, action)
+        WHERE action IN ('view', 'like', 'share');
+    `);
     // Backfill slugs for existing records that don't have one
     await client.query(`
       UPDATE cms_articles

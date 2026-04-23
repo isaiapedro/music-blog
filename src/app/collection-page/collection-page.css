@@ -21,6 +21,10 @@
   bottom: 0;
 }
 
+.shop-container.is-grid {
+  min-height: 130vh;
+}
+
 .collection-title {
   font-family: 'Playfair Display', serif;
   font-size: 3.5rem;
@@ -49,7 +53,6 @@
   display: flex;
   flex-direction: column;
   gap: 2.5rem;
-  overflow-y: auto;
 }
 
 .filter-group {
@@ -743,6 +746,9 @@
 
   .main-content {
     flex-direction: column;
+    max-width: 355px;
+    margin: 0 auto;
+    align-items: center;
   }
 
   .left-controls {
@@ -800,6 +806,22 @@
     margin-left: 0;
   }
 
+  .nav-text {
+    display: none; 
+  }
+
+  /* Show the arrow icons on mobile */
+  .nav-icon {
+    display: block !important; 
+  }
+
+  .page-btn.nav-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px; 
+  }
+
   .pagination {
     max-width: 100%;
   }
@@ -811,4 +833,9 @@
   .grid-settings-box {
     padding: 1rem;
   }
+
+  .grid-size-selector {
+    display: none;
+  }
+  
 }

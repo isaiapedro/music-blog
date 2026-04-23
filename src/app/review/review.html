@@ -17,7 +17,18 @@
                     <div class="article-header-column ">
                         <a routerLink="/collection-page" class="back-link"> Albums </a>
                         <h1 class="article-title">{{ content.album }}</h1>
-                        <p class="article-artist">{{ content.artist }}</p>
+                        <div class="subtitle-artist">
+                            <p class="article-artist">{{ content.artist }}</p>
+                            <div class="engagement-bar">
+                                <button class="action-btn" (click)="toggleLike()" [class.liked]="hasLiked()" [disabled]="hasLiked()">
+                                    <svg viewBox="0 0 24 24" [attr.fill]="hasLiked() ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                                    <span>{{ content.likes || 0 }}</span>
+                                </button>
+                                <button class="action-btn share-btn" (click)="shareReview()">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                                </button>
+                            </div>
+                        </div>
                         <span class="genre-list main-genres">
                             @for (genre of getGenreList(content); track genre) {
                                 <span class="genre-tag">{{ genre }}</span>
@@ -174,7 +185,7 @@
                             <h3 class="score-verdict">{{ getScoreMessage(content.score) }}</h3>
                         </div>
                     }
-                        
+
                     @if (content.tracklist?.length || content.producer || content.recordedAt) {
                         <section class="album-details">
                             <h2 class="section-title">Tracklist & Details</h2>
@@ -212,12 +223,10 @@
             @if (content.similarAlbums && content.similarAlbums.length) {
                 <section class="section similar">
                     <h2 class="section-title">Similar Albums You Might Enjoy</h2>
-                    
+
                     <div class="similar-grid">
                         @for (sim of content.similarAlbums; track sim.id) {
-                            
                             <a [routerLink]="['/reviews', sim.slug || sim.id]" class="similar-card">
-                                
                                 <div class="similar-cover-wrap">
                                     <img
                                         [src]="sim.image"
@@ -229,10 +238,9 @@
                                 </div>
                                 <h3 class="similar-title">{{ sim.album }}</h3>
                                 <div class="similar-info">
-                                    
                                     <p class="similar-artist">{{ sim.artist }}</p>
                                     @if (sim.releaseDate) {
-                                        <p class="similar-date">,{{ sim.releaseDate }}</p>
+                                        <p class="similar-date">, {{ getReleaseYear(sim.releaseDate) }}</p>
                                     }
                                 </div>
                             </a>
@@ -241,20 +249,36 @@
                 </section>
             }
 
-            @if (content.comments && content.comments.length) {
-                <section class="section comments">
-                    <h2 class="section-title">Comments</h2>
+            <section class="section comments-section">
+                <h2 class="section-title">Comments</h2>
+                <div class="comment-form">
+                    <textarea
+                        class="comment-input"
+                        placeholder="Share your thoughts..."
+                        [value]="commentText()"
+                        (input)="commentText.set($any($event.target).value)"
+                        rows="3"
+                    ></textarea>
+                    <button class="comment-submit" (click)="submitComment()" [disabled]="submittingComment() || !commentText().trim()">
+                        {{ submittingComment() ? 'Posting...' : 'Post comment' }}
+                    </button>
+                </div>
+                @if (content.comments && content.comments.length) {
                     <ul class="comment-list">
-                    @for (c of content.comments; track c.date + c.user) {
-                        <li class="comment-item">
-                        <strong class="comment-user">{{ c.user }}</strong>
-                        <span class="comment-date">{{ c.date }}</span>
-                        <p class="comment-text">{{ c.text }}</p>
-                        </li>
-                    }
+                        @for (c of content.comments; track c.date + c.user) {
+                            <li class="comment-item">
+                                <div class="comment-meta">
+                                    <strong class="comment-user">{{ c.user }}</strong>
+                                    <span class="comment-date">{{ c.date | date:'mediumDate' }}</span>
+                                </div>
+                                <p class="comment-text">{{ c.text }}</p>
+                            </li>
+                        }
                     </ul>
-                </section>
-            }
+                } @else {
+                    <p class="no-comments">Be the first to comment.</p>
+                }
+            </section>
         </article>
     } @else {
         <div class="error-state">

@@ -40,6 +40,10 @@ export class AdminPage implements OnInit {
   articleDrafts = computed(() => this.articles().filter((a) => !a.published));
   articlePublished = computed(() => this.articles().filter((a) => a.published));
 
+  // --- DASHBOARD STATE ---
+  dashboardStats = signal<any>(null);
+  selectedDashRange = signal<'week' | 'month' | 'year'>('month');
+
   ngOnInit() {
     // Fetch Reviews
     this.http.get<{ reviews: any[] }>(`${this.apiUrl}/reviews`).subscribe(data => {
@@ -49,6 +53,12 @@ export class AdminPage implements OnInit {
     // Fetch Articles
     this.http.get<{ articles: any[] }>(`${this.apiUrl}/articles`).subscribe(data => {
       this.articles.set(data.articles);
+    });
+
+    // Fetch Dashboard Stats
+    this.http.get<any>(`${this.apiUrl}/admin/dashboard`).subscribe({
+      next: (data) => this.dashboardStats.set(data),
+      error: (err) => console.error('Failed to load dashboard stats', err)
     });
   }
 
