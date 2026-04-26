@@ -16,6 +16,44 @@ html, body {
   animation: shimmer 1.4s infinite linear;
 }
 
+pre {
+  display: block;
+  width: 100%;
+  max-width: 100%; 
+  box-sizing: border-box; /* Keeps padding inside the 100% width */
+  margin: 0 0 1.5em 0;
+  padding: 1rem;
+  overflow-x: auto; /* Contains the scrollbar to the box */
+  -webkit-overflow-scrolling: touch;
+  background-color: #1b1b1b; /* Single solid greyish background */
+  border: 1px solid #3f3f3f; /* Subtle border to match */
+  border-radius: 8px;
+}
+
+/* 2. The actual code text inside the block */
+pre code {
+  display: inline-block; /* Prevents text from breaking out of the pre */
+  min-width: 100%;
+  background: transparent; /* Lets the grey from 'pre' show through */
+  padding: 0;
+  color: #e4e4e4;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 0.8em;
+  line-height: 1.6;
+  white-space: pre; /* Preserves your code indentation */
+}
+
+/* 3. Inline code snippets (e.g., inside paragraphs) */
+code:not(pre code) {
+  background-color: #2b2b2b; /* Matches the main code block grey */
+  color: #e4e4e4;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 0.8em;
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  white-space: normal; /* Allows inline code to wrap naturally with text */
+}
+
 @media (max-width: 768px) {
   html, body {
     touch-action: auto;

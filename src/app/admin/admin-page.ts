@@ -44,6 +44,9 @@ export class AdminPage implements OnInit {
   dashboardStats = signal<any>(null);
   selectedDashRange = signal<'week' | 'month' | 'year'>('month');
 
+  uploadingCover = signal(false);
+  uploadingBlockIndex = signal<number | null>(null);
+
   ngOnInit() {
     // Fetch Reviews
     this.http.get<{ reviews: any[] }>(`${this.apiUrl}/reviews`).subscribe(data => {
@@ -136,6 +139,59 @@ export class AdminPage implements OnInit {
 
   removeArticleBlock(index: number) {
     this.selectedArticle().contentBlocks.splice(index, 1);
+  }
+
+  onArticleCoverFileChange(event: Event, article: any) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    this.uploadingCover.set(true);
+    const body = new FormData();
+    body.append('image', file);
+    this.http.post<{ url: string }>(`${this.apiUrl}/upload`, body).subscribe({
+      next: (res) => {
+        article.image = res.url;
+        this.articles.set([...this.articles()]);
+        this.uploadingCover.set(false);
+        input.value = '';
+      },
+      error: (err) => {
+        console.error(err);
+        const msg =
+          typeof err.error?.error === 'string' ? err.error.error : 'Upload failed';
+        alert(msg);
+        this.uploadingCover.set(false);
+        input.value = '';
+      }
+    });
+  }
+
+  onArticleBlockImageFileChange(event: Event, article: any, blockIndex: number) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    this.uploadingBlockIndex.set(blockIndex);
+    const body = new FormData();
+    body.append('image', file);
+    this.http.post<{ url: string }>(`${this.apiUrl}/upload`, body).subscribe({
+      next: (res) => {
+        const blocks = article.contentBlocks;
+        if (blocks && blocks[blockIndex]?.type === 'image') {
+          blocks[blockIndex].imageUrl = res.url;
+        }
+        this.articles.set([...this.articles()]);
+        this.uploadingBlockIndex.set(null);
+        input.value = '';
+      },
+      error: (err) => {
+        console.error(err);
+        const msg =
+          typeof err.error?.error === 'string' ? err.error.error : 'Upload failed';
+        alert(msg);
+        this.uploadingBlockIndex.set(null);
+        input.value = '';
+      }
+    });
   }
 
   // ------------------------------------------

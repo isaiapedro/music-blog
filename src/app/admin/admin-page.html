@@ -187,6 +187,17 @@
             <div class="form-group">
                 <label>Main Cover Image URL</label>
                 <input type="text" [(ngModel)]="article.image" placeholder="https://...">
+                <div class="upload-row">
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    [disabled]="uploadingCover() || isSaving()"
+                    (change)="onArticleCoverFileChange($event, article)"
+                  />
+                  @if (uploadingCover()) {
+                    <span class="upload-status">Uploading…</span>
+                  }
+                </div>
             </div>
           </div>
           <div class="form-group">
@@ -224,6 +235,17 @@
                   @else if (block.type === 'image') {
                     <div class="form-group">
                       <input type="text" [(ngModel)]="block.imageUrl" placeholder="Image URL">
+                      <div class="upload-row">
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/gif"
+                          [disabled]="uploadingBlockIndex() === $index || isSaving()"
+                          (change)="onArticleBlockImageFileChange($event, article, $index)"
+                        />
+                        @if (uploadingBlockIndex() === $index) {
+                          <span class="upload-status">Uploading…</span>
+                        }
+                      </div>
                     </div>
                     <div class="form-group mt-2">
                       <input type="text" [(ngModel)]="block.caption" placeholder="Optional image caption">

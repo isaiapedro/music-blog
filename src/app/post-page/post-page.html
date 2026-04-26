@@ -51,7 +51,9 @@
             }
 
             @else if (block.type === 'paragraph') {
-              <p>{{ block.content }}</p>
+              <div class="markdown-body">
+                <markdown [data]="block.content || ''"></markdown>
+              </div>
             }
 
             @else if (block.type === 'image') {

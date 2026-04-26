@@ -146,6 +146,46 @@
   line-height: 1.3;
 }
 
+.post-body .markdown-body {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem;
+  line-height: 1.8;
+  color: #ccc;
+  margin: 0 0 1.5rem 0;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.markdown-body :deep(p) {
+  margin: 0 0 1em 0;
+}
+
+.markdown-body :deep(p:last-child) {
+  margin-bottom: 0;
+}
+
+.markdown-body :deep(strong) {
+  color: #fff;
+}
+
+:host ::ng-deep .markdown-body a {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  text-decoration-color: rgba(255, 255, 255, 0.45);
+}
+
+.markdown-body :deep(a:hover) {
+  text-decoration-color: rgba(255, 255, 255, 0.75);
+}
+
+.markdown-body :deep(ul),
+.markdown-body :deep(ol) {
+  margin: 0 0 1em 0;
+  padding-left: 1.5rem;
+}
+
 .body-image {
   margin: 2.5rem 0;
 }

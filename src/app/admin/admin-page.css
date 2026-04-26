@@ -215,6 +215,26 @@
   color: #bbb;
 }
 
+.upload-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.upload-row input[type="file"] {
+  width: auto;
+  max-width: 100%;
+  padding: 8px 0;
+  color: #bbb;
+}
+
+.upload-status {
+  font-size: 0.85rem;
+  color: #A5CEC7;
+}
+
 input[type="text"],
 input[type="number"],
 textarea {

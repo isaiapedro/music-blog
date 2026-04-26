@@ -4,6 +4,7 @@ import { Title, Meta } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { MarkdownComponent } from 'ngx-markdown';
 import { ImgFadeDirective } from '../shared/img-fade.directive';
 
 import { environment } from '../../environments/environment';
@@ -34,7 +35,7 @@ export interface Article {
 @Component({
   selector: 'app-post-page',
   standalone: true,
-  imports: [RouterModule, CommonModule, FormsModule, ImgFadeDirective],
+  imports: [RouterModule, CommonModule, FormsModule, ImgFadeDirective, MarkdownComponent],
   templateUrl: './post-page.html',
   styleUrl: './post-page.css'
 })
