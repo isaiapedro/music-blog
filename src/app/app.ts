@@ -17,7 +17,7 @@ import { filter } from 'rxjs/operators';
     <main style="display: block; width: 100%; min-height: 100%;">
       <mat-toolbar color="primary" class="navbar">
         <span class="spacer"></span>
-        <a mat-button routerLink="/home-page" routerLinkActive="active-link" class="title">isaia</a>
+        <a mat-button routerLink="/home-page" routerLinkActive="active-link" class="title">equal rights</a>
         <span class="spacer"></span>
         <div class="nav-box">
           <a mat-button routerLink="/articles-page" routerLinkActive="active-link">articles</a>

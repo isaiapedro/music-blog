@@ -10,7 +10,7 @@
 }
 
 .post-container {
-  max-width: 680px; /* The Medium/Substack "golden ratio" width */
+  max-width: 890px; /* The Medium/Substack "golden ratio" width */
   width: 100%;
 }
 
@@ -184,6 +184,20 @@
 .markdown-body :deep(ol) {
   margin: 0 0 1em 0;
   padding-left: 1.5rem;
+}
+
+:host ::ng-deep .markdown-body blockquote {
+  background-color: #222;
+  border-left: 4px solid #999;
+  margin: 2rem 0;
+  padding: 1.25rem 1.5rem;
+}
+
+:host ::ng-deep .markdown-body blockquote p {
+  color: #c0c0c0;
+  font-style: italic;
+  font-size: 1.25rem;
+  line-height: 1.4;
 }
 
 .body-image {
