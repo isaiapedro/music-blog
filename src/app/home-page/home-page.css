@@ -1,8 +1,14 @@
 /* Bg and filter section*/
 
+@media (min-width: 1100px) {
+  .articles-container {
+    zoom: 0.9;
+  }
+}
+
 .articles-container {
   padding: 120px 20px;
-  max-width: 1450px;
+  max-width: 1550px;
   margin: 0 auto;
   color: #ffffff;
   position: absolute;
@@ -163,9 +169,21 @@
   margin-bottom: 10px;
 }
 
+.article-byline {
+  font-family: 'Helvetica', sans-serif;
+  font-size: 0.95rem;
+  color: #cccccc;
+  font-weight: lighter;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+  margin-left: 2px;
+  display: block;
+}
+
 .article-date {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   word-spacing: -0.4ch;
+  font-weight: lighter;
   color: #888;
   font-family: 'IBM Plex Mono', monospace;
   margin-left: 2px;

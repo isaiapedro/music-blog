@@ -175,7 +175,7 @@
               <input type="text" [(ngModel)]="article.keywords" placeholder="e.g. vinyl, analog, 80s...">
             </div>
           </div>
-          <div class="form-row two-col">
+          <div class="form-row three-col">
             <div class="form-group">
               <label>Homepage Placement</label>
               <select [(ngModel)]="article.placement" class="theme-select">
@@ -199,6 +199,13 @@
                   }
                 </div>
             </div>
+            <div class="form-group">
+              <label>Hero YouTube Video ID (Optional)</label>
+              <input type="text" [(ngModel)]="article.youtubeVideoId" placeholder="e.g. dQw4w9WgXcQ">
+              <p style="font-size: 0.8rem; color: #888; margin-top: 4px;">
+                If provided, this video will replace the main image at the top of the article. The image will still be used for thumbnails on the home page.
+              </p>
+          </div>
           </div>
           <div class="form-group">
             <label>Short Description (Subtitle)</label>
@@ -316,6 +323,7 @@
               <label>Review Breakdown (Content Blocks)</label>
               <div class="widget-actions">
                 <button class="btn-add" (click)="addParagraphBlock()">+ Paragraph</button>
+                <button class="btn-add" (click)="addReviewImageBlock()">+ Image Embed</button>
                 <button class="btn-add" (click)="addMusicBlock()">+ Music Embed</button>
               </div>
             </div>
@@ -330,7 +338,26 @@
                 <div class="widget-card-body">
                   @if (block.type === 'paragraph') {
                     <textarea [(ngModel)]="block.content" rows="4" placeholder="Write paragraph markdown here..."></textarea>
-                  } @else if (block.type === 'music') {
+                  } 
+                  @else if (block.type === 'image') {
+                    <div class="form-group">
+                      <input type="text" [(ngModel)]="block.imageUrl" placeholder="Image URL">
+                      <div class="upload-row">
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/gif"
+                          [disabled]="uploadingBlockIndex() === $index || isSaving()"
+                          (change)="onReviewBlockImageFileChange($event, review, $index)"
+                        />
+                        @if (uploadingBlockIndex() === $index) {
+                          <span class="upload-status">Uploading…</span>
+                        }
+                      </div>
+                    </div>
+                    <div class="form-group mt-2">
+                      <input type="text" [(ngModel)]="block.title" placeholder="Optional image caption">
+                    </div>
+                  }@else if (block.type === 'music') {
                     <input type="text" [(ngModel)]="block.title" placeholder="Track / Album Title">
                     <div class="form-row two-col mt-2">
                       <input type="text" [(ngModel)]="block.spotifyId" placeholder="Spotify ID">

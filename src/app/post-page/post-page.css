@@ -49,6 +49,20 @@
   margin: 0 0 2rem 0;
 }
 
+.author-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem; /* Adds a tiny bit of breathing room between the name and the date */
+}
+
+.article-byline {
+  font-family: 'Helvetica', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #e0e0e0;
+  letter-spacing: 1px;
+}
+
 /* --- META & AUTHOR --- */
 .post-meta {
   display: flex;
@@ -87,7 +101,7 @@
   align-items: center;
   gap: 0.5rem;
   color: #888;
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-family: 'Inter', sans-serif;
 }
 
@@ -100,8 +114,8 @@
 }
 
 .action-btn svg, .action-stat svg {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
 }
 
 .action-btn:hover {
@@ -311,7 +325,7 @@
 
 .comment-user { color: #aaa; font-size: 0.85rem; }
 .comment-date { color: #555; font-size: 0.8rem; }
-.comment-text { color: #ccc; font-size: 0.95rem; line-height: 1.6; margin: 0; }
+.comment-text { color: #ccc; font-size: 0.95rem; line-height: 1.6; margin: 0; white-space: pre-wrap; }
 .no-comments { color: #555; font-size: 0.9rem; font-style: italic; padding-left: 0.5rem; }
 
 

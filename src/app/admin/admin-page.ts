@@ -119,6 +119,42 @@ export class AdminPage implements OnInit {
     this.selectedReview().breakdown.splice(index, 1);
   }
 
+  addReviewImageBlock() {
+    const review = this.selectedReview();
+    if (!review.breakdown) review.breakdown = [];
+    review.breakdown.push({ type: 'image', imageUrl: '', title: '' });
+  }
+
+  onReviewBlockImageFileChange(event: Event, review: any, blockIndex: number) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    
+    this.uploadingBlockIndex.set(blockIndex);
+    const body = new FormData();
+    body.append('image', file);
+    
+    this.http.post<{ url: string }>(`${this.apiUrl}/upload`, body).subscribe({
+      next: (res) => {
+        const blocks = review.breakdown;
+        if (blocks && blocks[blockIndex]?.type === 'image') {
+          blocks[blockIndex].imageUrl = res.url;
+        }
+        // Force angular reactivity update
+        this.reviews.set([...this.reviews()]);
+        this.uploadingBlockIndex.set(null);
+        input.value = '';
+      },
+      error: (err) => {
+        console.error(err);
+        const msg = typeof err.error?.error === 'string' ? err.error.error : 'Upload failed';
+        alert(msg);
+        this.uploadingBlockIndex.set(null);
+        input.value = '';
+      }
+    });
+  }
+
   addArticleHeading() {
     const article = this.selectedArticle();
     if (!article.contentBlocks) article.contentBlocks = [];

@@ -194,6 +194,7 @@
     flex-direction: column;
     position: relative;
     margin-left: 50px;
+    gap: 20px;
 }
 
 .tool-sample {
@@ -240,8 +241,8 @@
 
 .facts-header {
     text-align: left;
-    margin-top: -140px;
-    margin-bottom: 80px;
+    margin-top: -7.4vw;    /* -140px at 1900px */
+    margin-bottom: 4.2vw;  /* 80px at 1900px */
 }
 
 .facts-header h2 {
@@ -257,8 +258,8 @@
     display: grid;
     /* Creates a 2x2 square grid. Change to 'repeat(4, 1fr)' for a 1x4 row! */
     grid-template-columns: repeat(2, 1fr); 
-    gap: 40px; /* Consistent spacing between all rows and columns */
-    max-width: 700px;
+    gap: 70px; /* Consistent spacing between all rows and columns */
+    max-width: 900px;
 }
 
 .fact-sample {
@@ -273,38 +274,38 @@
 .fact-1 {
     align-self: flex-start;
     transform: rotate(-2deg);
-    margin-left: -270px;
+    margin-left: -14.2vw;  /* -270px at 1900px */
 }
 
 .fact-2 {
     align-self: flex-end;
     flex-direction: row-reverse;
     transform: rotate(4deg);
-    margin-top: 80px;
-    margin-left: -100px;
+    margin-top: 4.2vw;    /* 80px at 1900px */
+    margin-left: -3.3vw;  /* -100px at 1900px */
 }
 
 .fact-3 {
     align-self: flex-start;
     transform: rotate(1deg);
-    margin-top: 30px;
-    margin-left: -130px;
+    margin-top: 7.9vw;    /* 150px at 1900px */
+    margin-left: -10.5vw; /* -200px at 1900px */
 }
 
 .fact-4 {
     align-self: center;
     transform: rotate(-1deg);
-    margin-left: -100px;
-    margin-top: 120px;
-    position: relative; 
+    margin-left: -5.3vw;  /* -100px at 1900px */
+    margin-top: 6.3vw;    /* 120px at 1900px */
+    position: relative;
 }
 
 .pet-heart {
     position: absolute; 
     
     /* 2. Coordinates: moves it relative to the upper-right of fact-4's box */
-    top: 5px;   
-    right: 100px; 
+    top: 2px;   
+    right: 80px; 
     transform: rotate(10deg);
     /* 3. Sets the size of the heart */
     width: 32px;
@@ -460,8 +461,8 @@
   }
 
   .bio-photo-wrapper {
-    width: 100px;
-    height: 110px;
+    width: 140px;
+    height: 150px;
     flex-shrink: 0;
     margin-right: 0;
   }

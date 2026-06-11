@@ -17,7 +17,12 @@ import { filter } from 'rxjs/operators';
     <main style="display: block; width: 100%; min-height: 100%;">
       <mat-toolbar color="primary" class="navbar">
         <span class="spacer"></span>
-        <a mat-button routerLink="/home-page" routerLinkActive="active-link" class="title">equal rights</a>
+        <a routerLink="/home-page" class="logo-link" aria-label="Home">
+          <picture>
+            <source srcset="assets/logo-site.svg" type="image/svg+xml">
+            <img src="assets/logo-site.png" alt="Equal Rights Logo" class="site-logo">
+          </picture>
+        </a>
         <span class="spacer"></span>
         <div class="nav-box">
           <a mat-button routerLink="/articles-page" routerLinkActive="active-link">articles</a>
@@ -52,6 +57,8 @@ import { filter } from 'rxjs/operators';
   `,
   styles: [
     `
+
+      
       .content {
         margin-top: 64px;
       }
@@ -76,10 +83,17 @@ import { filter } from 'rxjs/operators';
         color: white;
       }
 
-      .title {
-        font-size: 30px;
-        font-weight: bold;
-        font-family: "Typescript Mono", monospace;
+      .logo-link {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .site-logo {
+        height: 35px;
+        width: auto;
+        display: block;
       }
 
       .nav-box a {

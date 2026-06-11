@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 730 95">
+  <!-- Equal sign icon — white, proportions from banner scaled to cap-height=65px -->
+  <!-- bar_h=24, gap=17, bar_w=101 (271:174 aspect from banner scaled by 65/174) -->
+  <rect x="0"  y="15" width="101" height="24" fill="white"/>
+  <rect x="0"  y="56" width="101" height="24" fill="white"/>
+  <!-- "Equal Rights" — JetBrains Mono Bold 82px; cap height=65px matches icon; baseline y=80 -->
+  <text
+    x="121"
+    y="80"
+    font-family="'JetBrains Mono', 'Courier New', monospace"
+    font-weight="700"
+    font-size="82"
+    fill="white"
+  >Equal Rights</text>
+</svg>

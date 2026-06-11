@@ -137,7 +137,7 @@ export class ReviewComponent implements OnInit {
 
   toggleLike() {
     const r = this.review();
-    if (!r || this.hasLiked()) return;
+    if (!r) return;
     this.http.post<{ liked: boolean; likes: number }>(`${this.apiUrl}/reviews/${r.id}/like`, {}).subscribe({
       next: (res) => {
         this.hasLiked.set(res.liked);

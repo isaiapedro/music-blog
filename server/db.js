@@ -98,6 +98,7 @@ const initSchema = async () => {
     await client.query(`ALTER TABLE cms_reviews ADD COLUMN IF NOT EXISTS likes INT DEFAULT 0;`);
     await client.query(`ALTER TABLE cms_reviews ADD COLUMN IF NOT EXISTS shares INT DEFAULT 0;`);
     await client.query(`ALTER TABLE cms_articles ADD COLUMN IF NOT EXISTS shares INT DEFAULT 0;`);
+    await client.query(`ALTER TABLE cms_articles ADD COLUMN IF NOT EXISTS youtube_video_id VARCHAR(50);`);
     await client.query(`
       CREATE TABLE IF NOT EXISTS visitor_interactions (
         id SERIAL PRIMARY KEY,

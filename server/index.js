@@ -186,6 +186,7 @@ function rowToArticle(row) {
     description: row.description,
     date: row.publish_date,
     image: row.image,
+    youtubeVideoId: row.youtube_video_id,
     readingTime: row.reading_time,
     views: row.views || 0,
     likes: row.likes || 0,
@@ -294,9 +295,10 @@ app.put('/api/articles/:id', authenticateToken, async (req, res) => {
         published = $8,
         reading_time = $9,
         placement = $10,
+        youtube_video_id = $11,
         publish_date = CASE WHEN $8 = true AND publish_date IS NULL THEN CURRENT_DATE ELSE publish_date END,
         updated_at = NOW()
-      WHERE id = $11
+      WHERE id = $12
       RETURNING *`,
       [
         b.title || 'Untitled Draft',
@@ -309,6 +311,7 @@ app.put('/api/articles/:id', authenticateToken, async (req, res) => {
         Boolean(b.published),
         calculatedReadingTime,
         placement,
+        b.youtubeVideoId || '',
         id
       ]
     );

@@ -47,20 +47,22 @@
 .article-header-column{
     display: flex;
     flex-direction: column;
-    gap: 1.45rem;
+    gap: 1.1rem;
     align-items: flex-start;
-    margin-top:70px;
+    margin-top:95px;
     margin-left: 30px;
-    max-width: 770px;
+    max-width: 1300px;
+    flex: 1;
+    width: 100%;
 }
 
 .back-link {
     margin-left: 2px;
-    margin-top: -44px;
+    margin-top: -70px;
     color: #888;
     text-decoration: none;
     font-weight: 500;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
 }
 
 .back-link:hover { text-decoration: underline; }
@@ -68,7 +70,7 @@
 .article-title {
     font-size: 3.1rem;
     font-weight: 600;
-    margin: -1rem 0 -0.5rem 0;
+    margin: 0rem 0 -0.5rem 0;
     color: #fff;
     font-family: 'Playfair Display', serif;
     margin-left: -3px;
@@ -80,31 +82,31 @@
     flex-direction: row;
     align-items: center; 
     justify-content: space-between; 
-    width: 97%;
-    margin-top: -18px;
+    width: 100%;
 }
 
 .article-artist {
-    font-size: 1.7rem;
+    font-size: 1.75rem;
     color: #888;
-    margin: 1.2rem 0;
+    margin: 0.5rem 0;
+    line-height: 1.05;
 }
 
 /* --- ENGAGEMENT BAR --- */
 .engagement-bar {
     display: flex;
     align-items: center;
-    gap: 1.25rem;
+    gap: 1.5rem;
 }
 
 .action-btn {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.5rem;
     background: none;
     border: none;
     color: #888;
-    font-size: 1rem;
+    font-size: 1.15rem;
     font-family: 'Inter', sans-serif;
     cursor: pointer;
     padding: 0;
@@ -112,7 +114,7 @@
     transition: color 0.2s;
 }
 
-.action-btn svg { width: 20px; height: 20px; }
+.action-btn svg { width: 24px; height: 24px; }
 .action-btn:hover { color: #fff; }
 .action-btn.liked { color: #FF5A5A; }
 
@@ -125,7 +127,6 @@
     align-items: center;
     vertical-align: middle;
     margin-left: -2px;
-    margin-top: -11px;
     text-transform: capitalize;
 }
 
@@ -184,6 +185,23 @@
     padding: 0px 10px;
 }
 
+.article-byline {
+  font-family: 'Helvetica', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #e0e0e0;
+  letter-spacing: 1px;
+  padding: 10px 10px;
+}
+
+.post-date-time {
+  color: #888;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
 /* Introduction, Review and Conclusion  */
 
 .main-content{
@@ -227,9 +245,18 @@
     text-underline-offset: 0.2em;
     text-decoration-color: rgba(255, 255, 255, 0.45);
 }
-.markdown-body :deep(a:hover) {
-    text-decoration-color: rgba(255, 255, 255, 0.75);
+
+:host ::ng-deep .markdown-body a {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  text-decoration-color: rgba(255, 255, 255, 0.45);
 }
+
+.markdown-body :deep(a:hover) {
+  text-decoration-color: rgba(255, 255, 255, 0.75);
+}
+
 .markdown-body :deep(code) {
     font-family: 'IBM Plex Mono', 'Inter', ui-monospace, monospace;
     font-size: 0.9em;
@@ -722,5 +749,5 @@ figcaption { font-size: 0.85rem; color: #666; margin-top: 0.25rem; }
 
 .comment-user { color: #aaa; font-size: 0.85rem; }
 .comment-date { color: #555; font-size: 0.8rem; }
-.comment-text { color: #ccc; font-size: 0.95rem; line-height: 1.6; margin: 0; }
+.comment-text { color: #ccc; font-size: 0.95rem; line-height: 1.6; margin: 0; white-space: pre-wrap; }
 .no-comments { color: #555; font-size: 0.9rem; font-style: italic; margin-left: 0.5rem; }

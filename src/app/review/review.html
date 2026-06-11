@@ -20,7 +20,7 @@
                         <div class="subtitle-artist">
                             <p class="article-artist">{{ content.artist }}</p>
                             <div class="engagement-bar">
-                                <button class="action-btn" (click)="toggleLike()" [class.liked]="hasLiked()" [disabled]="hasLiked()">
+                                <button class="action-btn" (click)="toggleLike()" [class.liked]="hasLiked()">
                                     <svg viewBox="0 0 24 24" [attr.fill]="hasLiked() ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                                     <span>{{ content.likes || 0 }}</span>
                                 </button>
@@ -54,6 +54,11 @@
                             </span>
                         }
                     </div>
+                </div>
+                <div class="post-date-time">
+                    <span class="article-byline">By Pedro Isaia</span>
+                    <span class="separator">·</span>
+                    <span>{{ content.date | date:'mediumDate' }}</span>
                 </div>
                 @if (content.context) {
                     <div class="article-context markdown-body">

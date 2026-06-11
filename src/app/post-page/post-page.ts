@@ -1,6 +1,6 @@
-import { Component, signal, inject, OnInit, DOCUMENT } from '@angular/core';
+import { Component, signal, computed, inject, OnInit, DOCUMENT } from '@angular/core';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
-import { Title, Meta } from '@angular/platform-browser';
+import { Title, Meta, DomSanitizer } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -24,6 +24,7 @@ export interface Article {
   description: string;
   date: string;
   image: string;
+  youtubeVideoId?: string;
   readingTime?: string;
   views?: number;
   likes?: number;
@@ -47,11 +48,20 @@ export class PostPage implements OnInit {
   private metaService = inject(Meta);
   private document = inject(DOCUMENT);
   private apiUrl = environment.apiUrl;
+  private sanitizer = inject(DomSanitizer);
 
   article = signal<Article | null>(null);
   hasLiked = signal(false);
   commentText = signal('');
   submittingComment = signal(false);
+
+  youtubeEmbedUrl = computed(() => {
+    const id = this.article()?.youtubeVideoId;
+    if (!id) return null;
+    return this.sanitizer.bypassSecurityTrustResourceUrl(
+      `https://www.youtube.com/embed/${id}`
+    );
+  });
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
@@ -101,7 +111,7 @@ export class PostPage implements OnInit {
 
   toggleLike() {
     const a = this.article();
-    if (!a || this.hasLiked()) return;
+    if (!a) return;
     this.http.post<{ liked: boolean; likes: number }>(`${this.apiUrl}/articles/${a.id}/like`, {}).subscribe({
       next: (res) => {
         this.hasLiked.set(res.liked);
@@ -152,4 +162,5 @@ export class PostPage implements OnInit {
     }
     script.textContent = JSON.stringify(data);
   }
+
 }
