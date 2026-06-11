@@ -373,6 +373,10 @@
   color: #fff;
 }
 
+.icon-btn.liked {
+  color: #FF5A5A;
+}
+
 .pagination {
   display: flex;
   flex-direction: row;

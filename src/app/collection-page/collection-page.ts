@@ -7,6 +7,7 @@ import { HttpClient } from '@angular/common/http';
 import { ImgFadeDirective } from '../shared/img-fade.directive';
 import { environment } from '../../environments/environment';
 import { LanguageService } from '../shared/language.service';
+import { LikedStateService } from '../shared/liked-state.service';
 
 @Component({
   selector: 'app-collection-page',
@@ -21,6 +22,7 @@ export class CollectionPage implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   langService = inject(LanguageService);
+  private likedService = inject(LikedStateService);
 
   reviews = signal<Review[]>([]);
 
@@ -34,11 +36,11 @@ export class CollectionPage implements OnInit {
       this.showLatestOnly.set(params['filter'] === 'latest');
     });
 
-    // Query the database, asking specifically for published=true
+    this.likedService.init();
+
     this.http.get<{ reviews: Review[] }>(`${this.apiUrl}/reviews?published=true`).subscribe({
       next: (data) => {
-        // Data is now live from the database!
-        this.reviews.set(data.reviews); 
+        this.reviews.set(data.reviews);
       },
       error: (error) => {
         console.error('Error fetching live reviews:', error);
@@ -55,6 +57,22 @@ export class CollectionPage implements OnInit {
     if (this.shareMenuId() !== null && !target.closest('.share-menu-wrap')) {
       this.shareMenuId.set(null);
     }
+  }
+
+  isLiked(id: number): boolean {
+    return this.likedService.isLiked(id);
+  }
+
+  toggleLike(review: any, event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.http.post<{ liked: boolean; likes: number }>(`${this.apiUrl}/reviews/${review.id}/like`, {}).subscribe({
+      next: (res) => {
+        this.likedService.setLiked(review.id, res.liked);
+        review.likes = res.likes;
+        this.reviews.set([...this.reviews()]);
+      }
+    });
   }
 
   toggleShareMenuForReview(id: number) {
@@ -91,9 +109,11 @@ export class CollectionPage implements OnInit {
         a.download = 'review-card.png';
         a.click();
         URL.revokeObjectURL(url);
+        this.cardDownloaded.set(true);
+        setTimeout(() => this.cardDownloaded.set(false), 3500);
       }
-    } catch (err) {
-      console.error('Share card failed:', err);
+    } catch (err: any) {
+      if (err?.name !== 'AbortError') console.error('Share card failed:', err);
     } finally {
       this.generatingCard.set(false);
     }
@@ -115,6 +135,7 @@ export class CollectionPage implements OnInit {
   shareMenuId = signal<number | null>(null);
   generatingCard = signal(false);
   copiedReviewId = signal<number | null>(null);
+  cardDownloaded = signal(false);
   
   togglePreview(review: any) {
     if (window.innerWidth <= 768) {

@@ -477,6 +477,18 @@ app.get('/api/reviews/:id/visitor-state', async (req, res) => {
   catch (err) { res.status(500).json({ error: 'Failed to get visitor state' }); }
 });
 
+app.get('/api/visitor-liked-review-ids', async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT content_id FROM visitor_interactions WHERE visitor_id=$1 AND content_type='review' AND action='like'`,
+      [req.visitor_id]
+    );
+    res.json({ ids: result.rows.map(r => Number(r.content_id)) });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to get liked IDs' });
+  }
+});
+
 // Admin analytics
 app.get('/api/admin/analytics', authenticateToken, async (req, res) => {
   try {

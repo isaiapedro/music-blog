@@ -9,6 +9,7 @@ import { ImgFadeDirective } from '../shared/img-fade.directive';
 
 import { environment } from '../../environments/environment';
 import { LanguageService } from '../shared/language.service';
+import { LikedStateService } from '../shared/liked-state.service';
 
 export interface Track {
   number: number;
@@ -75,15 +76,20 @@ export class ReviewComponent implements OnInit {
   private document = inject(DOCUMENT);
   private apiUrl = environment.apiUrl;
   langService = inject(LanguageService);
+  private likedService = inject(LikedStateService);
 
   review = signal<ReviewDetail | null>(null);
   isLoading = signal(true);
-  hasLiked = signal(false);
+  hasLiked = computed(() => {
+    const r = this.review();
+    return r ? this.likedService.isLiked(r.id) : false;
+  });
   commentText = signal('');
   submittingComment = signal(false);
   showShareMenu = signal(false);
   generatingCard = signal(false);
   linkCopied = signal(false);
+  cardDownloaded = signal(false);
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
@@ -93,7 +99,6 @@ export class ReviewComponent implements OnInit {
       if (!slug) { this.isLoading.set(false); return; }
 
       this.isLoading.set(true);
-      this.hasLiked.set(false);
       this.commentText.set('');
 
       this.http.get<any>(`${this.apiUrl}/reviews/${slug}`, {
@@ -109,11 +114,8 @@ export class ReviewComponent implements OnInit {
           });
           this.isLoading.set(false);
 
-          // Record unique view and fetch visitor state
           this.http.post(`${this.apiUrl}/reviews/${data.id}/view`, {}).subscribe();
-          this.http.get<{ liked: boolean }>(`${this.apiUrl}/reviews/${data.id}/visitor-state`).subscribe({
-            next: (state) => this.hasLiked.set(state.liked)
-          });
+          this.likedService.init();
 
           const pageTitle = `${data.album} — ${data.artist} Review | Isaia`;
           this.titleService.setTitle(pageTitle);
@@ -150,7 +152,7 @@ export class ReviewComponent implements OnInit {
     if (!r) return;
     this.http.post<{ liked: boolean; likes: number }>(`${this.apiUrl}/reviews/${r.id}/like`, {}).subscribe({
       next: (res) => {
-        this.hasLiked.set(res.liked);
+        this.likedService.setLiked(r.id, res.liked);
         this.review.update(rev => rev ? { ...rev, likes: res.likes } : rev);
       }
     });
@@ -191,9 +193,11 @@ export class ReviewComponent implements OnInit {
         link.download = 'review-card.png';
         link.click();
         URL.revokeObjectURL(url);
+        this.cardDownloaded.set(true);
+        setTimeout(() => this.cardDownloaded.set(false), 3500);
       }
-    } catch (err) {
-      console.error('Share card failed:', err);
+    } catch (err: any) {
+      if (err?.name !== 'AbortError') console.error('Share card failed:', err);
     } finally {
       this.generatingCard.set(false);
     }
