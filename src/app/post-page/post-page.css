@@ -328,6 +328,30 @@
 .comment-text { color: #ccc; font-size: 0.95rem; line-height: 1.6; margin: 0; white-space: pre-wrap; }
 .no-comments { color: #555; font-size: 0.9rem; font-style: italic; padding-left: 0.5rem; }
 
+.admin-reply {
+  margin-top: 10px;
+  margin-left: 16px;
+  padding: 10px 14px;
+  border-radius: 0 4px 4px 0;
+  background-color: #222;
+  border-left: 4px solid #999;
+}
+
+.admin-reply-author {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #c0c0c0;
+}
+
+.admin-reply-text {
+  color: #ccc; 
+  font-size: 0.95rem; 
+  line-height: 1.6; 
+  margin: 0; 
+  white-space: pre-wrap;
+}
 
 @media (max-width: 768px) {
   .page-wrapper {
@@ -355,3 +379,11 @@
     font-size: 1.4rem;
   }
 }
+
+
+.share-menu-wrap { position: relative; }
+.share-dropdown { position: absolute; right: 0; bottom: calc(100% + 8px); background: #1a1a1a; border: 1px solid #333; border-radius: 6px; min-width: 160px; z-index: 100; overflow: hidden; }
+.share-dropdown button { display: block; width: 100%; padding: 10px 14px; background: none; border: none; color: #ccc; font-size: 0.85rem; text-align: left; cursor: pointer; transition: background 0.15s; }
+.share-dropdown button:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.share-loading { font-size: 0.75rem; margin-left: 4px; opacity: 0.7; }
+.copied-toast { font-size: 0.8rem; color: #7cfc7c; padding: 2px 8px; white-space: nowrap; }

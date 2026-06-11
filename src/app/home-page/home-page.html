@@ -4,7 +4,7 @@
       <input 
         #searchBox
         type="text" 
-        placeholder="Search articles, reviews and more..." 
+        [placeholder]="langService.t('articles.searchPlaceholder')"
         class="search-bar"
         [value]="searchTerm()"
         (keyup.enter)="onSearch(searchBox.value)"
@@ -24,7 +24,7 @@
             class="filter-rect" 
             [class.active]="selectedTheme() === theme"
             (click)="setTheme(theme)">
-            {{ theme }}
+            {{ langService.label(theme) }}
           </button>
         }
       }
@@ -40,8 +40,8 @@
             <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=800&auto=format&fit=crop" class="article-img" alt="Latest Reviews" imgFade>
           </div>
           <span class="filter-rect article-theme">Reviews</span>
-          <h2 class="serif-heading">New Album Review</h2>
-          <time class="article-date">Weekly Update</time>
+          <h2 class="serif-heading">{{ langService.t('home.newAlbumReview') }}</h2>
+          <time class="article-date">{{ langService.t('home.weeklyUpdate') }}</time>
         </a>
       </article> 
 
@@ -51,9 +51,9 @@
             <div class="img-wrapper">
               <img [src]="side.image" class="article-img" alt="Article image" imgFade>
             </div>
-            <span class="filter-rect article-theme">{{ side.theme }}</span>
-            <h2 class="serif-heading">{{ side.title }}</h2>
-            <span class="article-byline">By Pedro Isaia</span>
+            <span class="filter-rect article-theme">{{ langService.label(side.theme) }}</span>
+            <h2 class="serif-heading">{{ langService.lang() === 'pt' && side.titlePt ? side.titlePt : side.title }}</h2>
+            <span class="article-byline">{{ langService.t('home.byAuthor') }}</span>
             <time class="article-date">{{ side.date | date:'longDate' }}</time>
           </a>
         </article>
@@ -67,15 +67,15 @@
             <div class="img-wrapper main-img-wrapper">
               <img [src]="main.image" class="article-img" alt="Main article image" imgFade>
             </div>
-            <h1 class="serif-heading main-heading">{{ main.title }}</h1>
-            <p class="description">{{ main.description }}</p>
-            <span class="article-byline">By Pedro Isaia</span>
+            <h1 class="serif-heading main-heading">{{ langService.lang() === 'pt' && main.titlePt ? main.titlePt : main.title }}</h1>
+            <p class="description">{{ langService.lang() === 'pt' && main.descriptionPt ? main.descriptionPt : main.description }}</p>
+            <span class="article-byline">{{ langService.t('home.byAuthor') }}</span>
             <time class="article-date main-date">{{ main.date | date:'longDate' }}</time>
           </a>
         </article>
 
         <div class="music-player-section">
-          <span class="filter-rect static-tag">Latest Track</span>
+          <span class="filter-rect static-tag">{{ langService.t('home.latestTrack') }}</span>
           <iframe 
             width="100%" 
             height="150" 
@@ -89,12 +89,12 @@
     }
 
     <div class="text-only-list">
-      <h2 class="serif-heading column-title">Latest Posts</h2>
+      <h2 class="serif-heading column-title">{{ langService.t('home.latestPosts') }}</h2>
       @for (article of listArticles(); track article.id) {
         <article class="list-item">
           <a [routerLink]="['/articles', article.slug || article.id]" class="post-wrapper">
-            <h3 class="serif-heading">{{ article.title }}</h3>
-            <span class="article-byline">By Pedro Isaia</span>
+            <h3 class="serif-heading">{{ langService.lang() === 'pt' && article.titlePt ? article.titlePt : article.title }}</h3>
+            <span class="article-byline">{{ langService.t('home.byAuthor') }}</span>
             <time class="article-date">{{ article.date | date:'longDate' }}</time>
           </a>
         </article>

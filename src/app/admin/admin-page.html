@@ -123,7 +123,8 @@
     <main class="cms-editor">
       @if (selectedArticle(); as article) {
         <div class="editor-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
-          <div>
+          <div style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
             <h2>{{ article.title || 'Untitled Article' }}</h2>
             <div class="item-stats">
               <span>👁️ {{ article.views || 0 }} Views</span>
@@ -133,17 +134,39 @@
             </div>
           </div>
 
-          <button class="btn-delete" (click)="deleteCurrentArticle()" [disabled]="isSaving()">
-            Delete Article
-          </button>
-        </div>
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <button class="btn-delete" (click)="deleteCurrentArticle()" [disabled]="isSaving()">
+              Delete Article
+            </button>
+            <button class="btn-card-action" (click)="downloadCard('post')" [disabled]="isGeneratingCard()">
+              {{ isGeneratingCard() ? 'Generating...' : '⬇ Download Card' }}
+            </button>
+            <button class="btn-card-action btn-instagram" (click)="shareToInstagram('post')" [disabled]="isGeneratingCard()">
+              {{ isGeneratingCard() ? 'Generating...' : '📸 Share to Instagram' }}
+            </button>
+          </div>
+          </div>
+          <div class="language-tabs">
+            <button [class.active]="editingLang()==='en'" (click)="editingLang.set('en')">EN</button>
+            <button [class.active]="editingLang()==='pt'" (click)="editingLang.set('pt')">PT</button>
+            @if (editingLang()==='en') {
+              <button class="btn-translate" (click)="autoTranslateArticle()" [disabled]="isTranslating() || isSaving()">
+                {{ isTranslating() ? 'Translating...' : '✨ Auto-Translate to PT' }}
+              </button>
+            }
+          </div>
+          </div>
 
         <div class="form-grid">
           
           <div class="form-row two-col">
             <div class="form-group">
               <label>Article Title</label>
-              <input type="text" [(ngModel)]="article.title" placeholder="Catchy title...">
+              @if (editingLang() === 'en') {
+                <input type="text" [(ngModel)]="article.title" placeholder="Catchy title...">
+              } @else {
+                <input type="text" [(ngModel)]="article.titlePt" placeholder="Título em português...">
+              }
             </div>
             
             <div class="form-group checkbox-group">
@@ -209,37 +232,39 @@
           </div>
           <div class="form-group">
             <label>Short Description (Subtitle)</label>
-            <textarea [(ngModel)]="article.description" rows="2" placeholder="Summary for the card view..."></textarea>
+            @if (editingLang() === 'en') {
+              <textarea [(ngModel)]="article.description" rows="2" placeholder="Summary for the card view..."></textarea>
+            } @else {
+              <textarea [(ngModel)]="article.descriptionPt" rows="2" placeholder="Descrição em português..."></textarea>
+            }
           </div>
 
           <div class="widget-list">
             <div class="widget-list-header">
-              <label>Article Content (Blocks)</label>
-              <div class="widget-actions">
-                <button class="btn-add" (click)="addArticleHeading()">+ Heading</button>
-                <button class="btn-add" (click)="addArticleParagraph()">+ Paragraph</button>
-                <button class="btn-add" (click)="addArticleImage()">+ Image Embed</button>
-              </div>
+              <label>Article Content (Blocks) — {{ editingLang() === 'en' ? 'English' : 'Português' }}</label>
+              @if (editingLang() === 'en') {
+                <div class="widget-actions">
+                  <button class="btn-add" (click)="addArticleHeading()">+ Heading</button>
+                  <button class="btn-add" (click)="addArticleParagraph()">+ Paragraph</button>
+                  <button class="btn-add" (click)="addArticleImage()">+ Image Embed</button>
+                </div>
+              }
             </div>
 
-            @for (block of article.contentBlocks; track $index) {
+            @for (block of (editingLang() === 'en' ? article.contentBlocks : article.contentBlocksPt); track $index) {
               <div class="widget-card">
                 <div class="widget-card-header">
                   <span class="widget-type">{{ block.type | uppercase }}</span>
-                  <button class="btn-remove" (click)="removeArticleBlock($index)">Remove</button>
+                  <button class="btn-remove" (click)="editingLang() === 'en' ? removeArticleBlock($index) : removeArticleBlockPt($index)">Remove</button>
                 </div>
                 
                 <div class="widget-card-body">
                   
                   @if (block.type === 'heading') {
                     <input type="text" [(ngModel)]="block.content" placeholder="Type your heading here...">
-                  } 
-                  
-                  @else if (block.type === 'paragraph') {
+                  } @else if (block.type === 'paragraph') {
                     <textarea [(ngModel)]="block.content" rows="6" placeholder="Write your paragraph..."></textarea>
-                  } 
-                  
-                  @else if (block.type === 'image') {
+                  } @else if (block.type === 'image') {
                     <div class="form-group">
                       <input type="text" [(ngModel)]="block.imageUrl" placeholder="Image URL">
                       <div class="upload-row">
@@ -265,15 +290,65 @@
           </div>
 
         </div>
+
+        @if (article.comments && article.comments.length) {
+          <div class="comments-manager">
+            <h3 class="comments-manager-title">Comments ({{ article.comments.length }})</h3>
+            @for (c of article.comments; track $index) {
+              <div class="admin-comment-card">
+                <div class="admin-comment-header">
+                  <span class="admin-comment-user">{{ c.user }}</span>
+                  <span class="admin-comment-date">{{ c.date | date:'mediumDate' }}</span>
+                  <button class="btn-remove" (click)="deleteComment('articles', article.id, $index)">Delete</button>
+                </div>
+                <p class="admin-comment-text">{{ c.text }}</p>
+                @if (c.adminReply) {
+                  <div class="admin-reply-existing">
+                    <span class="admin-reply-label">Your reply:</span> {{ c.adminReply.text }}
+                  </div>
+                }
+                <div class="admin-reply-row">
+                  <input type="text" class="admin-reply-input"
+                    [placeholder]="c.adminReply ? 'Edit reply...' : 'Write a reply...'"
+                    [value]="replyDrafts()[$index] ?? (c.adminReply?.text || '')"
+                    (input)="setReplyDraft($index, $any($event.target).value)">
+                  <button class="btn-save-reply" (click)="saveReply('articles', article.id, $index)">
+                    {{ c.adminReply ? 'Update' : 'Reply' }}
+                  </button>
+                  @if (c.adminReply) {
+                    <button class="btn-remove" (click)="setReplyDraft($index, ''); saveReply('articles', article.id, $index)">Remove</button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
       } @else if (selectedReview(); as review) {
         <div class="editor-header">
           <h2>{{ review.album }}</h2>
           <p style="margin-bottom: 8px;">{{ review.artist }} ({{ review.releaseDate }})</p>
+          <div class="language-tabs" style="margin-top: 8px;">
+            <button [class.active]="editingLang()==='en'" (click)="editingLang.set('en')">EN</button>
+            <button [class.active]="editingLang()==='pt'" (click)="editingLang.set('pt')">PT</button>
+            @if (editingLang()==='en') {
+              <button class="btn-translate" (click)="autoTranslateReview()" [disabled]="isTranslating() || isSaving()">
+                {{ isTranslating() ? 'Translating...' : '✨ Auto-Translate to PT' }}
+              </button>
+            }
+          </div>
           <div class="item-stats">
             <span>👁️ {{ review.views || 0 }} Views</span>
             <span>❤️ {{ review.likes || 0 }} Likes</span>
             <span>🔗 {{ review.shares || 0 }} Shares</span>
             <span>💬 {{ review.comments?.length || 0 }} Comments</span>
+          </div>
+          <div style="display: flex; gap: 8px; margin-top: 12px;">
+            <button class="btn-card-action" (click)="downloadCard('review')" [disabled]="isGeneratingCard()">
+              {{ isGeneratingCard() ? 'Generating...' : '⬇ Download Card' }}
+            </button>
+            <button class="btn-card-action btn-instagram" (click)="shareToInstagram('review')" [disabled]="isGeneratingCard()">
+              {{ isGeneratingCard() ? 'Generating...' : '📸 Share to Instagram' }}
+            </button>
           </div>
         </div>
 
@@ -310,25 +385,35 @@
 
           <div class="form-group">
             <label>Context (Historical background, impact, etc.)</label>
-            <textarea [(ngModel)]="review.context" rows="4" placeholder="Write context markdown here..."></textarea>
+            @if (editingLang() === 'en') {
+              <textarea [(ngModel)]="review.context" rows="4" placeholder="Write context markdown here..."></textarea>
+            } @else {
+              <textarea [(ngModel)]="review.contextPt" rows="4" placeholder="Contexto em português..."></textarea>
+            }
           </div>
 
           <div class="form-group">
             <label>Introduction</label>
-            <textarea [(ngModel)]="review.introduction" rows="4" placeholder="Write introduction markdown here..."></textarea>
+            @if (editingLang() === 'en') {
+              <textarea [(ngModel)]="review.introduction" rows="4" placeholder="Write introduction markdown here..."></textarea>
+            } @else {
+              <textarea [(ngModel)]="review.introductionPt" rows="4" placeholder="Introdução em português..."></textarea>
+            }
           </div>
 
           <div class="widget-list">
             <div class="widget-list-header">
-              <label>Review Breakdown (Content Blocks)</label>
-              <div class="widget-actions">
-                <button class="btn-add" (click)="addParagraphBlock()">+ Paragraph</button>
-                <button class="btn-add" (click)="addReviewImageBlock()">+ Image Embed</button>
-                <button class="btn-add" (click)="addMusicBlock()">+ Music Embed</button>
-              </div>
+              <label>Review Breakdown — {{ editingLang() === 'en' ? 'English' : 'Português' }}</label>
+              @if (editingLang() === 'en') {
+                <div class="widget-actions">
+                  <button class="btn-add" (click)="addParagraphBlock()">+ Paragraph</button>
+                  <button class="btn-add" (click)="addReviewImageBlock()">+ Image Embed</button>
+                  <button class="btn-add" (click)="addMusicBlock()">+ Music Embed</button>
+                </div>
+              }
             </div>
 
-            @for (block of review.breakdown; track $index) {
+            @for (block of (editingLang() === 'en' ? review.breakdown : review.breakdownPt); track $index) {
               <div class="widget-card">
                 <div class="widget-card-header">
                   <span class="widget-type">{{ block.type | uppercase }}</span>
@@ -371,10 +456,47 @@
 
           <div class="form-group mt-4">
             <label>Conclusion</label>
-            <textarea [(ngModel)]="review.conclusion" rows="4" placeholder="Write conclusion markdown here..."></textarea>
+            @if (editingLang() === 'en') {
+              <textarea [(ngModel)]="review.conclusion" rows="4" placeholder="Write conclusion markdown here..."></textarea>
+            } @else {
+              <textarea [(ngModel)]="review.conclusionPt" rows="4" placeholder="Conclusão em português..."></textarea>
+            }
           </div>
 
         </div>
+
+        @if (review.comments && review.comments.length) {
+          <div class="comments-manager">
+            <h3 class="comments-manager-title">Comments ({{ review.comments.length }})</h3>
+            @for (c of review.comments; track $index) {
+              <div class="admin-comment-card">
+                <div class="admin-comment-header">
+                  <span class="admin-comment-user">{{ c.user }}</span>
+                  <span class="admin-comment-date">{{ c.date | date:'mediumDate' }}</span>
+                  <button class="btn-remove" (click)="deleteComment('reviews', review.id, $index)">Delete</button>
+                </div>
+                <p class="admin-comment-text">{{ c.text }}</p>
+                @if (c.adminReply) {
+                  <div class="admin-reply-existing">
+                    <span class="admin-reply-label">Your reply:</span> {{ c.adminReply.text }}
+                  </div>
+                }
+                <div class="admin-reply-row">
+                  <input type="text" class="admin-reply-input"
+                    [placeholder]="c.adminReply ? 'Edit reply...' : 'Write a reply...'"
+                    [value]="replyDrafts()[$index] ?? (c.adminReply?.text || '')"
+                    (input)="setReplyDraft($index, $any($event.target).value)">
+                  <button class="btn-save-reply" (click)="saveReply('reviews', review.id, $index)">
+                    {{ c.adminReply ? 'Update' : 'Reply' }}
+                  </button>
+                  @if (c.adminReply) {
+                    <button class="btn-remove" (click)="setReplyDraft($index, ''); saveReply('reviews', review.id, $index)">Remove</button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
       } @else {
         <div class="dashboard-state">
           <div class="editor-header">

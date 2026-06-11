@@ -6,6 +6,7 @@ import { Review } from '../review.data';
 import { HttpClient } from '@angular/common/http';
 import { ImgFadeDirective } from '../shared/img-fade.directive';
 import { environment } from '../../environments/environment';
+import { LanguageService } from '../shared/language.service';
 
 @Component({
   selector: 'app-collection-page',
@@ -19,6 +20,7 @@ export class CollectionPage implements OnInit {
   private http = inject(HttpClient);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  langService = inject(LanguageService);
 
   reviews = signal<Review[]>([]);
 
@@ -47,10 +49,53 @@ export class CollectionPage implements OnInit {
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
-    
-    // If the menu is open, AND the click was not inside our sort component, close the menu
     if (this.showSortMenu() && !target.closest('.sort-container')) {
       this.showSortMenu.set(false);
+    }
+    if (this.shareMenuId() !== null && !target.closest('.share-menu-wrap')) {
+      this.shareMenuId.set(null);
+    }
+  }
+
+  toggleShareMenuForReview(id: number) {
+    this.shareMenuId.update(cur => cur === id ? null : id);
+  }
+
+  copyReviewLink(review: any) {
+    const slug = review.slug || review.id;
+    navigator.clipboard.writeText(`${window.location.origin}/reviews/${slug}`);
+    this.shareMenuId.set(null);
+    this.copiedReviewId.set(review.id);
+    setTimeout(() => this.copiedReviewId.set(null), 2000);
+  }
+
+  async shareReviewCard(review: any) {
+    this.generatingCard.set(true);
+    this.shareMenuId.set(null);
+    try {
+      const res = await fetch(`${this.apiUrl}/share-card`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'review', title: review.album, artist: review.artist, image: review.image })
+      });
+      if (!res.ok) throw new Error('Card generation failed');
+      const blob = await res.blob();
+      const file = new File([blob], 'review-card.png', { type: 'image/png' });
+      const nav = navigator as any;
+      if (nav.canShare?.({ files: [file] })) {
+        await nav.share({ files: [file] });
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = window.document.createElement('a');
+        a.href = url;
+        a.download = 'review-card.png';
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (err) {
+      console.error('Share card failed:', err);
+    } finally {
+      this.generatingCard.set(false);
     }
   }
 
@@ -67,6 +112,9 @@ export class CollectionPage implements OnInit {
   showSortMenu = signal(false);
 
   selectedPreview = signal<any | null>(null);
+  shareMenuId = signal<number | null>(null);
+  generatingCard = signal(false);
+  copiedReviewId = signal<number | null>(null);
   
   togglePreview(review: any) {
     if (window.innerWidth <= 768) {
@@ -268,12 +316,14 @@ export class CollectionPage implements OnInit {
 
   paginationText = computed(() => {
     const total = this.filteredReviews().length;
-    if (total === 0) return 'No reviews found';
+    if (total === 0) return this.langService.t('collection.noReviews');
 
     const start = ((this.currentPage() - 1) * this.itemsPerPage()) + 1;
     const end = Math.min(this.currentPage() * this.itemsPerPage(), total);
 
-    return `Showing ${start}-${end} out of ${total} reviews`;
+    return this.langService.lang() === 'pt'
+      ? `Mostrando ${start}-${end} de ${total} resenhas`
+      : `Showing ${start}-${end} out of ${total} reviews`;
   });
 
   updateSearch(term: string) {
@@ -336,6 +386,19 @@ export class CollectionPage implements OnInit {
     this.selectedPreview.set(null); // Clear preview
   }
 
+  displayContext(review: any): string {
+    return this.langService.lang() === 'pt' && review.contextPt
+      ? review.contextPt
+      : (review.context || this.langService.t('search.descFallback'));
+  }
+
+  displayIntro(review: any): string {
+    const text = this.langService.lang() === 'pt' && review.introductionPt
+      ? review.introductionPt
+      : review.introduction;
+    return this.getPreviewIntro(text);
+  }
+
   getPreviewIntro(text: string | undefined): string {
     if (!text) return 'No introduction written yet.';
     
@@ -351,28 +414,29 @@ export class CollectionPage implements OnInit {
   }
 
   formatDate(dateString: string | undefined): string {
-    if (!dateString) return 'Unknown Date';
+    if (!dateString) return this.langService.lang() === 'pt' ? 'Data desconhecida' : 'Unknown Date';
 
     const [year, month, day] = dateString.split('-').map(Number);
-    if (!year || !month || !day) return dateString; // Fallback if format is weird
+    if (!year || !month || !day) return dateString;
 
     const reviewDate = new Date(year, month - 1, day);
     const today = new Date();
-    
+
     today.setHours(0, 0, 0, 0);
     reviewDate.setHours(0, 0, 0, 0);
 
     const diffTime = today.getTime() - reviewDate.getTime();
     const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+    const locale = this.langService.lang() === 'pt' ? 'pt-BR' : 'en-US';
 
     if (diffDays === 0) {
-      return 'Today';
+      return this.langService.t('collection.today');
     } else if (diffDays === 1) {
-      return 'Yesterday';
+      return this.langService.t('collection.yesterday');
     } else if (diffDays > 1 && diffDays < 7) {
-      return new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(reviewDate);
+      return new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(reviewDate);
     } else {
-      return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(reviewDate);
+      return new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric', year: 'numeric' }).format(reviewDate);
     }
   }
 

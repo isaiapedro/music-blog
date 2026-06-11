@@ -1,7 +1,8 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, signal, inject } from '@angular/core';
 import { RouterLink, RouterOutlet, RouterLinkActive } from '@angular/router';
 import { NgOptimizedImage } from '@angular/common';
 import { ImgFadeDirective } from '../shared/img-fade.directive';
+import { LanguageService } from '../shared/language.service';
 
 @Component({
   selector: 'app-about-page',
@@ -16,6 +17,7 @@ import { ImgFadeDirective } from '../shared/img-fade.directive';
   styleUrl: './about-page.css',
 })
 export class AboutPage {
+  langService = inject(LanguageService);
 
   private baseImages = [
     'https://picsum.photos/id/1018/800/600',

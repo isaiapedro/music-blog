@@ -4,7 +4,7 @@
       <input 
         #searchBox
         type="text" 
-        placeholder="Search articles, reviews and more..." 
+        [placeholder]="langService.t('articles.searchPlaceholder')"
         class="search-bar"
         [value]="searchTerm()"
         (keyup.enter)="onSearch(searchBox.value)"
@@ -24,14 +24,14 @@
             class="filter-rect" 
             [class.active]="selectedTheme() === theme"
             (click)="setTheme(theme)">
-            {{ theme }}
+            {{ langService.label(theme) }}
           </button>
         }
       }
     </div>
   </div>
   <div class="border"></div>
-  <h1 class="collection-title">Articles</h1>
+  <h1 class="collection-title">{{ langService.t('articles.title') }}</h1>
 
   <div class="expandable-container" [class.expanded]="isExpanded()">
     <div class="masonry-grid">
@@ -41,9 +41,9 @@
             <div class="article-card">
               <img [src]="article.image" [alt]="article.title" class="article-image">
               <div class="article-info">
-                <h3 class="article-title">{{ article.title }}</h3>
+                <h3 class="article-title">{{ displayTitle(article) }}</h3>
                 <div class="title-underline"></div>
-                <p class="article-byline">By Pedro Isaia</p>
+                <p class="article-byline">{{ langService.t('articles.byAuthor') }}</p>
                 <p class="article-date">{{ article.date | date:'longDate' }}</p>
               </div>
             </div>
@@ -55,7 +55,7 @@
     @if (!isExpanded() && filteredArticles().length > 8) {
       <div class="fade-overlay">
         <button class="filter-rect show-more-btn" (click)="isExpanded.set(true)">
-          Show More
+          {{ langService.t('articles.showMore') }}
         </button>
       </div>
     }

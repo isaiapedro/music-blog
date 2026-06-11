@@ -4,18 +4,18 @@
 
       <header class="post-header">
         <a routerLink="/articles-page" [queryParams]="{ theme: post.theme }" class="back-link">
-          {{ post.theme }}
+          {{ langService.label(post.theme) }}
         </a>
-        <h1 class="post-title">{{ post.title }}</h1>
-        <h2 class="post-subtitle">{{ post.description }}</h2>
+        <h1 class="post-title">{{ displayTitle() }}</h1>
+        <h2 class="post-subtitle">{{ displayDescription() }}</h2>
 
         <div class="post-meta">
           <div class="author-text">
-            <span class="article-byline">By Pedro Isaia</span>
+            <span class="article-byline">{{ langService.t('post.byAuthor') }}</span>
             <div class="post-date-time">
               <span>{{ post.date | date:'mediumDate' }}</span>
               <span class="separator">·</span>
-              <span>{{ post.readingTime || '5 min read' }}</span>
+              <span>{{ post.readingTime || langService.t('post.defaultReadTime') }}</span>
             </div>
           </div>
         </div>
@@ -32,9 +32,19 @@
             </div>
           </div>
           <div class="engagement-right">
-            <button class="action-btn share-btn" (click)="sharePost()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-            </button>
+            @if (linkCopied()) {<span class="copied-toast">Link copied!</span>}
+            <div class="share-menu-wrap">
+              <button class="action-btn share-btn" (click)="toggleShareMenu()" [disabled]="generatingCard()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                @if (generatingCard()) {<span class="share-loading">...</span>}
+              </button>
+              @if (showShareMenu()) {
+                <div class="share-dropdown">
+                  <button (click)="copyLink()">Copy link</button>
+                  <button (click)="shareCard()">Share to Stories</button>
+                </div>
+              }
+            </div>
           </div>
         </div>
       </header>
@@ -56,8 +66,8 @@
       }
 
       <div class="post-body">
-        @if (post.contentBlocks && post.contentBlocks.length) {
-          @for (block of post.contentBlocks; track $index) {
+        @if (displayBlocks().length) {
+          @for (block of displayBlocks(); track $index) {
 
             @if (block.type === 'heading') {
               <h2>{{ block.content }}</h2>
@@ -79,23 +89,23 @@
             }
           }
         } @else {
-          <p class="placeholder-text">This article is currently being written. Please check back later for the full story.</p>
+          <p class="placeholder-text">{{ langService.t('post.writingPlaceholder') }}</p>
         }
       </div>
 
       <section class="comments-section">
-        <h2 class="comments-title">Comments</h2>
+        <h2 class="comments-title">{{ langService.t('post.comments') }}</h2>
 
         <div class="comment-form">
           <textarea
             class="comment-input"
-            placeholder="Share your thoughts..."
+            [placeholder]="langService.t('post.commentPlaceholder')"
             [value]="commentText()"
             (input)="commentText.set($any($event.target).value)"
             rows="3"
           ></textarea>
           <button class="comment-submit" (click)="submitComment()" [disabled]="submittingComment() || !commentText().trim()">
-            {{ submittingComment() ? 'Posting...' : 'Post comment' }}
+            {{ submittingComment() ? langService.t('post.posting') : langService.t('post.postComment') }}
           </button>
         </div>
 
@@ -108,19 +118,25 @@
                   <span class="comment-date">{{ c.date | date:'mediumDate' }}</span>
                 </div>
                 <p class="comment-text">{{ c.text }}</p>
+                @if (c.adminReply) {
+                  <div class="admin-reply">
+                    <span class="admin-reply-author">Pedro Isaia</span>
+                    <p class="admin-reply-text">{{ c.adminReply.text }}</p>
+                  </div>
+                }
               </li>
             }
           </ul>
         } @else {
-          <p class="no-comments">Be the first to comment.</p>
+          <p class="no-comments">{{ langService.t('post.beFirst') }}</p>
         }
       </section>
 
     </article>
   } @else {
     <div class="error-state">
-      <h2>Article Not Found</h2>
-      <a routerLink="/articles-page" class="back-link">&larr; Return to Articles</a>
+      <h2>{{ langService.t('post.notFound') }}</h2>
+      <a routerLink="/articles-page" class="back-link">{{ langService.t('post.returnToArticles') }}</a>
     </div>
   }
 </div>

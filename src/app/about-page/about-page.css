@@ -33,7 +33,11 @@
 .border{
   border-top: 4px solid #ffffff; 
   margin-bottom: 70px;
-}   
+}
+
+.lower-border{
+  border-bottom: 1px solid #ffffff;
+}
 
 /* Two Column Info */
 

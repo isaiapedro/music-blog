@@ -4,7 +4,6 @@
   }
 }
 
-
 .shop-container {
   background-image: 
         radial-gradient(
@@ -17,11 +16,11 @@
     
     background-blend-mode: overlay;
     background-attachment: fixed;
-    min-height: 170vh;
-    padding: 6rem 1.5rem 4rem;
+    min-height: 100%;
+    padding: 2.5rem 1.5rem 4rem;
     font-family: 'Inter', sans-serif;
     color: #e0e0e0;
-  position: absolute;
+  position: relative;
   top: 0;
   left: 0;
   right: 0;
@@ -38,7 +37,7 @@
   color: white;
   letter-spacing: 2px;
   text-align: center; /* Centers the text */
-  margin: 3rem auto 4.7rem auto;
+  margin: 3rem auto 5.5rem auto;
   position: relative;
   z-index: 10;
 }
@@ -337,7 +336,7 @@
   justify-content: space-between;
   position: relative;
   padding: 1rem 0;
-  overflow: hidden;
+  overflow: visible;
   margin-bottom: -1.5rem;
 }
 
@@ -490,7 +489,9 @@
 
 .preview-meta-tags {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
+  justify-content: center;
 }
 
 .meta-tag {
@@ -846,3 +847,9 @@
   }
   
 }
+.share-menu-wrap { position: relative; }
+.share-dropdown { position: absolute; right: 0; bottom: calc(100% + 8px); background: #1a1a1a; border: 1px solid #333; border-radius: 6px; min-width: 160px; z-index: 100; overflow: hidden; }
+.share-dropdown button { display: block; width: 100%; padding: 10px 14px; background: none; border: none; color: #ccc; font-size: 0.85rem; text-align: left; cursor: pointer; transition: background 0.15s; }
+.share-dropdown button:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.share-loading { font-size: 0.75rem; margin-left: 4px; opacity: 0.7; }
+.copied-toast { font-size: 0.8rem; color: #7cfc7c; padding: 2px 8px; white-space: nowrap; }

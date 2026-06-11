@@ -15,18 +15,28 @@
                         />
                     </div>
                     <div class="article-header-column ">
-                        <a routerLink="/collection-page" class="back-link"> Albums </a>
+                        <a routerLink="/collection-page" class="back-link"> {{ langService.t('review.backLink') }} </a>
                         <h1 class="article-title">{{ content.album }}</h1>
                         <div class="subtitle-artist">
                             <p class="article-artist">{{ content.artist }}</p>
                             <div class="engagement-bar">
+                                @if (linkCopied()) {<span class="copied-toast">Link copied!</span>}
                                 <button class="action-btn" (click)="toggleLike()" [class.liked]="hasLiked()">
                                     <svg viewBox="0 0 24 24" [attr.fill]="hasLiked() ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                                     <span>{{ content.likes || 0 }}</span>
                                 </button>
-                                <button class="action-btn share-btn" (click)="shareReview()">
+                                <div class="share-menu-wrap">
+                                  <button class="action-btn share-btn" (click)="toggleShareMenu()" [disabled]="generatingCard()">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-                                </button>
+                                    @if (generatingCard()) {<span class="share-loading">...</span>}
+                                  </button>
+                                  @if (showShareMenu()) {
+                                    <div class="share-dropdown">
+                                      <button (click)="copyLink()">Copy link</button>
+                                      <button (click)="shareCard()">Share to Stories</button>
+                                    </div>
+                                  }
+                                </div>
                             </div>
                         </div>
                         <span class="genre-list main-genres">
@@ -56,35 +66,29 @@
                     </div>
                 </div>
                 <div class="post-date-time">
-                    <span class="article-byline">By Pedro Isaia</span>
+                    <span class="article-byline">{{ langService.t('post.byAuthor') }}</span>
                     <span class="separator">·</span>
                     <span>{{ content.date | date:'mediumDate' }}</span>
                 </div>
-                @if (content.context) {
-                    <div class="article-context markdown-body">
-                    <markdown [data]="content.context"></markdown>
-                    </div>
-                } @else{
-                    <div class="article-context markdown-body">
-                    <markdown [data]="content.description"></markdown>
-                    </div>
-                }
+                <div class="article-context markdown-body">
+                    <markdown [data]="displayContext()"></markdown>
+                </div>
             </header>
             <div class="main-content">
                 <section class="content-column">
-                    @if (content.introduction) {
+                    @if (displayIntroduction()) {
                         <section class="section introduction">
-                            <h2 class="section-title">Introduction</h2>
+                            <h2 class="section-title">{{ langService.t('review.introduction') }}</h2>
                             <div class="markdown-body">
-                            <markdown [data]="content.introduction"></markdown>
+                            <markdown [data]="displayIntroduction()!"></markdown>
                             </div>
                         </section>
                     }
 
-                    @if (content.breakdown && content.breakdown.length) {
+                    @if (displayBreakdown().length) {
                         <section class="section breakdown">
-                            <h2 class="section-title">Review</h2>
-                            @for (block of content.breakdown; track $index) {
+                            <h2 class="section-title">{{ langService.t('review.review') }}</h2>
+                            @for (block of displayBreakdown(); track $index) {
                                 <div class="breakdown-block">
                                     @switch (block.type) {
                                         @case ('paragraph') {
@@ -152,11 +156,11 @@
                         </section>
                     }
 
-                    @if (content.conclusion) {
+                    @if (displayConclusion()) {
                         <section class="section conclusion">
-                            <h2 class="section-title">Conclusion</h2>
+                            <h2 class="section-title">{{ langService.t('review.conclusion') }}</h2>
                             <div class="markdown-body">
-                            <markdown [data]="content.conclusion"></markdown>
+                            <markdown [data]="displayConclusion()!"></markdown>
                             </div>
                         </section>
                     }
@@ -164,7 +168,7 @@
                 <section class="details-column">
                     @if (content.score != null) {
                         <div class="score">
-                            <h2 class="section-title">Recommendation Score</h2>
+                            <h2 class="section-title">{{ langService.t('review.score') }}</h2>
                             <div class="score-circle" [style.--percentage]="(content.score * 10) + '%'">
                                 <div class="score-value">
                                     {{ content.score }}
@@ -193,7 +197,7 @@
 
                     @if (content.tracklist?.length || content.producer || content.recordedAt) {
                         <section class="album-details">
-                            <h2 class="section-title">Tracklist & Details</h2>
+                            <h2 class="section-title">{{ langService.t('review.tracklist') }}</h2>
 
                             @if (content.tracklist && content.tracklist.length) {
                             <div class="tracklist-container">
@@ -211,13 +215,13 @@
 
                             <div class="album-meta-details">
                                 @if (content.totalDuration) {
-                                    <p><strong>Total Duration:</strong> {{ content.totalDuration }}</p>
+                                    <p><strong>{{ langService.t('review.duration') }}:</strong> {{ content.totalDuration }}</p>
                                 }
                                 @if (content.producer) {
-                                    <p><strong>Producer:</strong> {{ content.producer }}</p>
+                                    <p><strong>{{ langService.t('review.producer') }}:</strong> {{ content.producer }}</p>
                                 }
                                 @if (content.recordedAt) {
-                                    <p><strong>Recorded at:</strong> {{ content.recordedAt }}</p>
+                                    <p><strong>{{ langService.t('review.recordedAt') }}:</strong> {{ content.recordedAt }}</p>
                                 }
                             </div>
                         </section>
@@ -227,7 +231,7 @@
 
             @if (content.similarAlbums && content.similarAlbums.length) {
                 <section class="section similar">
-                    <h2 class="section-title">Similar Albums You Might Enjoy</h2>
+                    <h2 class="section-title">{{ langService.t('review.similar') }}</h2>
 
                     <div class="similar-grid">
                         @for (sim of content.similarAlbums; track sim.id) {
@@ -255,17 +259,17 @@
             }
 
             <section class="section comments-section">
-                <h2 class="section-title">Comments</h2>
+                <h2 class="section-title">{{ langService.t('post.comments') }}</h2>
                 <div class="comment-form">
                     <textarea
                         class="comment-input"
-                        placeholder="Share your thoughts..."
+                        [placeholder]="langService.t('post.commentPlaceholder')"
                         [value]="commentText()"
                         (input)="commentText.set($any($event.target).value)"
                         rows="3"
                     ></textarea>
                     <button class="comment-submit" (click)="submitComment()" [disabled]="submittingComment() || !commentText().trim()">
-                        {{ submittingComment() ? 'Posting...' : 'Post comment' }}
+                        {{ submittingComment() ? langService.t('post.posting') : langService.t('post.postComment') }}
                     </button>
                 </div>
                 @if (content.comments && content.comments.length) {
@@ -281,14 +285,14 @@
                         }
                     </ul>
                 } @else {
-                    <p class="no-comments">Be the first to comment.</p>
+                    <p class="no-comments">{{ langService.t('post.beFirst') }}</p>
                 }
             </section>
         </article>
     } @else {
         <div class="error-state">
-        <h2>Review not found</h2>
-        <p>This review could not be found in our database.</p>
+        <h2>{{ langService.t('review.notFound') }}</h2>
+        <p>{{ langService.t('review.notFoundDesc') }}</p>
         </div>
     }
 </div>

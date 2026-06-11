@@ -47,6 +47,16 @@ export class AdminPage implements OnInit {
   uploadingCover = signal(false);
   uploadingBlockIndex = signal<number | null>(null);
 
+  // --- LANGUAGE ---
+  editingLang = signal<'en' | 'pt'>('en');
+  isTranslating = signal(false);
+
+  // --- SHARE CARD ---
+  isGeneratingCard = signal(false);
+
+  // --- COMMENTS ---
+  replyDrafts = signal<Record<number, string>>({});
+
   ngOnInit() {
     // Fetch Reviews
     this.http.get<{ reviews: any[] }>(`${this.apiUrl}/reviews`).subscribe(data => {
@@ -177,6 +187,11 @@ export class AdminPage implements OnInit {
     this.selectedArticle().contentBlocks.splice(index, 1);
   }
 
+  removeArticleBlockPt(index: number) {
+    const article = this.selectedArticle();
+    if (article?.contentBlocksPt) article.contentBlocksPt.splice(index, 1);
+  }
+
   onArticleCoverFileChange(event: Event, article: any) {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
@@ -304,8 +319,167 @@ export class AdminPage implements OnInit {
     });
   }
 
+  deleteComment(type: 'articles' | 'reviews', contentId: number, index: number) {
+    if (!confirm('Delete this comment?')) return;
+    this.http.delete<{ comments: any[] }>(`${this.apiUrl}/admin/${type}/${contentId}/comments/${index}`).subscribe({
+      next: (res) => {
+        if (type === 'articles') {
+          const a = this.selectedArticle();
+          if (a) { a.comments = res.comments; this.articles.set([...this.articles()]); }
+        } else {
+          const r = this.selectedReview();
+          if (r) { r.comments = res.comments; this.reviews.set([...this.reviews()]); }
+        }
+        const drafts = { ...this.replyDrafts() };
+        delete drafts[index];
+        this.replyDrafts.set(drafts);
+      },
+      error: () => alert('Failed to delete comment.')
+    });
+  }
+
+  saveReply(type: 'articles' | 'reviews', contentId: number, index: number) {
+    const text = this.replyDrafts()[index] ?? '';
+    this.http.put<{ comments: any[] }>(`${this.apiUrl}/admin/${type}/${contentId}/comments/${index}/reply`, { text }).subscribe({
+      next: (res) => {
+        if (type === 'articles') {
+          const a = this.selectedArticle();
+          if (a) { a.comments = res.comments; this.articles.set([...this.articles()]); }
+        } else {
+          const r = this.selectedReview();
+          if (r) { r.comments = res.comments; this.reviews.set([...this.reviews()]); }
+        }
+      },
+      error: () => alert('Failed to save reply.')
+    });
+  }
+
+  setReplyDraft(index: number, text: string) {
+    this.replyDrafts.update(d => ({ ...d, [index]: text }));
+  }
+
+  initReplyDraft(index: number, existing: string) {
+    if (this.replyDrafts()[index] === undefined) {
+      this.replyDrafts.update(d => ({ ...d, [index]: existing || '' }));
+    }
+  }
+
+  autoTranslateArticle() {
+    const article = this.selectedArticle();
+    if (!article) return;
+    this.isTranslating.set(true);
+    const payload = {
+      textFields: { title: article.title, description: article.description },
+      blocks: article.contentBlocks || []
+    };
+    this.http.post<any>(`${this.apiUrl}/admin/translate`, payload).subscribe({
+      next: (res) => {
+        article.titlePt = res.translatedFields.title || '';
+        article.descriptionPt = res.translatedFields.description || '';
+        article.contentBlocksPt = res.translatedBlocks || [];
+        this.articles.set([...this.articles()]);
+        this.editingLang.set('pt');
+        this.isTranslating.set(false);
+      },
+      error: (err) => {
+        const msg = err.error?.detail || err.error?.error || err.message || 'Unknown error';
+        alert(`Translation failed: ${msg}`);
+        this.isTranslating.set(false);
+      }
+    });
+  }
+
+  autoTranslateReview() {
+    const review = this.selectedReview();
+    if (!review) return;
+    this.isTranslating.set(true);
+    const payload = {
+      textFields: { context: review.context, introduction: review.introduction, conclusion: review.conclusion },
+      blocks: review.breakdown || []
+    };
+    this.http.post<any>(`${this.apiUrl}/admin/translate`, payload).subscribe({
+      next: (res) => {
+        review.contextPt = res.translatedFields.context || '';
+        review.introductionPt = res.translatedFields.introduction || '';
+        review.conclusionPt = res.translatedFields.conclusion || '';
+        review.breakdownPt = res.translatedBlocks || [];
+        this.reviews.set([...this.reviews()]);
+        this.editingLang.set('pt');
+        this.isTranslating.set(false);
+      },
+      error: (err) => {
+        const msg = err.error?.detail || err.error?.error || err.message || 'Unknown error';
+        alert(`Translation failed: ${msg}`);
+        this.isTranslating.set(false);
+      }
+    });
+  }
+
   logout() {
     this.auth.logout();
+  }
+
+  private async fetchCardBlob(type: 'post' | 'review', payload: object): Promise<Blob> {
+    const response = await fetch(`${this.apiUrl}/share-card`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ type, ...payload }),
+    });
+    if (!response.ok) throw new Error('Card generation failed');
+    return response.blob();
+  }
+
+  private cardPayload(type: 'post' | 'review'): object {
+    if (type === 'post') {
+      const a = this.selectedArticle()!;
+      return { title: a.title, desc: a.description, image: a.image, category: a.theme };
+    } else {
+      const r = this.selectedReview()!;
+      return { title: r.album, artist: r.artist, image: r.image };
+    }
+  }
+
+  async downloadCard(type: 'post' | 'review') {
+    this.isGeneratingCard.set(true);
+    try {
+      const blob = await this.fetchCardBlob(type, this.cardPayload(type));
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${type}-card.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert('Failed to generate card image.');
+    } finally {
+      this.isGeneratingCard.set(false);
+    }
+  }
+
+  async shareToInstagram(type: 'post' | 'review') {
+    this.isGeneratingCard.set(true);
+    try {
+      const blob = await this.fetchCardBlob(type, this.cardPayload(type));
+      const file = new File([blob], `${type}-card.png`, { type: 'image/png' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'Share to Instagram Stories' });
+      } else {
+        // Desktop fallback: download + show tip
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${type}-card.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+        alert('Image downloaded. Open Instagram on your phone and share it to Stories from your camera roll.');
+      }
+    } catch (err: any) {
+      if (err?.name !== 'AbortError') alert('Failed to share card.');
+    } finally {
+      this.isGeneratingCard.set(false);
+    }
   }
 
   deleteCurrentArticle() {

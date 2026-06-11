@@ -2,10 +2,10 @@
   
   <div class="search-section">
     <div class="search-wrapper">
-      <input 
+      <input
         #searchBox
-        type="text" 
-        placeholder="Search articles..." 
+        type="text"
+        [placeholder]="langService.t('search.placeholder')"
         class="search-bar"
         [value]="searchTerm()"
         (keyup.enter)="onSearch(searchBox.value)"
@@ -18,26 +18,26 @@
       </svg>
     </div>
 
-    <h1 class="search-title">search "{{ searchTerm() }}"</h1>
+    <h1 class="search-title">{{ langService.t('search.label') }} "{{ searchTerm() }}"</h1>
 
   </div>
   @if (filteredReviews().length === 0 && filteredArticles().length === 0) {
-      <h2 class="article-missing">No post found</h2>
+      <h2 class="article-missing">{{ langService.t('search.noResults') }}</h2>
   }
   <div class="expandable-container" [class.expanded]="isArticlesExpanded()">
     @if (filteredArticles().length > 0) {
       <div class="article-columns">
-        <div class="subtitle"> Articles </div>
+        <div class="subtitle"> {{ langService.t('search.articles') }} </div>
         @for (article of filteredArticles(); track article.title; let i = $index) {
           <div class="blog-post" 
             [routerLink]="['/articles', article.slug || article.id]"
             [class.disabled-post]="!isArticlesExpanded() && i > 2">
             <div class="post-content">
               <a [routerLink]="['/articles', article.slug || article.id]" routerLinkActive="active-link" class="article-title">
-                {{ article.title }}
+                {{ displayArticleTitle(article) }}
               </a>
               <p class="post-description">
-                {{ article.description || 'A brief explanation of the review goes here.' }}
+                {{ displayArticleDesc(article) }}
               </p>
             </div>
             <div class="post-meta">
@@ -60,7 +60,7 @@
       @if (!isArticlesExpanded() && filteredArticles().length > 2) {
         <div class="fade-overlay">
           <button class="filter-rect show-more-btn" (click)="isArticlesExpanded.set(true)">
-            Show More
+            {{ langService.t('search.showMore') }}
           </button>
         </div>
       }
@@ -71,7 +71,7 @@
   <div class="expandable-container" [class.expanded]="isReviewsExpanded()">
     @if (filteredReviews().length > 0) {
       <div class="article-columns">
-        <div class="subtitle-review"> Reviews </div>
+        <div class="subtitle-review"> {{ langService.t('search.reviews') }} </div>
         @for (review of filteredReviews(); track review.album; let i = $index) {
           <div class="blog-post" 
             [routerLink]="['/reviews', review.slug || review.id]"
@@ -81,7 +81,7 @@
                 {{ review.album }} - {{ review.artist }}
               </a>
               <p class="post-description">
-                {{ review.context || 'A brief explanation of the review goes here.' }}
+                {{ displayReviewContext(review) }}
               </p>
             </div>
             <div class="post-meta">
@@ -104,7 +104,7 @@
       @if (!isReviewsExpanded() && filteredReviews().length > 2) {
         <div class="fade-overlay">
           <button class="filter-rect show-more-btn" (click)="isReviewsExpanded.set(true)">
-            Show More
+            {{ langService.t('search.showMore') }}
           </button>
         </div>
       }

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
+import { LanguageService } from '../shared/language.service';
 
 @Component({
   selector: 'app-articles-page',
@@ -16,6 +17,7 @@ export class ArticlesPage implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private http = inject(HttpClient);
+  langService = inject(LanguageService);
   
   @ViewChild('searchBox') searchInput!: ElementRef<HTMLInputElement>;
 
@@ -61,19 +63,23 @@ export class ArticlesPage implements OnInit {
   filteredArticles = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
     const activeTheme = this.selectedTheme().toLowerCase();
-    
+
     return this.articles().filter(article => {
       const title = article.title?.toLowerCase() || '';
+      const titlePt = article.titlePt?.toLowerCase() || '';
       const keywords = article.keywords?.toLowerCase() || '';
       const theme = article.theme?.toLowerCase() || '';
 
-      const matchesSearch = title.includes(term) || keywords.includes(term);
-      
+      const matchesSearch = title.includes(term) || titlePt.includes(term) || keywords.includes(term);
       const matchesTheme = activeTheme === 'all' || theme === activeTheme;
-      
+
       return matchesSearch && matchesTheme;
     });
   });
+
+  displayTitle(article: any): string {
+    return this.langService.lang() === 'pt' && article.titlePt ? article.titlePt : article.title;
+  }
 
   onSearch(text: string) {
     if (text === '') {

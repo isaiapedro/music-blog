@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, DOCUMENT } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, DOCUMENT } from '@angular/core';
 import { Title, Meta, DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -8,6 +8,7 @@ import { HttpClient } from '@angular/common/http';
 import { ImgFadeDirective } from '../shared/img-fade.directive';
 
 import { environment } from '../../environments/environment';
+import { LanguageService } from '../shared/language.service';
 
 export interface Track {
   number: number;
@@ -44,9 +45,13 @@ export interface ReviewDetail {
   recordedAt?: string;
   description?: string;
   context?: string;
+  contextPt?: string;
   introduction?: string;
+  introductionPt?: string;
   breakdown?: ReviewBlock[];
+  breakdownPt?: ReviewBlock[];
   conclusion?: string;
+  conclusionPt?: string;
   similarAlbums?: Array<{ id: string | number; slug?: string; image: string; album: string; artist: string; releaseDate: string }>;
   comments?: Array<{ user: string; date: string; text: string }>;
   views?: number;
@@ -69,12 +74,16 @@ export class ReviewComponent implements OnInit {
   private metaService = inject(Meta);
   private document = inject(DOCUMENT);
   private apiUrl = environment.apiUrl;
+  langService = inject(LanguageService);
 
   review = signal<ReviewDetail | null>(null);
   isLoading = signal(true);
   hasLiked = signal(false);
   commentText = signal('');
   submittingComment = signal(false);
+  showShareMenu = signal(false);
+  generatingCard = signal(false);
+  linkCopied = signal(false);
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
@@ -94,6 +103,7 @@ export class ReviewComponent implements OnInit {
           this.review.set({
             ...data,
             breakdown: typeof data.breakdown === 'string' ? JSON.parse(data.breakdown) : data.breakdown,
+            breakdownPt: typeof data.breakdownPt === 'string' ? JSON.parse(data.breakdownPt) : data.breakdownPt,
             tracklist: typeof data.tracklist === 'string' ? JSON.parse(data.tracklist) : data.tracklist,
             similarAlbums: typeof data.similarAlbums === 'string' ? JSON.parse(data.similarAlbums) : data.similarAlbums,
           });
@@ -146,10 +156,47 @@ export class ReviewComponent implements OnInit {
     });
   }
 
-  shareReview() {
-    const r = this.review();
+  toggleShareMenu() { this.showShareMenu.update(v => !v); }
+
+  copyLink() {
     navigator.clipboard.writeText(window.location.href);
+    const r = this.review();
     if (r) this.http.post(`${this.apiUrl}/reviews/${r.id}/share`, {}).subscribe();
+    this.showShareMenu.set(false);
+    this.linkCopied.set(true);
+    setTimeout(() => this.linkCopied.set(false), 2000);
+  }
+
+  async shareCard() {
+    const r = this.review();
+    if (!r) return;
+    this.generatingCard.set(true);
+    this.showShareMenu.set(false);
+    try {
+      const res = await fetch(`${this.apiUrl}/share-card`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'review', title: r.album, artist: r.artist, image: r.image })
+      });
+      if (!res.ok) throw new Error('Card generation failed');
+      const blob = await res.blob();
+      const file = new File([blob], 'review-card.png', { type: 'image/png' });
+      const nav = navigator as any;
+      if (nav.canShare?.({ files: [file] })) {
+        await nav.share({ files: [file] });
+      } else {
+        const url = URL.createObjectURL(blob);
+        const link = this.document.createElement('a');
+        link.href = url;
+        link.download = 'review-card.png';
+        link.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (err) {
+      console.error('Share card failed:', err);
+    } finally {
+      this.generatingCard.set(false);
+    }
   }
 
   submitComment() {
@@ -194,14 +241,44 @@ export class ReviewComponent implements OnInit {
     return stars;
   }
 
+  displayContext = computed(() => {
+    const r = this.review();
+    if (!r) return '';
+    const isPt = this.langService.lang() === 'pt';
+    return isPt && r.contextPt ? r.contextPt : (r.context || r.description || '');
+  });
+
+  displayIntroduction = computed(() => {
+    const r = this.review();
+    if (!r) return null;
+    const isPt = this.langService.lang() === 'pt';
+    return isPt && r.introductionPt ? r.introductionPt : r.introduction;
+  });
+
+  displayBreakdown = computed(() => {
+    const r = this.review();
+    if (!r) return [];
+    const isPt = this.langService.lang() === 'pt';
+    const pt = r.breakdownPt;
+    return isPt && pt && pt.length ? pt : (r.breakdown || []);
+  });
+
+  displayConclusion = computed(() => {
+    const r = this.review();
+    if (!r) return null;
+    const isPt = this.langService.lang() === 'pt';
+    return isPt && r.conclusionPt ? r.conclusionPt : r.conclusion;
+  });
+
   getScoreMessage(score: number): string {
-    if (score >= 9.5) return 'An Absolute Masterpiece';
-    if (score >= 8.5) return 'Essential Listening';
-    if (score >= 7.5) return 'Highly Recommended';
-    if (score >= 6.0) return 'A Solid Record';
-    if (score >= 5.0) return 'Average & Flawed';
-    if (score >= 3.0) return 'Disappointing';
-    return 'Not Recommended';
+    const t = (k: string) => this.langService.t(k);
+    if (score >= 9.5) return t('review.score_masterpiece');
+    if (score >= 8.5) return t('review.score_essential');
+    if (score >= 7.5) return t('review.score_recommended');
+    if (score >= 6.0) return t('review.score_solid');
+    if (score >= 5.0) return t('review.score_average');
+    if (score >= 3.0) return t('review.score_disappointing');
+    return t('review.score_skip');
   }
 
   getReleaseYear(dateStr: string | undefined): string {

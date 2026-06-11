@@ -1,6 +1,6 @@
 <div class="shop-container" [class.is-grid]="viewMode() === 'grid'">
   
-  <h1 class="collection-title">Albums</h1>
+  <h1 class="collection-title">{{ langService.t('collection.title') }}</h1>
 
   <div class="shop-content-wrapper">
   
@@ -9,14 +9,14 @@
       @if (showFilters()) {
         <aside class="sidebar">
           <div class="filter-group">
-            <input type="text" placeholder="search..." [ngModel]="searchTerm()" (ngModelChange)="updateSearch($event)" class="search-input">
+            <input type="text" [placeholder]="langService.t('collection.searchPh')" [ngModel]="searchTerm()" (ngModelChange)="updateSearch($event)" class="search-input">
           </div>
 
           <div class="filter-group">
-            <h3 class="filter-title">Genre</h3>
+            <h3 class="filter-title">{{ langService.t('collection.genre') }}</h3>
             <div class="filter-options">
               @for (genre of displayedGenres(); track genre) {
-                <button class="filter-btn" [class.active]="selectedGenre() === genre" (click)="toggleGenre(genre)">{{ genre }}</button>
+                <button class="filter-btn" [class.active]="selectedGenre() === genre" (click)="toggleGenre(genre)">{{ langService.label(genre) }}</button>
               }
               @if (genres.length > 7) {
                 <button class="filter-btn more-btn" (click)="showAllGenres.set(!showAllGenres())">{{ showAllGenres() ? '-' : '+' }}</button>
@@ -25,9 +25,9 @@
           </div>
 
           <div class="filter-group">
-            <h3 class="filter-title">Decade</h3>
+            <h3 class="filter-title">{{ langService.t('collection.decade') }}</h3>
             <select class="filter-select" [ngModel]="selectedDecade() || ''" (change)="selectDecade($event)">
-              <option value="">All Decades</option>
+              <option value="">{{ langService.t('collection.allDecades') }}</option>
               @for (decade of decades; track decade) {
                 <option [value]="decade">{{ decade }}</option>
               }
@@ -35,9 +35,9 @@
 
             @if (selectedDecade()) {
             <div class="filter-group mt-3">
-              <h3 class="filter-title">Year</h3>
+              <h3 class="filter-title">{{ langService.t('collection.year') }}</h3>
               <select class="filter-select" [ngModel]="selectedYear() || ''" (change)="selectYear($event)">
-                <option value="">All Years</option>
+                <option value="">{{ langService.t('collection.allYears') }}</option>
                 @for (year of availableYears(); track year) {
                   <option [value]="year">{{ year }}</option>
                 }
@@ -47,10 +47,10 @@
           </div>
           
           <div class="filter-group">
-            <h3 class="filter-title">Country</h3>
+            <h3 class="filter-title">{{ langService.t('collection.country') }}</h3>
             <div class="filter-options">
               @for (country of displayedCountries(); track country) {
-                <button class="filter-btn" [class.active]="selectedCountry() === country" (click)="toggleCountry(country)">{{ country }}</button>
+                <button class="filter-btn" [class.active]="selectedCountry() === country" (click)="toggleCountry(country)">{{ langService.label(country) }}</button>
               }
               @if (countries.length > 5) {
                 <button class="filter-btn more-btn" (click)="showAllCountries.set(!showAllCountries())">{{ showAllCountries() ? '-' : '+' }}</button>
@@ -65,10 +65,10 @@
         @if (viewMode() === 'grid') {
           <div class="grid-settings-box">
             <button class="settings-btn" (click)="showFilters.set(!showFilters())">
-              {{ showFilters() ? '- Hide Filters' : '+ Show Filters' }}
+              {{ showFilters() ? langService.t('collection.hideFilters') : langService.t('collection.showFilters') }}
             </button>
             <div class="grid-size-selector">
-              <label>Grid Size</label>
+              <label>{{ langService.t('collection.gridSize') }}</label>
               <select class="filter-select minimal" [ngModel]="gridSize()" (ngModelChange)="updateGridSize($event)">
                 <option [value]="16">4x4 Collage (16)</option>
                 <option [value]="25">5x5 Collage (25)</option>
@@ -103,9 +103,9 @@
 
           @if (showSortMenu()) {
             <div class="sort-dropdown-menu">
-              <button (click)="updateSort('date')" [class.active]="sortBy() === 'date'">Most Recent</button>
-              <button (click)="updateSort('name')" [class.active]="sortBy() === 'name'">Alphabetical (A-Z)</button>
-              <button (click)="updateSort('score')" [class.active]="sortBy() === 'score'">Score</button>
+              <button (click)="updateSort('date')" [class.active]="sortBy() === 'date'">{{ langService.t('collection.mostRecent') }}</button>
+              <button (click)="updateSort('name')" [class.active]="sortBy() === 'name'">{{ langService.t('collection.alphabetical') }}</button>
+              <button (click)="updateSort('score')" [class.active]="sortBy() === 'score'">{{ langService.t('collection.score') }}</button>
             </div>
           }
         </div>
@@ -119,7 +119,7 @@
                 <div class="post-content">
                   <h3 class="post-title">{{ review.album }}</h3>
                   <p class="post-description">
-                    {{ review.context || 'A brief explanation of the review goes here.' }}
+                    {{ displayContext(review) }}
                   </p>
                   
                   <div class="post-meta">
@@ -133,9 +133,18 @@
                       <button class="icon-btn" (click)="$event.preventDefault(); $event.stopPropagation()">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                       </button>
-                      <button class="icon-btn" (click)="$event.preventDefault(); $event.stopPropagation()">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-                      </button>
+                      @if (copiedReviewId() === review.id) {<span class="copied-toast">Link copied!</span>}
+                      <div class="share-menu-wrap" (click)="$event.stopPropagation()">
+                        <button class="icon-btn" (click)="toggleShareMenuForReview(review.id)" [disabled]="generatingCard()">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                        </button>
+                        @if (shareMenuId() === review.id) {
+                          <div class="share-dropdown">
+                            <button (click)="copyReviewLink(review)">Copy link</button>
+                            <button (click)="shareReviewCard(review)">Share to Stories</button>
+                          </div>
+                        }
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -152,7 +161,7 @@
                   class="page-btn nav-btn" 
                   [disabled]="currentPage() === 1"
                   (click)="changePage(currentPage() - 1)">
-                  <span class="nav-text">Previous</span>
+                  <span class="nav-text">{{ langService.t('collection.previous') }}</span>
                   <svg class="nav-icon" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="15 18 9 12 15 6"></polyline>
                   </svg>
@@ -175,7 +184,7 @@
                   class="page-btn nav-btn" 
                   [disabled]="currentPage() === totalPages()"
                   (click)="changePage(currentPage() + 1)">
-                  <span class="nav-text">Next</span>
+                  <span class="nav-text">{{ langService.t('collection.next') }}</span>
                   <svg class="nav-icon" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="9 18 15 12 9 6"></polyline>
                   </svg>
@@ -226,22 +235,22 @@
                 
                 @if (review.country) {
                   <button class="meta-tag" (click)="applyFilterFromTag('country', review.country)">
-                    {{ review.country | lowercase }}
+                    {{ langService.label(review.country) }}
                   </button>
                 }
 
                 @for (genre of getSplitGenres(review.genre || review.genres); track genre) {
                   <button class="meta-tag" (click)="applyFilterFromTag('genre', genre)">
-                    {{ genre }}
+                    {{ langService.label(genre) }}
                   </button>
                 }
               </div>
             </div>
 
-            <p class="preview-desc">"{{ getPreviewIntro(review.introduction) }}"</p>
+            <p class="preview-desc">"{{ displayIntro(review) }}"</p>
             
             <button class="btn-show-more" [routerLink]="['/reviews', review.slug || review.id]">
-              Read Full Review
+              {{ langService.t('collection.readFull') }}
             </button>
           </div>
         }

@@ -3,6 +3,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet, Router, NavigationEnd } fro
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { filter } from 'rxjs/operators';
+import { LanguageService } from './shared/language.service';
 
 @Component({
   selector: 'app-root',
@@ -25,11 +26,22 @@ import { filter } from 'rxjs/operators';
         </a>
         <span class="spacer"></span>
         <div class="nav-box">
-          <a mat-button routerLink="/articles-page" routerLinkActive="active-link">articles</a>
-          <a mat-button routerLink="/collection-page" routerLinkActive="active-link">reviews</a>
-          <a mat-button routerLink="/about-page" routerLinkActive="active-link">about</a>
+          <a mat-button routerLink="/articles-page" routerLinkActive="active-link">{{ langService.t('nav.articles') }}</a>
+          <a mat-button routerLink="/collection-page" routerLinkActive="active-link">{{ langService.t('nav.reviews') }}</a>
+          <a mat-button routerLink="/about-page" routerLinkActive="active-link">{{ langService.t('nav.about') }}</a>
         </div>
         <span class="spacer"></span>
+        <li class="language-menu">
+          <button class="lang-btn" (click)="toggleLangMenu()" aria-label="Switch language">
+            <img src="assets/languages.svg" alt="Languages">
+          </button>
+          @if (langMenuOpen()) {
+            <div class="dropdown-content">
+              <a (click)="langService.lang.set('en'); langMenuOpen.set(false)" [class.active]="langService.lang() === 'en'">English</a>
+              <a (click)="langService.lang.set('pt'); langMenuOpen.set(false)" [class.active]="langService.lang() === 'pt'">Português</a>
+            </div>
+          }
+        </li>
         <button class="hamburger-btn" (click)="toggleSidebar()" [attr.aria-label]="sidebarOpen() ? 'Close menu' : 'Open menu'">
           <span class="hamburger-line" [class.open]="sidebarOpen()"></span>
           <span class="hamburger-line" [class.open]="sidebarOpen()"></span>
@@ -43,10 +55,10 @@ import { filter } from 'rxjs/operators';
 
       <div class="sidebar-drawer" [class.open]="sidebarOpen()">
         <nav class="sidebar-nav">
-          <a routerLink="/home-page" (click)="closeSidebar()" class="sidebar-link">home</a>
-          <a routerLink="/articles-page" (click)="closeSidebar()" class="sidebar-link">articles</a>
-          <a routerLink="/collection-page" (click)="closeSidebar()" class="sidebar-link">reviews</a>
-          <a routerLink="/about-page" (click)="closeSidebar()" class="sidebar-link">about</a>
+          <a routerLink="/home-page" (click)="closeSidebar()" class="sidebar-link">{{ langService.t('nav.home') }}</a>
+          <a routerLink="/articles-page" (click)="closeSidebar()" class="sidebar-link">{{ langService.t('nav.articles') }}</a>
+          <a routerLink="/collection-page" (click)="closeSidebar()" class="sidebar-link">{{ langService.t('nav.reviews') }}</a>
+          <a routerLink="/about-page" (click)="closeSidebar()" class="sidebar-link">{{ langService.t('nav.about') }}</a>
         </nav>
       </div>
 
@@ -118,6 +130,68 @@ import { filter } from 'rxjs/operators';
 
       .spacer {
         flex-grow: 1;
+      }
+
+      .language-menu {
+        position: relative;
+        list-style: none;
+        cursor: pointer;
+        margin-right: 8px;
+        display: flex;
+        align-items: center;
+      }
+
+      .lang-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+      }
+
+      .lang-btn img {
+        height: 22px;
+        width: auto;
+        display: block;
+        opacity: 0.85;
+        transition: opacity 0.2s;
+      }
+
+      .lang-btn:hover img {
+        opacity: 1;
+      }
+
+      .language-menu .dropdown-content {
+        position: absolute;
+        right: 0;
+        top: calc(100% + 8px);
+        background: #1a1a1a;
+        border: 1px solid #444;
+        border-radius: 6px;
+        min-width: 130px;
+        z-index: 1200;
+        overflow: hidden;
+      }
+
+      .language-menu .dropdown-content a {
+        display: block;
+        padding: 10px 16px;
+        color: white;
+        text-decoration: none;
+        font-family: 'Helvetica', sans-serif;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+
+      .language-menu .dropdown-content a:hover {
+        background: rgba(255,255,255,0.08);
+      }
+
+      .language-menu .dropdown-content a.active {
+        color: #ggg;
+        font-weight: 600;
       }
 
       /* Hamburger — hidden on desktop */
@@ -208,14 +282,21 @@ import { filter } from 'rxjs/operators';
 
 export class App {
   sidebarOpen = signal(false);
+  langMenuOpen = signal(false);
   private router = inject(Router);
+  langService = inject(LanguageService);
 
   constructor() {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
       this.sidebarOpen.set(false);
+      this.langMenuOpen.set(false);
     });
+  }
+
+  toggleLangMenu() {
+    this.langMenuOpen.update(v => !v);
   }
 
   toggleSidebar() {

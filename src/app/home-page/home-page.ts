@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { ImgFadeDirective } from '../shared/img-fade.directive';
 import { environment } from '../../environments/environment';
+import { LanguageService } from '../shared/language.service';
 
 @Component({
   selector: 'app-home-page',
@@ -16,6 +17,7 @@ import { environment } from '../../environments/environment';
 export class HomePage implements OnInit {
   private router = inject(Router);
   private http = inject(HttpClient);
+  langService = inject(LanguageService);
 
   searchTerm = signal('');
   selectedTheme = signal('All');

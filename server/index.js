@@ -1,6 +1,11 @@
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
+const fs = require('fs');
+const path = require('path');
+const puppeteer = require('puppeteer');
 const express = require('express');
 const cors = require('cors');
+const deepl = require('deepl-node');
+const deeplTranslator = process.env.DEEPL_API_KEY ? new deepl.Translator(process.env.DEEPL_API_KEY) : null;
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const multer = require('multer');
@@ -168,6 +173,10 @@ function rowToReview(row) {
     views: row.views || 0,
     likes: row.likes || 0,
     shares: row.shares || 0,
+    contextPt: row.context_pt || '',
+    introductionPt: row.introduction_pt || '',
+    breakdownPt: row.breakdown_pt || [],
+    conclusionPt: row.conclusion_pt || '',
   };
 }
 
@@ -193,7 +202,10 @@ function rowToArticle(row) {
     shares: row.shares || 0,
     comments: typeof row.comments === 'string' ? JSON.parse(row.comments) : (row.comments || []),
     contentBlocks: row.content_blocks,
-    published: row.published
+    published: row.published,
+    titlePt: row.title_pt || '',
+    descriptionPt: row.description_pt || '',
+    contentBlocksPt: row.content_blocks_pt || [],
   };
 }
 
@@ -296,9 +308,12 @@ app.put('/api/articles/:id', authenticateToken, async (req, res) => {
         reading_time = $9,
         placement = $10,
         youtube_video_id = $11,
+        title_pt = $12,
+        description_pt = $13,
+        content_blocks_pt = $14::jsonb,
         publish_date = CASE WHEN $8 = true AND publish_date IS NULL THEN CURRENT_DATE ELSE publish_date END,
         updated_at = NOW()
-      WHERE id = $12
+      WHERE id = $15
       RETURNING *`,
       [
         b.title || 'Untitled Draft',
@@ -312,6 +327,9 @@ app.put('/api/articles/:id', authenticateToken, async (req, res) => {
         calculatedReadingTime,
         placement,
         b.youtubeVideoId || '',
+        b.titlePt || '',
+        b.descriptionPt || '',
+        JSON.stringify(b.contentBlocksPt || []),
         id
       ]
     );
@@ -647,6 +665,10 @@ app.put('/api/reviews/:id', authenticateToken, async (req, res) => {
         country = $13,
         slug = $14,
         comments = $15::jsonb,
+        context_pt = $17,
+        introduction_pt = $18,
+        breakdown_pt = $19::jsonb,
+        conclusion_pt = $20,
         publish_date = CASE WHEN $2 = true AND publish_date IS NULL THEN TO_CHAR(NOW(), 'YYYY-MM-DD') ELSE publish_date END,
         updated_at = NOW()
       WHERE id = $16`,
@@ -666,7 +688,11 @@ app.put('/api/reviews/:id', authenticateToken, async (req, res) => {
         b.country || '',
         newSlug,
         JSON.stringify(b.comments || []),
-        id
+        id,
+        b.contextPt || '',
+        b.introductionPt || '',
+        JSON.stringify(b.breakdownPt || []),
+        b.conclusionPt || '',
       ]
     );
 
@@ -687,6 +713,109 @@ app.put('/api/reviews/:id', authenticateToken, async (req, res) => {
   } catch (err) {
     console.error('Error updating review:', err);
     res.status(500).json({ error: 'Failed to update database' });
+  }
+});
+
+// --- COMMENT MANAGEMENT (ADMIN) ---
+app.delete('/api/admin/:type/:id/comments/:index', authenticateToken, async (req, res) => {
+  const { type, id, index } = req.params;
+  const table = type === 'articles' ? 'cms_articles' : 'cms_reviews';
+  const idx = parseInt(index, 10);
+  try {
+    const r = await pool.query(`SELECT comments FROM ${table} WHERE id=$1`, [id]);
+    if (!r.rows[0]) return res.status(404).json({ error: 'Not found' });
+    const comments = r.rows[0].comments || [];
+    comments.splice(idx, 1);
+    await pool.query(`UPDATE ${table} SET comments=$1::jsonb WHERE id=$2`, [JSON.stringify(comments), id]);
+    res.json({ comments });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to delete comment' });
+  }
+});
+
+app.put('/api/admin/:type/:id/comments/:index/reply', authenticateToken, async (req, res) => {
+  const { type, id, index } = req.params;
+  const { text } = req.body;
+  const table = type === 'articles' ? 'cms_articles' : 'cms_reviews';
+  const idx = parseInt(index, 10);
+  try {
+    const r = await pool.query(`SELECT comments FROM ${table} WHERE id=$1`, [id]);
+    if (!r.rows[0]) return res.status(404).json({ error: 'Not found' });
+    const comments = r.rows[0].comments || [];
+    if (!comments[idx]) return res.status(404).json({ error: 'Comment not found' });
+    comments[idx].adminReply = text?.trim() ? { text: text.trim(), date: new Date().toISOString() } : null;
+    await pool.query(`UPDATE ${table} SET comments=$1::jsonb WHERE id=$2`, [JSON.stringify(comments), id]);
+    res.json({ comments });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to reply to comment' });
+  }
+});
+
+// --- AUTO-TRANSLATE ---
+app.post('/api/admin/translate', authenticateToken, async (req, res) => {
+  if (!deeplTranslator) return res.status(503).json({ error: 'DEEPL_API_KEY not configured' });
+  const { textFields = {}, blocks = [] } = req.body;
+  try {
+    const translatedFields = {};
+    for (const [key, text] of Object.entries(textFields)) {
+      if (text?.trim()) {
+        const r = await deeplTranslator.translateText(text, 'en', 'pt-BR');
+        translatedFields[key] = r.text;
+      }
+    }
+    const translatedBlocks = await Promise.all(blocks.map(async (block) => {
+      const b = { ...block };
+      if ((b.type === 'paragraph' || b.type === 'heading') && b.content) {
+        b.content = (await deeplTranslator.translateText(b.content, 'en', 'pt-BR')).text;
+      }
+      if (b.type === 'image' && b.caption) {
+        b.caption = (await deeplTranslator.translateText(b.caption, 'en', 'pt-BR')).text;
+      }
+      return b;
+    }));
+    res.json({ translatedFields, translatedBlocks });
+  } catch (err) {
+    console.error('Translation error:', err);
+    res.status(500).json({ error: 'Translation failed', detail: err.message });
+  }
+});
+
+// --- SHARE CARD ---
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+app.post('/api/share-card', async (req, res) => {
+  const { type = 'post', title, desc, artist, image, category } = req.body;
+  if (!['post','review'].includes(type)) return res.status(400).json({ error: 'Invalid type' });
+  const templatePath = path.join(__dirname, '../src/assets/cards', `${type}-card.html`);
+  let html;
+  try { html = fs.readFileSync(templatePath, 'utf8'); }
+  catch { return res.status(400).json({ error: 'Template not found' }); }
+
+  if (title) html = html.replace(/(<div class="title">)[^<]*(<\/div>)/, `$1${escHtml(title)}$2`);
+  if (type === 'post' && desc) html = html.replace(/(<div class="description">)[^<]*(<\/div>)/, `$1${escHtml(desc)}$2`);
+  if (type === 'review' && artist) html = html.replace(/(<div class="artist">)[^<]*(<\/div>)/, `$1${escHtml(artist)}$2`);
+  if (type === 'post' && category) html = html.replace(/<!--\s*Optional[\s\S]*?-->/, `<div class="category">${escHtml(category)}</div>`);
+  if (image) html = html.replace(/<div class="image-placeholder">[\s\S]*?<\/div>/, `<img src="${String(image).replace(/"/g,'&quot;')}" alt="Cover">`);
+
+  try {
+    const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox','--disable-setuid-sandbox'] });
+    const page = await browser.newPage();
+    await page.setViewport({ width: 1080, height: 1350, deviceScaleFactor: 2 });
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+    await new Promise(r => setTimeout(r, 800));
+    const card = await page.$('.card');
+    const buffer = await card.screenshot({ encoding: 'binary' });
+    await browser.close();
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Content-Disposition', `inline; filename="${type}-card.png"`);
+    res.send(buffer);
+  } catch (err) {
+    console.error('Card generation error:', err);
+    res.status(500).json({ error: 'Card generation failed' });
   }
 });
 

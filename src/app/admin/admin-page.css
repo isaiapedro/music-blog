@@ -462,3 +462,184 @@ input[type="checkbox"] {
   padding: 2px 8px;
   border-radius: 4px;
 }
+
+/* Language tabs */
+.language-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.language-tabs button {
+  background: #222;
+  border: 1px solid #444;
+  color: #888;
+  padding: 4px 14px;
+  border-radius: 6px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.language-tabs button:hover {
+  border-color: #888;
+  color: #ccc;
+}
+
+.language-tabs button.active {
+  background: #fff;
+  border-color: #fff;
+  color: #000;
+}
+
+/* Comment Manager */
+.comments-manager {
+  max-width: 800px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #333;
+}
+
+.comments-manager-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #888;
+  margin: 0 0 16px 0;
+}
+
+.admin-comment-card {
+  background-color: #141414;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.admin-comment-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.admin-comment-user {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.8rem;
+  color: #A5CEC7;
+  font-weight: 600;
+}
+
+.admin-comment-date {
+  font-size: 0.78rem;
+  color: #555;
+  flex: 1;
+}
+
+.admin-comment-text {
+  color: #ccc;
+  font-size: 0.9rem;
+  margin: 0 0 10px 0;
+  line-height: 1.5;
+}
+
+.admin-reply-existing {
+  background: rgba(165, 206, 199, 0.07);
+  border-left: 2px solid #A5CEC7;
+  padding: 6px 10px;
+  margin-bottom: 10px;
+  font-size: 0.85rem;
+  color: #bbb;
+  border-radius: 0 4px 4px 0;
+}
+
+.admin-reply-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  color: #A5CEC7;
+  margin-right: 6px;
+}
+
+.admin-reply-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.admin-reply-input {
+  flex: 1;
+  padding: 8px 10px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 0.85rem;
+  font-family: 'Inter', sans-serif;
+}
+
+.admin-reply-input:focus {
+  outline: none;
+  border-color: #A5CEC7;
+}
+
+.btn-save-reply {
+  background: rgba(165, 206, 199, 0.1);
+  border: 1px solid #A5CEC7;
+  color: #A5CEC7;
+  padding: 6px 14px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.btn-save-reply:hover {
+  background: rgba(165, 206, 199, 0.2);
+}
+
+.btn-translate {
+  background: #1a3a2a !important;
+  border-color: #2a6a4a !important;
+  color: #4ade80 !important;
+  padding: 4px 14px;
+  font-size: 0.8rem !important;
+}
+
+.btn-card-action {
+  background: #1a1a2e;
+  border: 1px solid #444;
+  color: #a0c4ff;
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-card-action:hover:not(:disabled) {
+  background: #2a2a4e;
+  border-color: #6688cc;
+}
+
+.btn-card-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-instagram {
+  background: #2a1a2e;
+  border-color: #884488;
+  color: #e0aaff;
+}
+
+.btn-instagram:hover:not(:disabled) {
+  background: #3a1a3e;
+  border-color: #cc66cc;
+}

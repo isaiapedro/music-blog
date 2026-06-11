@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
+import { LanguageService } from '../shared/language.service';
 
 @Component({
   selector: 'app-article-search-page',
@@ -16,6 +17,7 @@ export class ArticleSearchPage implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private http = inject(HttpClient);
+  langService = inject(LanguageService);
 
   @ViewChild('searchBox') searchInput!: ElementRef<HTMLInputElement>;
 
@@ -136,6 +138,22 @@ export class ArticleSearchPage implements OnInit {
       .sort((a, b) => b.score - a.score)
       .map(item => item.review);
   });
+
+  displayArticleTitle(article: any): string {
+    return this.langService.lang() === 'pt' && article.titlePt ? article.titlePt : article.title;
+  }
+
+  displayArticleDesc(article: any): string {
+    return this.langService.lang() === 'pt' && article.descriptionPt
+      ? article.descriptionPt
+      : (article.description || this.langService.t('search.descFallback'));
+  }
+
+  displayReviewContext(review: any): string {
+    return this.langService.lang() === 'pt' && review.contextPt
+      ? review.contextPt
+      : (review.context || this.langService.t('search.descFallback'));
+  }
 
   onSearch(text: string) {
     if (text === '') {

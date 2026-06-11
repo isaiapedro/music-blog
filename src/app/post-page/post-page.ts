@@ -8,6 +8,7 @@ import { MarkdownComponent } from 'ngx-markdown';
 import { ImgFadeDirective } from '../shared/img-fade.directive';
 
 import { environment } from '../../environments/environment';
+import { LanguageService } from '../shared/language.service';
 
 export interface ArticleBlock {
   type: 'heading' | 'paragraph' | 'image';
@@ -19,9 +20,11 @@ export interface ArticleBlock {
 export interface Article {
   id: number;
   title: string;
+  titlePt?: string;
   theme: string;
   keywords: string;
   description: string;
+  descriptionPt?: string;
   date: string;
   image: string;
   youtubeVideoId?: string;
@@ -29,8 +32,9 @@ export interface Article {
   views?: number;
   likes?: number;
   shares?: number;
-  comments?: Array<{ user: string; date: string; text: string }>;
+  comments?: Array<{ user: string; date: string; text: string; adminReply?: { text: string; date: string } }>;
   contentBlocks?: ArticleBlock[];
+  contentBlocksPt?: ArticleBlock[];
 }
 
 @Component({
@@ -49,11 +53,34 @@ export class PostPage implements OnInit {
   private document = inject(DOCUMENT);
   private apiUrl = environment.apiUrl;
   private sanitizer = inject(DomSanitizer);
+  langService = inject(LanguageService);
 
   article = signal<Article | null>(null);
   hasLiked = signal(false);
   commentText = signal('');
   submittingComment = signal(false);
+  showShareMenu = signal(false);
+  generatingCard = signal(false);
+  linkCopied = signal(false);
+
+  displayTitle = computed(() => {
+    const post = this.article();
+    if (!post) return '';
+    return this.langService.lang() === 'pt' && post.titlePt ? post.titlePt : post.title;
+  });
+
+  displayDescription = computed(() => {
+    const post = this.article();
+    if (!post) return '';
+    return this.langService.lang() === 'pt' && post.descriptionPt ? post.descriptionPt : (post.description || '');
+  });
+
+  displayBlocks = computed(() => {
+    const post = this.article();
+    if (!post) return [];
+    const ptBlocks = post.contentBlocksPt;
+    return this.langService.lang() === 'pt' && ptBlocks && ptBlocks.length ? ptBlocks : (post.contentBlocks || []);
+  });
 
   youtubeEmbedUrl = computed(() => {
     const id = this.article()?.youtubeVideoId;
@@ -120,10 +147,47 @@ export class PostPage implements OnInit {
     });
   }
 
-  sharePost() {
-    const a = this.article();
+  toggleShareMenu() { this.showShareMenu.update(v => !v); }
+
+  copyLink() {
     navigator.clipboard.writeText(window.location.href);
+    const a = this.article();
     if (a) this.http.post(`${this.apiUrl}/articles/${a.id}/share`, {}).subscribe();
+    this.showShareMenu.set(false);
+    this.linkCopied.set(true);
+    setTimeout(() => this.linkCopied.set(false), 2000);
+  }
+
+  async shareCard() {
+    const a = this.article();
+    if (!a) return;
+    this.generatingCard.set(true);
+    this.showShareMenu.set(false);
+    try {
+      const res = await fetch(`${this.apiUrl}/share-card`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'post', title: a.title, desc: a.description, image: a.image, category: a.theme })
+      });
+      if (!res.ok) throw new Error('Card generation failed');
+      const blob = await res.blob();
+      const file = new File([blob], 'post-card.png', { type: 'image/png' });
+      const nav = navigator as any;
+      if (nav.canShare?.({ files: [file] })) {
+        await nav.share({ files: [file] });
+      } else {
+        const url = URL.createObjectURL(blob);
+        const link = this.document.createElement('a');
+        link.href = url;
+        link.download = 'post-card.png';
+        link.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (err) {
+      console.error('Share card failed:', err);
+    } finally {
+      this.generatingCard.set(false);
+    }
   }
 
   submitComment() {

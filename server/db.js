@@ -99,6 +99,14 @@ const initSchema = async () => {
     await client.query(`ALTER TABLE cms_reviews ADD COLUMN IF NOT EXISTS shares INT DEFAULT 0;`);
     await client.query(`ALTER TABLE cms_articles ADD COLUMN IF NOT EXISTS shares INT DEFAULT 0;`);
     await client.query(`ALTER TABLE cms_articles ADD COLUMN IF NOT EXISTS youtube_video_id VARCHAR(50);`);
+    // Portuguese translation columns
+    await client.query(`ALTER TABLE cms_articles ADD COLUMN IF NOT EXISTS title_pt VARCHAR(255);`);
+    await client.query(`ALTER TABLE cms_articles ADD COLUMN IF NOT EXISTS description_pt TEXT;`);
+    await client.query(`ALTER TABLE cms_articles ADD COLUMN IF NOT EXISTS content_blocks_pt JSONB DEFAULT '[]';`);
+    await client.query(`ALTER TABLE cms_reviews ADD COLUMN IF NOT EXISTS context_pt TEXT;`);
+    await client.query(`ALTER TABLE cms_reviews ADD COLUMN IF NOT EXISTS introduction_pt TEXT;`);
+    await client.query(`ALTER TABLE cms_reviews ADD COLUMN IF NOT EXISTS breakdown_pt JSONB DEFAULT '[]';`);
+    await client.query(`ALTER TABLE cms_reviews ADD COLUMN IF NOT EXISTS conclusion_pt TEXT;`);
     await client.query(`
       CREATE TABLE IF NOT EXISTS visitor_interactions (
         id SERIAL PRIMARY KEY,
