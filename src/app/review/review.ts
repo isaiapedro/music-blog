@@ -18,13 +18,15 @@ export interface Track {
 }
 
 export interface ReviewBlock {
-  type: 'paragraph' | 'image' | 'music';
+  type: 'paragraph' | 'image' | 'music' | 'audio';
   title?: string;
   content?: string;
   imageUrl?: string;
   imageAlt?: string;
   spotifyId?: string;
   youtubeMusicId?: string;
+  url?: string;
+  label?: string;
 }
 
 export interface ReviewDetail {
