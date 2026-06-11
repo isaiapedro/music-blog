@@ -151,6 +151,18 @@
                                             }
                                             </div>
                                         }
+                                        @case ('audio') {
+                                            @if (block.url) {
+                                                <div class="audio-block">
+                                                    @if (block.label) {
+                                                        <span class="audio-label">{{ block.label }}</span>
+                                                    }
+                                                    <audio controls preload="metadata" class="audio-player">
+                                                        <source [src]="block.url" type="audio/mpeg">
+                                                    </audio>
+                                                </div>
+                                            }
+                                        }
                                     }
                                 </div>
                             }

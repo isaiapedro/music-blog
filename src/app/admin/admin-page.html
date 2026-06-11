@@ -409,6 +409,7 @@
                   <button class="btn-add" (click)="addParagraphBlock()">+ Paragraph</button>
                   <button class="btn-add" (click)="addReviewImageBlock()">+ Image Embed</button>
                   <button class="btn-add" (click)="addMusicBlock()">+ Music Embed</button>
+                  <button class="btn-add" (click)="addAudioBlock()">+ Audio Clip</button>
                 </div>
               }
             </div>
@@ -448,6 +449,29 @@
                       <input type="text" [(ngModel)]="block.spotifyId" placeholder="Spotify ID">
                       <input type="text" [(ngModel)]="block.youtubeMusicId" placeholder="YouTube ID">
                     </div>
+                  } @else if (block.type === 'audio') {
+                    <div class="form-group">
+                      <input type="text" [(ngModel)]="block.label" placeholder="Optional label (e.g. Track 3 preview)">
+                    </div>
+                    <div class="form-group mt-2">
+                      <input type="text" [(ngModel)]="block.url" placeholder="Audio URL (auto-filled on upload)">
+                      <div class="upload-row">
+                        <input
+                          type="file"
+                          accept="audio/*"
+                          [disabled]="uploadingAudioIndex() === $index || isSaving()"
+                          (change)="onReviewAudioFileChange($event, review, $index)"
+                        />
+                        @if (uploadingAudioIndex() === $index) {
+                          <span class="upload-status">Processing & uploading… (~20s clip)</span>
+                        }
+                      </div>
+                    </div>
+                    @if (block.url) {
+                      <audio controls preload="metadata" style="width:100%;margin-top:8px;">
+                        <source [src]="block.url" type="audio/mpeg">
+                      </audio>
+                    }
                   }
                 </div>
               </div>

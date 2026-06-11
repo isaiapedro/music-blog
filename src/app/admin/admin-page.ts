@@ -46,6 +46,7 @@ export class AdminPage implements OnInit {
 
   uploadingCover = signal(false);
   uploadingBlockIndex = signal<number | null>(null);
+  uploadingAudioIndex = signal<number | null>(null);
 
   // --- LANGUAGE ---
   editingLang = signal<'en' | 'pt'>('en');
@@ -133,6 +134,41 @@ export class AdminPage implements OnInit {
     const review = this.selectedReview();
     if (!review.breakdown) review.breakdown = [];
     review.breakdown.push({ type: 'image', imageUrl: '', title: '' });
+  }
+
+  addAudioBlock() {
+    const review = this.selectedReview();
+    if (!review.breakdown) review.breakdown = [];
+    review.breakdown.push({ type: 'audio', url: '', label: '' });
+  }
+
+  onReviewAudioFileChange(event: Event, review: any, blockIndex: number) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    this.uploadingAudioIndex.set(blockIndex);
+    const body = new FormData();
+    body.append('audio', file);
+
+    this.http.post<{ url: string }>(`${this.apiUrl}/upload-audio`, body).subscribe({
+      next: (res) => {
+        const blocks = review.breakdown;
+        if (blocks && blocks[blockIndex]?.type === 'audio') {
+          blocks[blockIndex].url = res.url;
+        }
+        this.reviews.set([...this.reviews()]);
+        this.uploadingAudioIndex.set(null);
+        input.value = '';
+      },
+      error: (err) => {
+        console.error(err);
+        const msg = typeof err.error?.error === 'string' ? err.error.error : 'Upload failed';
+        alert(msg);
+        this.uploadingAudioIndex.set(null);
+        input.value = '';
+      }
+    });
   }
 
   onReviewBlockImageFileChange(event: Event, review: any, blockIndex: number) {

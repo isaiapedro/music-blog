@@ -1,6 +1,7 @@
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const puppeteer = require('puppeteer');
 const express = require('express');
 const cors = require('cors');
@@ -10,6 +11,9 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const multer = require('multer');
 const sharp = require('sharp');
+const ffmpeg = require('fluent-ffmpeg');
+const ffmpegPath = require('ffmpeg-static');
+ffmpeg.setFfmpegPath(ffmpegPath);
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const { v4: uuidv4 } = require('uuid');
@@ -647,6 +651,63 @@ app.post('/api/upload', authenticateToken, upload.single('image'), async (req, r
   } catch (error) {
     console.error("Compression/Upload Error:", error);
     res.status(500).json({ error: 'Failed to process and upload image' });
+  }
+});
+
+const ALLOWED_AUDIO_MIME_TYPES = [
+  'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav',
+  'audio/flac', 'audio/aac', 'audio/ogg', 'audio/x-m4a', 'audio/mp4'
+];
+const MAX_AUDIO_SIZE = 50 * 1024 * 1024; // 50MB
+const AUDIO_CLIP_DURATION = 20;
+
+app.post('/api/upload-audio', authenticateToken, upload.single('audio'), async (req, res) => {
+  let tmpIn, tmpOut;
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded.' });
+    if (!ALLOWED_AUDIO_MIME_TYPES.includes(req.file.mimetype)) {
+      return res.status(400).json({ error: 'Invalid file type. Allowed: MP3, WAV, FLAC, AAC, OGG, M4A.' });
+    }
+    if (req.file.size > MAX_AUDIO_SIZE) {
+      return res.status(400).json({ error: 'File too large. Maximum size is 50MB.' });
+    }
+
+    const ts = Date.now();
+    tmpIn = path.join(os.tmpdir(), `audio-in-${ts}`);
+    tmpOut = path.join(os.tmpdir(), `audio-out-${ts}.mp3`);
+
+    await fs.promises.writeFile(tmpIn, req.file.buffer);
+
+    await new Promise((resolve, reject) => {
+      ffmpeg(tmpIn)
+        .audioCodec('libmp3lame')
+        .audioBitrate(128)
+        .duration(AUDIO_CLIP_DURATION)
+        .output(tmpOut)
+        .on('end', resolve)
+        .on('error', reject)
+        .run();
+    });
+
+    const outputBuffer = await fs.promises.readFile(tmpOut);
+    const bucketName = process.env.S3_BUCKET_NAME;
+    const fileName = `${ts}-clip.mp3`;
+
+    await s3Client.send(new PutObjectCommand({
+      Bucket: bucketName,
+      Key: `blog-audio/${fileName}`,
+      Body: outputBuffer,
+      ContentType: 'audio/mpeg'
+    }));
+
+    const audioUrl = `https://${bucketName}.s3.${process.env.AWS_REGION}.amazonaws.com/blog-audio/${fileName}`;
+    res.status(200).json({ url: audioUrl });
+  } catch (error) {
+    console.error('Audio upload error:', error);
+    res.status(500).json({ error: 'Failed to process and upload audio' });
+  } finally {
+    if (tmpIn) fs.promises.unlink(tmpIn).catch(() => {});
+    if (tmpOut) fs.promises.unlink(tmpOut).catch(() => {});
   }
 });
 
