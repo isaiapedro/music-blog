@@ -655,8 +655,12 @@ app.post('/api/upload', authenticateToken, upload.single('image'), async (req, r
 });
 
 const ALLOWED_AUDIO_MIME_TYPES = [
-  'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav',
-  'audio/flac', 'audio/aac', 'audio/ogg', 'audio/x-m4a', 'audio/mp4'
+  'audio/mpeg', 'audio/mp3',
+  'audio/wav', 'audio/x-wav', 'audio/wave', 'audio/vnd.wave', 'audio/x-pn-wav',
+  'audio/flac', 'audio/x-flac',
+  'audio/aac', 'audio/x-aac',
+  'audio/ogg',
+  'audio/x-m4a', 'audio/mp4', 'audio/m4a'
 ];
 const MAX_AUDIO_SIZE = 50 * 1024 * 1024; // 50MB
 const AUDIO_CLIP_DURATION = 20;
