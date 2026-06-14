@@ -123,6 +123,12 @@ const initSchema = async () => {
         ON visitor_interactions(visitor_id, content_type, content_id, action)
         WHERE action IN ('view', 'like', 'share');
     `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS cms_settings (
+        key VARCHAR(100) PRIMARY KEY,
+        value TEXT
+      );
+    `);
     // Backfill slugs for existing records that don't have one
     await client.query(`
       UPDATE cms_articles

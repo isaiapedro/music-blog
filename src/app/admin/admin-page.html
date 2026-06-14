@@ -118,6 +118,34 @@
           </div>
         }
       </div>
+
+      <div class="sidebar-section">
+        <h4 class="sidebar-mainTitle">Site Settings</h4>
+        <div style="padding: 12px 0;">
+          <label style="display:block; font-size:0.75rem; color:#aaa; margin-bottom:6px;">Reviews Card Image</label>
+          <input
+            type="text"
+            [ngModel]="siteSettings()['review_side_image']"
+            (ngModelChange)="saveReviewSideImageUrl($event)"
+            placeholder="Auto (latest review)"
+            style="width:100%; box-sizing:border-box;"
+          >
+          <div class="upload-row" style="margin-top:6px;">
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              [disabled]="uploadingReviewSideImage()"
+              (change)="onReviewSideImageFileChange($event)"
+            >
+            @if (uploadingReviewSideImage()) {
+              <span class="upload-status">Uploading…</span>
+            }
+          </div>
+          @if (siteSettings()['review_side_image']) {
+            <img [src]="siteSettings()['review_side_image']" alt="Reviews card preview" style="width:100%; margin-top:8px; border-radius:4px;">
+          }
+        </div>
+      </div>
     </aside>
 
     <main class="cms-editor">

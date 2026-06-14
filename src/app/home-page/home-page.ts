@@ -25,13 +25,30 @@ export class HomePage implements OnInit {
   themes = ['All', 'Music', 'Technology', 'Literature', 'Travel', 'Fashion'];
 
   articles = signal<any[]>([]);
+  latestReview = signal<any>(null);
+  siteSettings = signal<Record<string, string>>({});
+
+  reviewSideImage = computed(() =>
+    this.siteSettings()['review_side_image'] || this.latestReview()?.image || ''
+  );
 
   ngOnInit() {
-    // Fetch ONLY published articles from the DB
     this.http.get<{articles: any[]}>(`${environment.apiUrl}/articles?published=true`)
       .subscribe({
         next: (data) => this.articles.set(data.articles),
         error: (err) => console.error('Failed to load articles', err)
+      });
+
+    this.http.get<{reviews: any[]}>(`${environment.apiUrl}/reviews?published=true`)
+      .subscribe({
+        next: (data) => this.latestReview.set(data.reviews?.[0] ?? null),
+        error: (err) => console.error('Failed to load reviews', err)
+      });
+
+    this.http.get<Record<string, string>>(`${environment.apiUrl}/settings`)
+      .subscribe({
+        next: (data) => this.siteSettings.set(data),
+        error: (err) => console.error('Failed to load settings', err)
       });
   }
   

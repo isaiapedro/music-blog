@@ -35,9 +35,9 @@
     
     <div class="side-stories">
       <article class="side-item">
-        <a routerLink="/collection-page" [queryParams]="{ filter: 'latest' }" class="post-wrapper">
+        <a [routerLink]="latestReview() ? ['/reviews', latestReview().slug || latestReview().id] : ['/collection-page']" class="post-wrapper">
           <div class="img-wrapper">
-            <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=800&auto=format&fit=crop" class="article-img" alt="Latest Reviews" imgFade>
+            <img [src]="reviewSideImage()" class="article-img" alt="Latest Reviews" imgFade>
           </div>
           <span class="filter-rect article-theme">Reviews</span>
           <h2 class="serif-heading">{{ langService.t('home.newAlbumReview') }}</h2>

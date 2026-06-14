@@ -58,6 +58,10 @@ export class AdminPage implements OnInit {
   // --- COMMENTS ---
   replyDrafts = signal<Record<number, string>>({});
 
+  // --- SITE SETTINGS ---
+  siteSettings = signal<Record<string, string>>({});
+  uploadingReviewSideImage = signal(false);
+
   ngOnInit() {
     // Fetch Reviews
     this.http.get<{ reviews: any[] }>(`${this.apiUrl}/reviews`).subscribe(data => {
@@ -73,6 +77,12 @@ export class AdminPage implements OnInit {
     this.http.get<any>(`${this.apiUrl}/admin/dashboard`).subscribe({
       next: (data) => this.dashboardStats.set(data),
       error: (err) => console.error('Failed to load dashboard stats', err)
+    });
+
+    // Fetch Site Settings
+    this.http.get<Record<string, string>>(`${this.apiUrl}/settings`).subscribe({
+      next: (data) => this.siteSettings.set(data),
+      error: (err) => console.error('Failed to load settings', err)
     });
   }
 
@@ -278,6 +288,44 @@ export class AdminPage implements OnInit {
         this.uploadingBlockIndex.set(null);
         input.value = '';
       }
+    });
+  }
+
+  // ------------------------------------------
+
+  // --- SITE SETTINGS METHODS ---
+
+  onReviewSideImageFileChange(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    this.uploadingReviewSideImage.set(true);
+    const body = new FormData();
+    body.append('image', file);
+    this.http.post<{ url: string }>(`${this.apiUrl}/upload`, body).subscribe({
+      next: (res) => {
+        this.saveSetting('review_side_image', res.url);
+        this.uploadingReviewSideImage.set(false);
+        input.value = '';
+      },
+      error: (err) => {
+        console.error(err);
+        const msg = typeof err.error?.error === 'string' ? err.error.error : 'Upload failed';
+        alert(msg);
+        this.uploadingReviewSideImage.set(false);
+        input.value = '';
+      }
+    });
+  }
+
+  saveReviewSideImageUrl(url: string) {
+    this.saveSetting('review_side_image', url);
+  }
+
+  private saveSetting(key: string, value: string) {
+    this.http.put(`${this.apiUrl}/settings`, { key, value }).subscribe({
+      next: () => this.siteSettings.set({ ...this.siteSettings(), [key]: value }),
+      error: (err) => console.error('Failed to save setting', err)
     });
   }
 

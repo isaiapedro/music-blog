@@ -548,7 +548,7 @@ app.get('/api/reviews', async (req, res) => {
     
     // If the frontend asks for ?published=true (like the Home Page), filter it
     if (published === 'true') {
-      query = 'SELECT * FROM cms_reviews WHERE published = true ORDER BY id DESC';
+      query = 'SELECT * FROM cms_reviews WHERE published = true ORDER BY publish_date DESC NULLS LAST, id DESC';
     }
 
     const result = await pool.query(query);
@@ -606,6 +606,34 @@ app.get('/api/reviews/:slug', async (req, res) => {
     res.json({ ...rowToReview(row), similarAlbums });
   } catch (err) {
     console.error('Error fetching single review:', err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// GET /api/settings — public
+app.get('/api/settings', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT key, value FROM cms_settings');
+    const settings = Object.fromEntries(result.rows.map(r => [r.key, r.value]));
+    res.json(settings);
+  } catch (err) {
+    console.error('Error fetching settings:', err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// PUT /api/settings — authenticated
+app.put('/api/settings', authenticateToken, async (req, res) => {
+  try {
+    const { key, value } = req.body;
+    if (!key) return res.status(400).json({ error: 'key is required' });
+    await pool.query(
+      'INSERT INTO cms_settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = $2',
+      [key, value ?? null]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Error saving setting:', err);
     res.status(500).json({ error: 'Database error' });
   }
 });
