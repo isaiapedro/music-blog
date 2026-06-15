@@ -1,20 +1,21 @@
 <div class="login-wrapper">
   <div class="login-card">
     <h1>Admin Access</h1>
-    <div class="field">                                                                                                                                                      
-      <label for="password">Password</label>                                                                                                                                 
-      <input                                                                                                                                                                 
-        id="password"                                                                                                                                                        
-        type="password"                                                                                                                                                      
-        placeholder="Enter admin password"                                                                                                                                   
-        autocomplete="current-password"                                                                                                                                      
-      />                                                                                                                                                                     
-    </div>                                                                                                                                                                   
-    @if (error()) {                                                                                                                                                          
-      <p class="error-msg">{{ error() }}</p>                                                                                                                                 
-    }                                                                                                                                                                        
-    <button type="button" (click)="submit()" [disabled]="loading()">                                                                                                         
-      {{ loading() ? 'Signing in...' : 'Sign In' }}                                                                                                                          
-    </button>    
+    <div class="field">                                                                                                                                                                          
+      <label for="password">Password</label>                                                                                                                                                     
+      <input
+        #passwordInput                                                                                                                                                                           
+        id="password"                                                                                                                                                                            
+        type="password"                                                                                                                                                                          
+        placeholder="Enter admin password"                                                                                                                                                       
+        autocomplete="current-password"                                                                                                                                                          
+      />                                                                                                                                                                                         
+    </div>                                                                                                                                                                                       
+    @if (error()) {                                                                                                                                                                              
+      <p class="error-msg">{{ error() }}</p>                                                                                                                                                     
+    }                                                                                                                                                                                            
+    <button type="button" (click)="submit(passwordInput.value)" [disabled]="loading()">                                                                                                          
+      {{ loading() ? 'Signing in...' : 'Sign In' }}                                                                                                                                              
+    </button>  
   </div>
 </div>

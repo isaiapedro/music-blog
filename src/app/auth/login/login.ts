@@ -1,4 +1,4 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, signal, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../auth.service';
@@ -10,7 +10,7 @@ import { AuthService } from '../auth.service';
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   private auth = inject(AuthService);
   private router = inject(Router);
 
@@ -23,12 +23,12 @@ export class LoginComponent {
     }
   }
 
-  submit() {
-    const input = document.getElementById('password') as HTMLInputElement;
-    const password = input?.value ?? '';
+  submit(password: string) {
     if (!password) return;
+    
     this.loading.set(true);
     this.error.set('');
+    
     this.auth.login(password).subscribe({
       next: ({ token }) => {
         this.auth.setToken(token);
