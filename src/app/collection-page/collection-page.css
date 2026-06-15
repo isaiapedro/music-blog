@@ -16,7 +16,8 @@
     
     background-blend-mode: overlay;
     background-attachment: fixed;
-    min-height: 100%;
+    background-size: cover;
+    min-height: 100vh;
     padding: 2.5rem 1.5rem 4rem;
     font-family: 'Inter', sans-serif;
     color: #e0e0e0;
