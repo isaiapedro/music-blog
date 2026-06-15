@@ -228,7 +228,8 @@ export class CollectionPage implements OnInit {
     const filteredArray =  this.reviews().filter((review: any) => {
       
       const reviewAlbum = review.album ? review.album.toLowerCase() : '';
-      const matchesSearch = !term || reviewAlbum.includes(term);
+      const reviewArtist = review.artist ? review.artist.toLowerCase() : '';
+      const matchesSearch = !term || reviewAlbum.includes(term) || reviewArtist.includes(term);
 
       let matchesGenre = true;
       if (genre) {

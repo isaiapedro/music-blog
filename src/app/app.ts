@@ -15,7 +15,7 @@ import { LanguageService } from './shared/language.service';
     RouterLinkActive
   ],
   template: `
-    <main style="display: block; width: 100%; min-height: 100%;">
+    <main style="display: block; width: 100%; min-height: 100%;" [class.light-theme]="!isDark()">
       <mat-toolbar color="primary" class="navbar">
         <span class="spacer"></span>
         <a routerLink="/home-page" class="logo-link" aria-label="Home">
@@ -31,6 +31,9 @@ import { LanguageService } from './shared/language.service';
           <a mat-button routerLink="/about-page" routerLinkActive="active-link">{{ langService.t('nav.about') }}</a>
         </div>
         <span class="spacer"></span>
+        <button class="theme-btn" (click)="toggleTheme()" [attr.aria-label]="isDark() ? 'Switch to light mode' : 'Switch to dark mode'">
+          {{ isDark() ? '☀' : '☾' }}
+        </button>
         <li class="language-menu">
           <button class="lang-btn" (click)="toggleLangMenu()" aria-label="Switch language">
             <img src="assets/languages.svg" alt="Languages">
@@ -151,7 +154,7 @@ import { LanguageService } from './shared/language.service';
       }
 
       .lang-btn img {
-        height: 22px;
+        height: 22.5px;
         width: auto;
         display: block;
         opacity: 0.85;
@@ -276,6 +279,83 @@ import { LanguageService } from './shared/language.service';
           display: none;
         }
       }
+
+      /* Theme toggle button */
+      .theme-btn {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 25px;
+        color: white;
+        margin-right: 15px;
+        margin-bottom: 1px;
+        line-height: 1;
+      }
+
+      /* Light mode — navbar */
+      .light-theme .mat-toolbar {
+        background-image: none;
+        background-color: #f5f5f0;
+        border-bottom: 1px solid #777;
+        color: black;
+      }
+
+      .light-theme .mat-toolbar a,
+      .light-theme .mat-toolbar .mat-mdc-button,
+      .light-theme .navbar a {
+        color: black;
+      }
+
+      .light-theme .site-logo {
+        filter: invert(1) brightness(0);
+      }
+
+      .light-theme .theme-btn {
+        color: black;
+      }
+
+      .light-theme .nav-box .active-link {
+        background-color: #fbfbfb;
+        box-shadow: 0px 0px 0px 2px black, 0px 5px 0px 2px black;
+      }
+
+      .light-theme .lang-btn img {
+        filter: invert(1) brightness(0);
+      }
+
+      .light-theme .language-menu .dropdown-content {
+        background: #f5f5f0;
+        border: 1px solid #ccc;
+      }
+
+      .light-theme .language-menu .dropdown-content a {
+        color: black;
+      }
+
+      .light-theme .language-menu .dropdown-content a:hover {
+        background: rgba(0,0,0,0.06);
+      }
+
+      .light-theme .hamburger-line {
+        background-color: black;
+      }
+
+      .light-theme .sidebar-drawer {
+        background: #f5f5f0;
+        border-left: 1px solid #ccc;
+      }
+
+      .light-theme .sidebar-link {
+        color: black;
+        border-bottom: 1px solid #ddd;
+      }
+
+      .light-theme .sidebar-link:hover {
+        background-color: rgba(0,0,0,0.05);
+      }
     `,
   ],
 })
@@ -283,6 +363,7 @@ import { LanguageService } from './shared/language.service';
 export class App {
   sidebarOpen = signal(false);
   langMenuOpen = signal(false);
+  isDark = signal(true);
   private router = inject(Router);
   langService = inject(LanguageService);
 
@@ -305,5 +386,12 @@ export class App {
 
   closeSidebar() {
     this.sidebarOpen.set(false);
+  }
+
+  toggleTheme() {
+    this.isDark.update(v => !v);
+    const isLight = !this.isDark();
+    document.body.classList.toggle('light-theme', isLight);
+    document.documentElement.classList.toggle('light-theme', isLight);
   }
 }
