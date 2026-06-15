@@ -1,21 +1,26 @@
 <div class="login-wrapper">
   <div class="login-card">
     <h1>Admin Access</h1>
-    <div class="field">                                                                                                                                                                          
-      <label for="password">Password</label>                                                                                                                                                     
+    
+    <div class="field">
+      <label for="password">Password</label>
       <input
-        #passwordInput                                                                                                                                                                           
-        id="password"                                                                                                                                                                            
-        type="password"                                                                                                                                                                          
-        placeholder="Enter admin password"                                                                                                                                                       
-        autocomplete="current-password"                                                                                                                                                          
-      />                                                                                                                                                                                         
-    </div>                                                                                                                                                                                       
-    @if (error()) {                                                                                                                                                                              
-      <p class="error-msg">{{ error() }}</p>                                                                                                                                                     
-    }                                                                                                                                                                                            
-    <button type="button" (click)="submit(passwordInput.value)" [disabled]="loading()">                                                                                                          
-      {{ loading() ? 'Signing in...' : 'Sign In' }}                                                                                                                                              
-    </button>  
+        #pwd
+        id="password"
+        type="password"
+        placeholder="Enter admin password"
+        autocomplete="current-password"
+        (keyup.enter)="submit(pwd.value)"
+        [disabled]="loading()"
+      />
+    </div>
+
+    @if (error()) {
+      <p class="error-msg">{{ error() }}</p>
+    }
+
+    <button type="button" (click)="submit(pwd.value)" [disabled]="loading()">
+      {{ loading() ? 'Signing in...' : 'Sign In' }}
+    </button>
   </div>
 </div>

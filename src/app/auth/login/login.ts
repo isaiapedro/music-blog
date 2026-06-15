@@ -24,7 +24,10 @@ export class LoginComponent implements OnInit {
   }
 
   submit(password: string) {
-    if (!password) return;
+    if (!password) {
+      this.error.set('Please enter a password');
+      return;
+    }
     
     this.loading.set(true);
     this.error.set('');
