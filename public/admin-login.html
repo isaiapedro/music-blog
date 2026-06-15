@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login</title>
+  <style>
+    body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f9f9f9; margin: 0; }
+    .card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 320px; text-align: center; }
+    input { width: 100%; padding: 10px; margin: 15px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+    button { width: 100%; padding: 10px; background: #333; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; }
+    button:disabled { background: #888; cursor: not-allowed; }
+    .error { color: #d32f2f; font-size: 0.9rem; display: none; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>Admin Access</h2>
+    <div class="error" id="err-msg">Invalid password.</div>
+    <input type="password" id="pwd" placeholder="Enter admin password">
+    <button onclick="login()" id="btn">Sign In</button>
+  </div>
+
+  <script>
+    const pwdInput = document.getElementById('pwd');
+    const btn = document.getElementById('btn');
+    const err = document.getElementById('err-msg');
+
+    // Submit on Enter key
+    pwdInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') login();
+    });
+
+    function login() {
+      const password = pwdInput.value;
+      if (!password) return;
+
+      btn.innerText = 'Signing in...';
+      btn.disabled = true;
+      err.style.display = 'none';
+
+      fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: password })
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('Invalid');
+        return res.json();
+      })
+      .then(data => {
+        // Store the token exactly as tested in your previous logs
+        sessionStorage.setItem('admin_token', data.token);
+        localStorage.setItem('token', data.token); // Fallback depending on your AuthService
+        
+        // Redirect back into the main Angular application
+        window.location.href = '/admin';
+      })
+      .catch(e => {
+        err.style.display = 'block';
+        btn.innerText = 'Sign In';
+        btn.disabled = false;
+      });
+    }
+  </script>
+
+</body>
+</html>
