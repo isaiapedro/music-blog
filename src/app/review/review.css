@@ -442,8 +442,13 @@ figcaption { font-size: 0.85rem; color: #666; margin-top: 0.25rem; }
   }
 
   .cover-wrap {
+    margin-top: -20px;
     max-width: 100%;
     width: 100%;
+  }
+
+  .back-link {
+    margin-top: -30px;
   }
 
   .article-cover {
@@ -466,8 +471,16 @@ figcaption { font-size: 0.85rem; color: #666; margin-top: 0.25rem; }
     font-size: 1.3rem;
   }
 
+  .article-release-date {
+    margin-top: -10px;
+  }
+
+  .post-date-time {
+    margin-top: 40px;
+  }
+
   .article-context{
-    margin-top: 3rem;
+    margin-top: 2rem;
   }
 
   .main-content {

@@ -150,8 +150,8 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    margin-left: 20px;
-    margin-right: 20px;
+    margin-left: 15px;
+    margin-right: 5px;
     gap: 30px;
 }
 

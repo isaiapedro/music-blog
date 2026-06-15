@@ -277,14 +277,8 @@ export class ReviewComponent implements OnInit {
   });
 
   getScoreMessage(score: number): string {
-    const t = (k: string) => this.langService.t(k);
-    if (score >= 9.5) return t('review.score_masterpiece');
-    if (score >= 8.5) return t('review.score_essential');
-    if (score >= 7.5) return t('review.score_recommended');
-    if (score >= 6.0) return t('review.score_solid');
-    if (score >= 5.0) return t('review.score_average');
-    if (score >= 3.0) return t('review.score_disappointing');
-    return t('review.score_skip');
+    const formattedScore = score.toFixed(1);
+  return this.langService.t(`review.score_${formattedScore}`);
   }
 
   getReleaseYear(dateStr: string | undefined): string {
