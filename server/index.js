@@ -892,35 +892,78 @@ function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// 🧠 Pool de Cache em Memória (Mantenha declarado acima da rota)
+const cardCache = new Map();
+
+// --- SHARE CARD ---
 app.post('/api/share-card', async (req, res) => {
   const { type = 'post', title, desc, artist, image, category } = req.body;
   if (!['post','review'].includes(type)) return res.status(400).json({ error: 'Invalid type' });
-  const templatePath = path.join(__dirname, '../src/assets/cards', `${type}-card.html`);
-  let html;
-  try { html = fs.readFileSync(templatePath, 'utf8'); }
-  catch { return res.status(400).json({ error: 'Template not found' }); }
+  
+  // 🔑 Chave única de cache
+  const cacheKey = `${type}_${title || ''}_${artist || ''}_${desc || ''}_${image || ''}_${category || ''}`;
 
-  if (title) html = html.replace(/(<div class="title">)[^<]*(<\/div>)/, `$1${escHtml(title)}$2`);
-  if (type === 'post' && desc) html = html.replace(/(<div class="description">)[^<]*(<\/div>)/, `$1${escHtml(desc)}$2`);
-  if (type === 'review' && artist) html = html.replace(/(<div class="artist">)[^<]*(<\/div>)/, `$1${escHtml(artist)}$2`);
-  if (type === 'post' && category) html = html.replace(/<!--\s*Optional[\s\S]*?-->/, `<div class="category">${escHtml(category)}</div>`);
-  if (image) html = html.replace(/<div class="image-placeholder">[\s\S]*?<\/div>/, `<img src="${String(image).replace(/"/g,'&quot;')}" alt="Cover">`);
-
-  try {
-    const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox','--disable-setuid-sandbox'] });
-    const page = await browser.newPage();
-    await page.setViewport({ width: 1080, height: 1350, deviceScaleFactor: 2 });
-    await page.setContent(html, { waitUntil: 'networkidle0' });
-    await new Promise(r => setTimeout(r, 800));
-    const card = await page.$('.card');
-    const buffer = await card.screenshot({ encoding: 'binary' });
-    await browser.close();
+  // ⚡ Verificação de Cache
+  if (cardCache.has(cacheKey)) {
     res.setHeader('Content-Type', 'image/png');
     res.setHeader('Content-Disposition', `inline; filename="${type}-card.png"`);
-    res.send(buffer);
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    return res.send(cardCache.get(cacheKey));
+  }
+
+  const templatePath = path.join(__dirname, '../src/assets/cards', `${type}-card.html`);
+  let html;
+  try { 
+    html = fs.readFileSync(templatePath, 'utf8'); 
+  } catch (err) { 
+    return res.status(400).json({ error: 'Template not found' }); 
+  }
+
+  // 📑 Substituições de conteúdo no HTML com formatação explícita terminada por ponto e vírgula
+  if (title) { html = html.replace(/(<div class="title">)[^<]*(<\/div>)/, `$1${escHtml(title)}$2`); }
+  if (type === 'post' && desc) { html = html.replace(/(<div class="description">)[^<]*(<\/div>)/, `$1${escHtml(desc)}$2`); }
+  if (type === 'review' && artist) { html = html.replace(/(<div class="artist">)[^<]*(<\/div>)/, `$1${escHtml(artist)}$2`); }
+  if (type === 'post' && category) { html = html.replace(//, `<div class="category">${escHtml(category)}</div>`); }
+  if (image) { html = html.replace(/<div class="image-placeholder">[\s\S]*?<\/div>/, `<img src="${String(image).replace(/"/g,'&quot;')}" alt="Cover">`); }
+
+  let browser;
+
+  try {
+    browser = await puppeteer.launch({ 
+      headless: 'new', 
+      args: ['--no-sandbox','--disable-setuid-sandbox'] 
+    });
+    
+    const page = await browser.newPage();
+    await page.setViewport({ width: 1080, height: 1350, deviceScaleFactor: 2 });
+    
+    await page.setContent(html, { waitUntil: 'networkidle0', timeout: 7000 });
+    await new Promise(r => setTimeout(r, 800));
+    
+    const card = await page.$('.card');
+    if (!card) throw new Error("O seletor '.card' não foi encontrado no HTML do template.");
+
+    const screenshotBuffer = await card.screenshot({ omitBackground: true });
+    const finalBuffer = Buffer.from(screenshotBuffer);
+    
+    // Grava o resultado binário no cache
+    cardCache.set(cacheKey, finalBuffer);
+
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Content-Disposition', `inline; filename="${type}-card.png"`);
+    res.setHeader('Cache-Control', 'no-cache');
+    
+    res.send(finalBuffer);
+
   } catch (err) {
-    console.error('Card generation error:', err);
-    res.status(500).json({ error: 'Card generation failed' });
+    console.error('❌ Erro na geração do card:', err.message);
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.status(500).json({ error: 'Card generation failed', details: err.message });
+
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
   }
 });
 

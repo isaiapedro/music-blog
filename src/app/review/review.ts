@@ -92,6 +92,8 @@ export class ReviewComponent implements OnInit {
   generatingCard = signal(false);
   linkCopied = signal(false);
   cardDownloaded = signal(false);
+  generatedCardUrl = signal<string | null>(null);
+  generatedCardFile = signal<File | null>(null);
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
@@ -176,6 +178,7 @@ export class ReviewComponent implements OnInit {
     if (!r) return;
     this.generatingCard.set(true);
     this.showShareMenu.set(false);
+  
     try {
       const res = await fetch(`${this.apiUrl}/share-card`, {
         method: 'POST',
@@ -183,26 +186,51 @@ export class ReviewComponent implements OnInit {
         body: JSON.stringify({ type: 'review', title: r.album, artist: r.artist, image: r.image })
       });
       if (!res.ok) throw new Error('Card generation failed');
+    
       const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
       const file = new File([blob], 'review-card.png', { type: 'image/png' });
-      const nav = navigator as any;
-      if (nav.canShare?.({ files: [file] })) {
-        await nav.share({ files: [file] });
-      } else {
-        const url = URL.createObjectURL(blob);
-        const link = this.document.createElement('a');
-        link.href = url;
-        link.download = 'review-card.png';
-        link.click();
-        URL.revokeObjectURL(url);
-        this.cardDownloaded.set(true);
-        setTimeout(() => this.cardDownloaded.set(false), 3500);
-      }
-    } catch (err: any) {
-      if (err?.name !== 'AbortError') console.error('Share card failed:', err);
+
+  
+      try { await navigator.clipboard.writeText(window.location.href); } catch(e) {}
+
+
+      this.generatedCardUrl.set(url);
+      this.generatedCardFile.set(file);
+    
+    } catch (err) {
+      console.error('Falha ao gerar o card:', err);
     } finally {
       this.generatingCard.set(false);
     }
+  }
+
+
+  async shareNativeFile() {
+    const file = this.generatedCardFile();
+    const nav = navigator as any;
+  
+    if (file && nav.canShare?.({ files: [file] })) {
+      try {
+        await nav.share({ files: [file] });
+      } catch (err) {
+        console.log('Usuário cancelou o compartilhamento ou falhou:', err);
+      }
+    } else {
+  
+      const link = this.document.createElement('a');
+      link.href = this.generatedCardUrl() || '';
+      link.download = 'review-card.png';
+      link.click();
+    }
+  }
+
+
+  closeCardModal() {
+    const url = this.generatedCardUrl();
+    if (url) URL.revokeObjectURL(url);
+    this.generatedCardUrl.set(null);
+    this.generatedCardFile.set(null);
   }
 
   submitComment() {

@@ -431,8 +431,10 @@ figcaption { font-size: 0.85rem; color: #666; margin-top: 0.25rem; }
 }
 
 @media (max-width: 768px) {
+
   .review-article {
     padding: 4.5rem 1rem 3rem;
+    background-attachment: scroll;
   }
 
   .top-row {
@@ -504,7 +506,16 @@ figcaption { font-size: 0.85rem; color: #666; margin-top: 0.25rem; }
 
   .similar-card {
     margin-bottom: 2rem;
+.review-article {
+    padding: 4.5rem 1rem 3rem;
+    background-attachment: scroll; /* 👈 ADD THIS LINE TO FIX THE CUTOFF */
   }
+
+  .top-row {
+    flex-direction: column;
+    gap: 3rem;
+    align-items: flex-start;
+  }  }
 
   .similar-cover-wrap {
     max-width: 100%;
@@ -708,6 +719,101 @@ figcaption { font-size: 0.85rem; color: #666; margin-top: 0.25rem; }
 }
 .error-state h2 { color: #fff; margin-bottom: 0.5rem; }
 .error-state p { color: #888; }
+
+.card-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    z-index: 9999; /* Keeps it above headers/navigation bars */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.card-modal-content {
+    background: #1a1a1a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1.5rem;
+    max-width: 360px;
+    width: 100%;
+    position: relative;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    box-sizing: border-box;
+}
+
+.card-modal-content h3 {
+    margin-top: 0;
+    color: #fff;
+    font-size: 1.4rem;
+}
+
+.card-modal-content p {
+    color: #aaa;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+}
+
+.close-modal-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.close-modal-btn:hover { color: #fff; }
+
+.modal-preview-image {
+    width: 100%;
+    max-height: 45vh;
+    object-fit: contain;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    margin-bottom: 1.25rem;
+    display: block;
+}
+
+.modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.modal-share-btn {
+    background: #0084d2;
+    color: #fff;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: background 0.2s, transform 0.1s;
+    width: 100%;
+}
+
+.modal-share-btn:hover {
+    background: #006fa3;
+}
+
+.modal-share-btn:active {
+    transform: scale(0.98);
+}
 
 /* --- COMMENTS --- */
 .comments-section {

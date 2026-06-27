@@ -308,4 +308,25 @@
         <p>{{ langService.t('review.notFoundDesc') }}</p>
         </div>
     }
+    
+  @if (generatedCardUrl()) {
+    <div class="card-modal-backdrop" (click)="closeCardModal()">
+      <div class="card-modal-content" (click)="$event.stopPropagation()">
+        <button class="close-modal-btn" (click)="closeCardModal()">✕</button>
+        <h3>✨ Card Pronto para Compartilhar!</h3>
+        <p>O link da review já foi copiado! Toque no botão abaixo e selecione o <b>Instagram</b> para postar nos Stories.</p>
+      
+        <img [src]="generatedCardUrl()" alt="Instagram Share Card" class="modal-preview-image" />
+      
+        <div class="modal-actions">
+          <button class="modal-share-btn" (click)="shareNativeFile()">
+            Compartilhar no Instagram
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
 </div>
+
+ 
