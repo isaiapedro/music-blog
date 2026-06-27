@@ -503,17 +503,38 @@ import { LanguageService } from './shared/language.service';
 export class App {
   sidebarOpen = signal(false);
   langMenuOpen = signal(false);
-  isDark = signal(true);
+  isDark = signal<boolean>(this.detectSystemTheme());
   private router = inject(Router);
   langService = inject(LanguageService);
 
   constructor() {
+    this.applyThemeClasses(!this.isDark());
+    
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        this.isDark.set(e.matches);
+        this.applyThemeClasses(!e.matches);
+      });
+    }
+    
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
       this.sidebarOpen.set(false);
       this.langMenuOpen.set(false);
     });
+  }
+
+  private detectSystemTheme(): boolean {
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return true; // Default standard fallback
+  }
+
+  private applyThemeClasses(isLight: boolean) {
+    document.body.classList.toggle('light-theme', isLight);
+    document.documentElement.classList.toggle('light-theme', isLight);
   }
 
   toggleLangMenu() {
@@ -530,8 +551,6 @@ export class App {
 
   toggleTheme() {
     this.isDark.update(v => !v);
-    const isLight = !this.isDark();
-    document.body.classList.toggle('light-theme', isLight);
-    document.documentElement.classList.toggle('light-theme', isLight);
+    this.applyThemeClasses(!this.isDark());
   }
 }

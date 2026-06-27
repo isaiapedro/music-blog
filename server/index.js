@@ -919,12 +919,28 @@ app.post('/api/share-card', async (req, res) => {
     return res.status(400).json({ error: 'Template not found' }); 
   }
 
-  // 📑 Substituições de conteúdo no HTML com formatação explícita terminada por ponto e vírgula
-  if (title) { html = html.replace(/(<div class="title">)[^<]*(<\/div>)/, `$1${escHtml(title)}$2`); }
-  if (type === 'post' && desc) { html = html.replace(/(<div class="description">)[^<]*(<\/div>)/, `$1${escHtml(desc)}$2`); }
-  if (type === 'review' && artist) { html = html.replace(/(<div class="artist">)[^<]*(<\/div>)/, `$1${escHtml(artist)}$2`); }
-  if (type === 'post' && category) { html = html.replace(//, `<div class="category">${escHtml(category)}</div>`); }
-  if (image) { html = html.replace(/<div class="image-placeholder">[\s\S]*?<\/div>/, `<img src="${String(image).replace(/"/g,'&quot;')}" alt="Cover">`); }
+  if (title) {
+    html = html.replace(/(<div class="title">)[\s\S]*?(<\/div>)/, (match, open, close) => open + escHtml(title) + close);
+  }
+
+  if (type === 'post' && desc) {
+    html = html.replace(/(<div class="description">)[\s\S]*?(<\/div>)/, (match, open, close) => open + escHtml(desc) + close);
+  }
+
+  if (type === 'review' && artist) {
+    html = html.replace(/(<div class="artist">)[\s\S]*?(<\/div>)/, (match, open, close) => open + escHtml(artist) + close);
+  }
+
+  if (type === 'post' && category) {
+    html = html.replace(/(<div class="category">)[\s\S]*?(<\/div>)/, (match, open, close) => open + escHtml(category) + close);
+  }  
+
+  if (image) {
+    html = html.replace(/<div class="image-placeholder">[\s\S]*?<\/div>/, () => {
+        const escapedSrc = String(image).replace(/"/g, '&quot;');
+        return `<img src="${escapedSrc}" alt="Cover">`;
+    }); 
+  }
 
   let browser;
 

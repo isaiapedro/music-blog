@@ -2,9 +2,16 @@ import { Injectable, signal } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class LanguageService {
-  lang = signal<'en' | 'pt'>('en');
+  lang = signal<'en' | 'pt'>(this.detectBrowserLanguage());
   toggle() { this.lang.update(l => l === 'en' ? 'pt' : 'en'); }
-
+  
+  private detectBrowserLanguage(): 'en' | 'pt' {
+    if (typeof navigator !== 'undefined' && navigator.language) {
+      return navigator.language.toLowerCase().startsWith('pt') ? 'pt' : 'en';
+    }
+    return 'en'; // Safe fallback
+  }
+  
   private translations: Record<string, Record<'en' | 'pt', string>> = {
     // Navbar
     'nav.articles':  { en: 'articles',    pt: 'blog'  },

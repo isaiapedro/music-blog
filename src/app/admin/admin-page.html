@@ -1,7 +1,11 @@
 <div class="cms-layout">
+  <input type="checkbox" id="sidebar-mobile-toggle" class="sidebar-mobile-toggle" style="display: none;">
   
   <nav class="cms-navbar">
-    <div class="cms-logo">Content Manager</div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <label for="sidebar-mobile-toggle" class="sidebar-toggle-btn">☰</label>
+      <div class="cms-logo">Content Manager</div>
+    </div>
     <div style="display: flex; gap: 10px; align-items: center;">
       <button class="btn-export"
               [disabled]="(!selectedReview() && !selectedArticle()) || isSaving()"
@@ -12,8 +16,8 @@
     </div>
   </nav>
 
-  
   <div class="cms-body">
+    <label for="sidebar-mobile-toggle" class="sidebar-backdrop"></label>
     
     <aside class="cms-sidebar">
       <div class="sidebar-section">
@@ -150,29 +154,29 @@
 
     <main class="cms-editor">
       @if (selectedArticle(); as article) {
-        <div class="editor-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
-          <div style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h2>{{ article.title || 'Untitled Article' }}</h2>
-            <div class="item-stats">
-              <span>👁️ {{ article.views || 0 }} Views</span>
-              <span>❤️ {{ article.likes || 0 }} Likes</span>
-              <span>🔗 {{ article.shares || 0 }} Shares</span>
-              <span>💬 {{ article.comments?.length || 0 }} Comments</span>
+        <div class="editor-header header-flex-container">
+          <div class="header-main-content">
+            <div class="header-title-row">
+              <h2>{{ article.title || 'Untitled Article' }}</h2>
+              <div class="item-stats">
+                <span>👁️ {{ article.views || 0 }} Views</span>
+                <span>❤️ {{ article.likes || 0 }} Likes</span>
+                <span>🔗 {{ article.shares || 0 }} Shares</span>
+                <span>💬 {{ article.comments?.length || 0 }} Comments</span>
+              </div>
             </div>
-          </div>
 
-          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-            <button class="btn-delete" (click)="deleteCurrentArticle()" [disabled]="isSaving()">
-              Delete Article
-            </button>
-            <button class="btn-card-action" (click)="downloadCard('post')" [disabled]="isGeneratingCard()">
-              {{ isGeneratingCard() ? 'Generating...' : '⬇ Download Card' }}
-            </button>
-            <button class="btn-card-action btn-instagram" (click)="shareToInstagram('post')" [disabled]="isGeneratingCard()">
-              {{ isGeneratingCard() ? 'Generating...' : '📸 Share to Instagram' }}
-            </button>
-          </div>
+            <div class="header-buttons-row">
+              <button class="btn-delete" (click)="deleteCurrentArticle()" [disabled]="isSaving()">
+                Delete Article
+              </button>
+              <button class="btn-card-action" (click)="downloadCard('post')" [disabled]="isGeneratingCard()">
+                {{ isGeneratingCard() ? 'Generating...' : '⬇ Download Card' }}
+              </button>
+              <button class="btn-card-action btn-instagram" (click)="shareToInstagram('post')" [disabled]="isGeneratingCard()">
+                {{ isGeneratingCard() ? 'Generating...' : '📸 Share to Instagram' }}
+              </button>
+            </div>
           </div>
           <div class="language-tabs">
             <button [class.active]="editingLang()==='en'" (click)="editingLang.set('en')">EN</button>
@@ -183,7 +187,7 @@
               </button>
             }
           </div>
-          </div>
+        </div>
 
         <div class="form-grid">
           
@@ -370,7 +374,7 @@
             <span>🔗 {{ review.shares || 0 }} Shares</span>
             <span>💬 {{ review.comments?.length || 0 }} Comments</span>
           </div>
-          <div style="display: flex; gap: 8px; margin-top: 12px;">
+          <div class="header-buttons-row mt-2">
             <button class="btn-card-action" (click)="downloadCard('review')" [disabled]="isGeneratingCard()">
               {{ isGeneratingCard() ? 'Generating...' : '⬇ Download Card' }}
             </button>
