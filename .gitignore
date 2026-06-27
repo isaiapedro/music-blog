@@ -47,3 +47,6 @@ Thumbs.db
 .claude/*
 hooks/*
 CLAUDE.md
+
+.env
+cron/*.log
