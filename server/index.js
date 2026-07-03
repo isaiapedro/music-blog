@@ -1,6 +1,7 @@
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 const fs = require('fs');
 const path = require('path');
+const QRCode = require('qrcode');
 const os = require('os');
 const puppeteer = require('puppeteer');
 const express = require('express');
@@ -888,16 +889,8 @@ app.post('/api/admin/translate', authenticateToken, async (req, res) => {
 });
 
 // --- SHARE CARD ---
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// 🧠 Pool de Cache em Memória (Mantenha declarado acima da rota)
-const cardCache = new Map();
-
-// --- SHARE CARD ---
 app.post('/api/share-card', async (req, res) => {
-  const { type = 'post', title, desc, artist, image, category } = req.body;
+  const { type = 'post', title, desc, artist, image, category, url } = req.body;
   if (!['post','review'].includes(type)) return res.status(400).json({ error: 'Invalid type' });
   
   // 🔑 Chave única de cache
@@ -919,29 +912,32 @@ app.post('/api/share-card', async (req, res) => {
     return res.status(400).json({ error: 'Template not found' }); 
   }
 
-  if (title) {
-    html = html.replace(/(<div class="title">)[\s\S]*?(<\/div>)/, (match, open, close) => open + escHtml(title) + close);
+  // Inject updated text/image placeholders from main branch
+  if (title) html = html.replace(/(<div class="title">)[^<]*(<\/div>)/, `$1${escHtml(title)}$2`);
+  if (type === 'post' && desc) html = html.replace(/(<div class="description">)[^<]*(<\/div>)/, `$1${escHtml(desc)}$2`);
+  if (type === 'review' && artist) html = html.replace(/(<div class="artist">)[^<]*(<\/div>)/, `$1${escHtml(artist)}$2`);
+  if (type === 'post' && category) html = html.replace(//, `<div class="category">${escHtml(category)}</div>`);
+  if (image) html = html.replace(/<div class="image-placeholder">[\s\S]*?<\/div>/, `<img src="${String(image).replace(/"/g,'&quot;')}" alt="Cover">`);
+
+  // QR Code Generation
+  if (url && type === 'review') {
+    try {
+      const qrDataUrl = await QRCode.toDataURL(url, {
+        width: 360,
+        margin: 1,
+        color: { dark: '#000000', light: '#ffffff' },
+      });
+      html = html.replace('QR_PLACEHOLDER', qrDataUrl);
+    } catch {
+      html = html.replace(/(<div class="qr-wrap">)[\s\S]*?(<\/div>)/, '');
+    }
+  } else {
+    html = html.replace(/(<div class="qr-wrap">)[\s\S]*?(<\/div>\s*<\/div>)/, '');
   }
 
-  if (type === 'post' && desc) {
-    html = html.replace(/(<div class="description">)[\s\S]*?(<\/div>)/, (match, open, close) => open + escHtml(desc) + close);
-  }
-
-  if (type === 'review' && artist) {
-    html = html.replace(/(<div class="artist">)[\s\S]*?(<\/div>)/, (match, open, close) => open + escHtml(artist) + close);
-  }
-
-  if (type === 'post' && category) {
-    html = html.replace(/(<div class="category">)[\s\S]*?(<\/div>)/, (match, open, close) => open + escHtml(category) + close);
-  }  
-
-  if (image) {
-    html = html.replace(/<div class="image-placeholder">[\s\S]*?<\/div>/, () => {
-        const escapedSrc = String(image).replace(/"/g, '&quot;');
-        return `<img src="${escapedSrc}" alt="Cover">`;
-    }); 
-  }
-
+  // Dynamic Viewport Dimensions
+  const isStories = type === 'review';
+  const vpHeight = isStories ? 1920 : 1350;
   let browser;
 
   try {
@@ -951,7 +947,7 @@ app.post('/api/share-card', async (req, res) => {
     });
     
     const page = await browser.newPage();
-    await page.setViewport({ width: 1080, height: 1350, deviceScaleFactor: 2 });
+    await page.setViewport({ width: 1080, height: vpHeight, deviceScaleFactor: 2 });
     
     await page.setContent(html, { waitUntil: 'networkidle0', timeout: 7000 });
     await new Promise(r => setTimeout(r, 800));
@@ -962,13 +958,12 @@ app.post('/api/share-card', async (req, res) => {
     const screenshotBuffer = await card.screenshot({ omitBackground: true });
     const finalBuffer = Buffer.from(screenshotBuffer);
     
-    // Grava o resultado binário no cache
+    // 💾 Save the generated image buffer into the cache
     cardCache.set(cacheKey, finalBuffer);
 
     res.setHeader('Content-Type', 'image/png');
     res.setHeader('Content-Disposition', `inline; filename="${type}-card.png"`);
     res.setHeader('Cache-Control', 'no-cache');
-    
     res.send(finalBuffer);
 
   } catch (err) {

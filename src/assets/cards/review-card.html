@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=1080">
-  <title>Review Card — Equal Rights</title>
+  <title>Review Card</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
@@ -11,41 +11,32 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      height: 1080px;
-      width: 810px;
+      width: 1080px;
+      height: 1920px;
       overflow: hidden;
-      background: #0d0d0d;
+      background: transparent;
     }
 
     .card {
-      height: 1080px;
-      width: 810px;
+      width: 1080px;
+      height: 1920px;
       position: relative;
       display: flex;
       flex-direction: column;
-      background:
-        radial-gradient(
-          circle at bottom center,
-          #1a1a1a 0%,
-          #0d0d0d 25%,
-          #0d0d0d 100%
-        );
+      align-items: center;
+      background: radial-gradient(circle at top center, #1a1a1a 0%, #0d0d0d 60%);
       overflow: hidden;
-      border-radius: 16px;
+      border-radius: 48px;
     }
 
-    /* ── Image area — 40% of card height ─────────────────── */
+    /* ── Album cover ──────────────────────────────────────── */
     .image-wrap {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 710px;
-      height: 640px;
+      width: 880px;
+      height: 880px;
       flex-shrink: 0;
       overflow: hidden;
-      margin: 0 auto;
-      margin-top: 50px;
-      border-radius: 24px;
+      margin-top: 100px;
+      border-radius: 32px;
     }
 
     .image-wrap img,
@@ -53,14 +44,9 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-top: 15x;
     }
 
     .image-placeholder {
-      /* Simulate an album cover feel: dark with a subtle grid */
       background:
         repeating-linear-gradient(0deg, transparent, transparent 59px, #1c1c1c 59px, #1c1c1c 60px),
         repeating-linear-gradient(90deg, transparent, transparent 59px, #1c1c1c 59px, #1c1c1c 60px),
@@ -70,78 +56,91 @@
       justify-content: center;
       color: #333;
       font-family: 'IBM Plex Mono', monospace;
-      font-size: 20px;
-      letter-spacing: 0.1em;
+      font-size: 24px;
     }
 
-    /* ── Content area ─────────────────────────────────────── */
+    /* ── Content ──────────────────────────────────────────── */
     .content {
       flex: 1;
       display: flex;
       flex-direction: column;
-      padding: 0 72px;
-      padding-top: 12px;
+      width: 100%;
+      padding: 0 80px;
+      padding-top: 48px;
     }
 
-    /* "Review:" label */
     .review-label {
       font-family: 'IBM Plex Mono', monospace;
-      font-size: 32px;
+      font-size: 36px;
       font-weight: 400;
       letter-spacing: 0.05em;
       color: #d32531;
-      margin-bottom: 12px;
-      flex-shrink: 0;
+      margin-bottom: 16px;
     }
 
     .title {
       font-family: 'IBM Plex Mono', monospace;
-      font-size: 54px;
+      font-size: 72px;
       font-weight: 700;
-      line-height: 1.1;
+      line-height: 1.05;
       color: #ffffff;
       letter-spacing: -0.02em;
-      margin-left: -2px;
-      flex-shrink: 0;
       display: -webkit-box;
       -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
 
-    /* Artist name */
     .artist {
       font-family: 'Inter', sans-serif;
-      font-size: 40px;
+      font-size: 48px;
       font-weight: 400;
-      line-height: 1.5;
       color: #777;
-      margin-top: 10px;
-      flex-shrink: 0;
+      margin-top: 16px;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
 
-    /* Spacer — pushes logo down but not flush to description */
-    .divider {
-      flex: 1;
-    }
+    .divider { flex: 1; }
 
-    /* ── Logo ─────────────────────────────────────────────── */
-    .logo-wrap {
+    /* ── Bottom row: QR + Logo ────────────────────────────── */
+    .bottom-row {
       display: flex;
-      justify-content: center;
       align-items: center;
-      padding-bottom: 40px;
+      justify-content: space-between;
+      width: 100%;
+      padding: 0 80px 80px;
       flex-shrink: 0;
     }
 
+    .qr-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .qr-img {
+      width: 180px;
+      height: 180px;
+      border-radius: 16px;
+      background: #fff;
+      padding: 10px;
+    }
+
+    .qr-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 22px;
+      color: #555;
+      letter-spacing: 0.03em;
+    }
+
     .logo-wrap svg {
-      width: 310px;
+      width: 280px;
       height: auto;
-      opacity: 0.9;
+      opacity: 0.85;
     }
   </style>
 </head>
@@ -149,25 +148,21 @@
   <div class="card">
 
     <div class="image-wrap">
-      <!--
-        Replace with:
-        <img src="album-cover.jpg" alt="Album cover">
-      -->
       <div class="image-placeholder">Album cover</div>
     </div>
 
     <div class="content">
-
       <div class="review-label">Review:</div>
-
-      <div class="title">
-        Album Title Goes Here
-      </div>
-
+      <div class="title">Album Title Goes Here</div>
       <div class="artist">Artist Name</div>
-
       <div class="divider"></div>
+    </div>
 
+    <div class="bottom-row">
+      <div class="qr-wrap">
+        <img src="QR_PLACEHOLDER" alt="QR code" class="qr-img">
+        <span class="qr-label">Scan to read</span>
+      </div>
       <div class="logo-wrap">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 730 95">
           <rect x="0"  y="15" width="101" height="24" fill="white"/>
@@ -181,7 +176,6 @@
           >Equal Rights</text>
         </svg>
       </div>
-
     </div>
 
   </div>

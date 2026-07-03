@@ -108,7 +108,7 @@ export class PostPage implements OnInit {
             next: (state) => this.hasLiked.set(state.liked)
           });
 
-          const pageTitle = `${data.title} — Isaia`;
+          const pageTitle = `${data.title} — Equal Rights`;
           this.titleService.setTitle(pageTitle);
           this.metaService.updateTag({ name: 'description', content: data.description || '' });
           this.metaService.updateTag({ property: 'og:title', content: pageTitle });
