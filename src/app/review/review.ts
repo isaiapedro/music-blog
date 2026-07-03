@@ -119,7 +119,7 @@ export class ReviewComponent implements OnInit {
           this.http.post(`${this.apiUrl}/reviews/${data.id}/view`, {}).subscribe();
           this.likedService.init();
 
-          const pageTitle = `${data.album} — ${data.artist} Review | Isaia`;
+          const pageTitle = `${data.album} — ${data.artist} Review`;
           this.titleService.setTitle(pageTitle);
           const desc = data.description || data.context || '';
           this.metaService.updateTag({ name: 'description', content: desc });
@@ -180,7 +180,7 @@ export class ReviewComponent implements OnInit {
       const res = await fetch(`${this.apiUrl}/share-card`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'review', title: r.album, artist: r.artist, image: r.image })
+        body: JSON.stringify({ type: 'review', title: r.album, artist: r.artist, image: r.image, url: window.location.href })
       });
       if (!res.ok) throw new Error('Card generation failed');
       const blob = await res.blob();

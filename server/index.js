@@ -1,6 +1,7 @@
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 const fs = require('fs');
 const path = require('path');
+const QRCode = require('qrcode');
 const os = require('os');
 const puppeteer = require('puppeteer');
 const express = require('express');
@@ -893,7 +894,7 @@ function escHtml(s) {
 }
 
 app.post('/api/share-card', async (req, res) => {
-  const { type = 'post', title, desc, artist, image, category } = req.body;
+  const { type = 'post', title, desc, artist, image, category, url } = req.body;
   if (!['post','review'].includes(type)) return res.status(400).json({ error: 'Invalid type' });
   const templatePath = path.join(__dirname, '../src/assets/cards', `${type}-card.html`);
   let html;
@@ -906,14 +907,32 @@ app.post('/api/share-card', async (req, res) => {
   if (type === 'post' && category) html = html.replace(/<!--\s*Optional[\s\S]*?-->/, `<div class="category">${escHtml(category)}</div>`);
   if (image) html = html.replace(/<div class="image-placeholder">[\s\S]*?<\/div>/, `<img src="${String(image).replace(/"/g,'&quot;')}" alt="Cover">`);
 
+  if (url && type === 'review') {
+    try {
+      const qrDataUrl = await QRCode.toDataURL(url, {
+        width: 360,
+        margin: 1,
+        color: { dark: '#000000', light: '#ffffff' },
+      });
+      html = html.replace('QR_PLACEHOLDER', qrDataUrl);
+    } catch {
+      html = html.replace(/(<div class="qr-wrap">)[\s\S]*?(<\/div>)/, '');
+    }
+  } else {
+    html = html.replace(/(<div class="qr-wrap">)[\s\S]*?(<\/div>\s*<\/div>)/, '');
+  }
+
+  const isStories = type === 'review';
+  const vpHeight = isStories ? 1920 : 1350;
+
   try {
     const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox','--disable-setuid-sandbox'] });
     const page = await browser.newPage();
-    await page.setViewport({ width: 1080, height: 1350, deviceScaleFactor: 2 });
+    await page.setViewport({ width: 1080, height: vpHeight, deviceScaleFactor: 2 });
     await page.setContent(html, { waitUntil: 'networkidle0' });
     await new Promise(r => setTimeout(r, 800));
     const card = await page.$('.card');
-    const buffer = await card.screenshot({ encoding: 'binary' });
+    const buffer = await card.screenshot({ encoding: 'binary', omitBackground: true });
     await browser.close();
     res.setHeader('Content-Type', 'image/png');
     res.setHeader('Content-Disposition', `inline; filename="${type}-card.png"`);
