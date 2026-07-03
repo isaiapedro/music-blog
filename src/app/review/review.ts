@@ -180,7 +180,7 @@ export class ReviewComponent implements OnInit {
       const res = await fetch(`${this.apiUrl}/share-card`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'review', title: r.album, artist: r.artist, image: r.image })
+        body: JSON.stringify({ type: 'review', title: r.album, artist: r.artist, image: r.image, url: window.location.href })
       });
       if (!res.ok) throw new Error('Card generation failed');
       const blob = await res.blob();
