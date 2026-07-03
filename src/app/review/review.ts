@@ -119,7 +119,7 @@ export class ReviewComponent implements OnInit {
           this.http.post(`${this.apiUrl}/reviews/${data.id}/view`, {}).subscribe();
           this.likedService.init();
 
-          const pageTitle = `${data.album} — ${data.artist} Review | Isaia`;
+          const pageTitle = `${data.album} — ${data.artist} Review`;
           this.titleService.setTitle(pageTitle);
           const desc = data.description || data.context || '';
           this.metaService.updateTag({ name: 'description', content: desc });
