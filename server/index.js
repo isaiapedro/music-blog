@@ -30,6 +30,7 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 
 app.use(cors({
   origin: (origin, callback) => {
+    console.log(`[CORS DEBUG] Incoming Origin: '${origin}' | Allowed Array:`, allowedOrigins); // 👈 Add this line
     if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
     callback(new Error('Not allowed by CORS'));
   },
@@ -888,6 +889,12 @@ app.post('/api/admin/translate', authenticateToken, async (req, res) => {
   }
 });
 
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+const cardCache = new Map();
+
 // --- SHARE CARD ---
 app.post('/api/share-card', async (req, res) => {
   const { type = 'post', title, desc, artist, image, category, url } = req.body;
@@ -916,7 +923,7 @@ app.post('/api/share-card', async (req, res) => {
   if (title) html = html.replace(/(<div class="title">)[^<]*(<\/div>)/, `$1${escHtml(title)}$2`);
   if (type === 'post' && desc) html = html.replace(/(<div class="description">)[^<]*(<\/div>)/, `$1${escHtml(desc)}$2`);
   if (type === 'review' && artist) html = html.replace(/(<div class="artist">)[^<]*(<\/div>)/, `$1${escHtml(artist)}$2`);
-  if (type === 'post' && category) html = html.replace(//, `<div class="category">${escHtml(category)}</div>`);
+  if (type === 'post' && category) html = html.replace('', `<div class="category">${escHtml(category)}</div>`);
   if (image) html = html.replace(/<div class="image-placeholder">[\s\S]*?<\/div>/, `<img src="${String(image).replace(/"/g,'&quot;')}" alt="Cover">`);
 
   // QR Code Generation
